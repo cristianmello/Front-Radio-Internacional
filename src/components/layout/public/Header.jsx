@@ -214,7 +214,7 @@ const Header = ({ onOpenAuth }) => {
   const mobileAuthItems = !auth?.user_code
     ? [{ name: 'Ingresar', slug: 'login', action: onOpenAuth }]
     : [
-      { name: 'Perfil', slug: 'perfil', action: () => navigate('/profile') },
+      { name: 'Perfil', slug: 'perfil', action: () => navigate('/perfil') },
       { name: 'Cerrar sesión', slug: 'logout', action: handleLogoutClick }
     ];
 

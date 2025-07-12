@@ -18,11 +18,13 @@ const VerifyEmailPage = () => {
 
         const verifyToken = async () => {
             try {
-                const response = await fetch(`${Url.url}/api/users/verify-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token }),
-                });
+                const response = await fetch(
+                    `${Url.url}/api/users/verify-email?token=${encodeURIComponent(token)}`,
+                    {
+                        method: 'GET',
+                        credentials: 'include'
+                    }
+                );
 
                 const data = await response.json();
 

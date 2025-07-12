@@ -307,11 +307,7 @@ const AuthModal = ({ isOpen, onClose, onLogin, onRegister, onRecover, error }) =
                   minLength={6}
                 />
               </div>
-              <div className="form-options">
-                <label>
-                  <input type="checkbox" required /> Acepto términos y condiciones
-                </label>
-              </div>
+
               <button type="submit" className="auth-submit" disabled={isSubmitting}>
                 {isSubmitting ? "Cargando..." : "Registrarse"}
               </button>
