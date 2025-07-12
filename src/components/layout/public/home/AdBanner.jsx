@@ -23,7 +23,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
     // Si no hay anuncios, mostramos el placeholder y terminamos.
     if (!data.length) {
         return (
-            <section className="ad-section" style={{ display: 'block !important' }}>
+            <section className="ad-section">
                 {sectionTitle && <h2>{sectionTitle}</h2>}
                 {/* El botón de eliminar sección siempre está en el header */}
                 {canEdit && onDeleteSection && (
@@ -91,7 +91,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
     };
 
     return (
-        <section className="ad-section-wrapper section-appear">
+        <section className="ad-section-wrapper" style={{ display: 'block !important' }}>
             {sectionTitle && <h2>{sectionTitle}</h2>}
             {canEdit && (
                 <div className="section-actions">
@@ -107,7 +107,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
                 </div>
             )}
             {renderAdContainer()}
-        </section>
+        </section >
     );
 };
 
