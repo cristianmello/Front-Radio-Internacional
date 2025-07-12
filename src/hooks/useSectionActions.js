@@ -106,9 +106,6 @@ export function useSectionActions(slug, onDeleted) {
         }
     };
 
-    console.log(`%c[useSectionActions] Hook inicializado para: ${slug}. ¿Tengo la función onDeleted?`, 'color: purple;', typeof onDeleted === 'function');
-
-
     // Eliminar toda la sección
     const deleteSection = async () => {
         try {

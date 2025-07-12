@@ -62,8 +62,6 @@ export default function SectionWrapper({ section, onSectionDeleted }) {
     const { editArticle } = useArticleActions();
     const adHook = useAdvertisement(editingAdvertisement?.ad_id);
 
-    console.log(`%c[SectionWrapper] Renderizando slug: ${section.section_slug}. ¿Tengo la función onSectionDeleted?`, 'color: orange;', typeof onSectionDeleted === 'function');
-
     const handleSelectAdvertisement = async (code) => {
         try {
             const result = await addItem(code);
@@ -84,9 +82,6 @@ export default function SectionWrapper({ section, onSectionDeleted }) {
     };
 
     const handleDeleteSection = async () => {
-        // ================= SENSOR 5 =================
-        console.log(`%c[SectionWrapper] Botón de borrar presionado para: ${section.section_slug}`, 'color: red; font-weight: bold;');
-        // ============================================
         const result = await deleteSection();
         if (!result.success) {
             alert(result.message || "No se pudo eliminar la sección.");
