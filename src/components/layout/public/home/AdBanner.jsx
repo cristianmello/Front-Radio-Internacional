@@ -95,7 +95,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
     };
 
     return (
-        <section className="ad-section-wrapper section-appear">
+        <section className="ad-section-wrapper">
             {sectionTitle && <h2>{sectionTitle}</h2>}
             {canEdit && (
                 <div className="section-actions">
