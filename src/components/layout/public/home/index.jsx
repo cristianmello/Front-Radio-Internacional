@@ -34,6 +34,8 @@ const HomePage = () => {
     // 2. Definimos qué tipos de sección pertenecen al sidebar. ¡Este es tu nuevo panel de control!
     const sidebarWidgetTypes = ['sidebar', 'sideaudios', 'ad-small', 'ad-skyscraper', 'ad-verticalsm'];
 
+    const noLazyTypes = ['ad-banner', 'ad-large', 'ad-small', 'ad-skyscraper', 'ad-biglarge', 'ad-verticalsm'];
+
     // 3. Encontramos la única sección de contenido principal.
     const mainContentSection = sorted.find(s => s.section_type === 'maincontent');
 
@@ -69,14 +71,16 @@ const HomePage = () => {
 
                 // Para cualquier otro tipo de sección (ej: 'breaking', 'trending', 'ad-banner' de ancho completo),
                 // la renderizamos como una sección independiente.
-                return (
-                    <LazySection
-                        key={sec.section_slug}
-                        section={sec}
-                        categoryFilter={category}
-                        onSectionDeleted={handleSectionDeleted}
-                    />
-                );
+                if (noLazyTypes.includes(sec.section_type)) {
+                    return (
+                        <SectionWrapper
+                            key={sec.section_slug}
+                            section={sec}
+                            categoryFilter={category}
+                            onSectionDeleted={handleSectionDeleted}
+                        />
+                    );
+                }
             })}
         </div>
     );
