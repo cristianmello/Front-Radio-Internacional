@@ -23,7 +23,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
     // Si no hay anuncios, mostramos el placeholder y terminamos.
     if (!data.length) {
         return (
-            <section className="ad-section">
+            <section className="ad-section" style={{ display: 'block !important' }}>
                 {sectionTitle && <h2>{sectionTitle}</h2>}
                 {/* El botón de eliminar sección siempre está en el header */}
                 {canEdit && onDeleteSection && (
