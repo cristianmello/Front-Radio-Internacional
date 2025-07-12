@@ -3,6 +3,7 @@ import useSections from "../../../../hooks/useSections";
 import LazySection from "./LazySection";
 import NewsLayout from "./NewsLayout";
 import useAuth from "../../../../hooks/UseAuth";
+import SectionWrapper from "./SectionWrapper";
 
 const HomePage = () => {
     const { auth, roles } = useAuth();
