@@ -14,8 +14,7 @@ export default function useCategories() {
     setLoading(true);
     setError(null);
     try {
-      // CAMBIO 2: Añadimos el objeto de opciones al fetch.
-      // Si options.force es true, usará 'no-cache', si no, el comportamiento por defecto.
+
       const res = await fetch(`${Url.url}/api/categories`, {
         cache: options.force ? 'no-cache' : 'default'
       });

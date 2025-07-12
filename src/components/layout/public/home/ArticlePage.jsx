@@ -5,7 +5,6 @@ import { es } from 'date-fns/locale';
 import usePublicArticle from '../../../../hooks/usePublicArticle';
 import useArticleActions from '../../../../hooks/useArticleActions';
 import useRelatedArticles from '../../../../hooks/useRelatedArticles';
-import useCategories from '../../../../hooks/useCategories';
 import useAuth from '../../../../hooks/UseAuth';
 import { useEditMode } from '../../../../context/EditModeContext';
 import { Editor } from '@tinymce/tinymce-react';
@@ -15,6 +14,7 @@ import SidebarWidget from './SidebarWidget';
 import RenderArticleContent from './RenderArticleContent';
 import useSections from '../../../../hooks/useSections';
 import useAdvertisements from '../../../../hooks/useAdvertisements';
+import useCategories from '../../../../hooks/useCategories';
 
 const iconMap = {
     success: 'fas fa-check-circle',
