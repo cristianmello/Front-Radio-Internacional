@@ -1,7 +1,7 @@
 // src/components/layout/public/Footer.jsx
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import useCategories from "../../../hooks/useCategories";
+import useCategories from "../../../hooks/UseCategories";
 
 export default function Footer() {
   const navigate = useNavigate();

@@ -2,9 +2,9 @@
 // src/components/layout/public/home/CreateArticleModal.jsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
-import useCategories from "../../../../hooks/useCategories";
 import useAuth from "../../../../hooks/UseAuth";
 import Url from "../../../../helpers/Url";
+import useCategories from "../../../../hooks/UseCategories";
 
 const defaultContentHTML = `
             <p>En un giro inesperado que ha sorprendido a la comunidad internacional, los líderes de dos naciones históricamente enfrentadas han firmado hoy un acuerdo de paz que pone fin a décadas de conflicto. El tratado, negociado en secreto durante los últimos seis meses, establece un marco para la cooperación económica, cultural y política entre ambos países.</p>

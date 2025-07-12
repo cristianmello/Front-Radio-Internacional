@@ -7,8 +7,8 @@ import EditArticleModal from "./EditArticleModal";
 import { useSectionActions } from "../../../../hooks/useSectionActions";
 import { SectionEditContext } from "../../../../context/SectionEditContext";
 import { useEditMode } from "../../../../context/EditModeContext";
-import useCategories from "../../../../hooks/useCategories";
 import useArticleActions from "../../../../hooks/useArticleActions";
+import useCategories from "../../../../hooks/UseCategories";
 
 /**
  * Componente de layout principal que organiza el contenido principal y un sidebar dinámico.

@@ -14,7 +14,7 @@ import SidebarWidget from './SidebarWidget';
 import RenderArticleContent from './RenderArticleContent';
 import useSections from '../../../../hooks/useSections';
 import useAdvertisements from '../../../../hooks/useAdvertisements';
-import useCategories from '../../../../hooks/useCategories';
+import useCategories from '../../../../hooks/UseCategories';
 
 const iconMap = {
     success: 'fas fa-check-circle',

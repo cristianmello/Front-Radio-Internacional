@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import useAudio from "../../../../hooks/UseAudio";
-import useCategories from "../../../../hooks/useCategories";
+import useCategories from "../../../../hooks/UseCategories";
 
 export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSuccess }) {
     const modalContentRef = useRef(null);

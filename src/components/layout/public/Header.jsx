@@ -6,7 +6,6 @@ import AddCategoryModal from "./home/AddCategoryModal";
 import DeleteCategoryModal from "./home/DeleteCategoryModal";
 import Url from "../../../helpers/Url";
 import { useEditMode } from "../../../context/EditModeContext";
-import useCategories from "../../../hooks/useCategories";
 import CreateArticleModal from "./home/CreateArticleModal";
 import CreateAudioModal from "./home/CreateAudioModal";
 import useArticleActions from "../../../hooks/useArticleActions";
@@ -17,7 +16,8 @@ import CreateAdvertisementModal from "./home/CreateAdvertisementModal";
 import DeleteAdvertisementModal from "./home/DeleteAdvertisementModal";
 import SelectAdvertisementToEditModal from "./home/SelectAdvertisementToEditModal";
 import EditAdvertisementModal from "./home/EditAdvertisementModal";
-import EditContentArticleModal from "./home/EditContentArticleModal";  // ← Nuevo
+import EditContentArticleModal from "./home/EditContentArticleModal";
+import useCategories from "../../../hooks/UseCategories";
 
 const Header = ({ onOpenAuth }) => {
   const { auth, logout, roles } = useAuth();
