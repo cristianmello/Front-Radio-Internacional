@@ -1,5 +1,5 @@
 const Url = {
-  url: process.env.REACT_APP_API_URL
+  url: import.meta.env.VITE_API_URL
 };
 
 export default Url;
