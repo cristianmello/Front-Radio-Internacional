@@ -7,6 +7,10 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
     // 1. Obtenemos TODAS las funciones del contexto, igual que en TrendingNews.jsx
     const { canEdit, onAddItem, onRemove, onEdit, onDeleteSection } = useSectionEdit();
 
+    if (!data.length && !canEdit) {
+        return null;
+    }
+
     // El placeholder ahora incluye el botón para añadir un anuncio directamente
     const renderPlaceholder = () => (
         <div className="widget ad-widget-placeholder">

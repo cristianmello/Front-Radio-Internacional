@@ -2,7 +2,7 @@
 import React from "react";
 
 const ArticleModal = ({ isOpen, onClose, articleContent }) => {
-    // Si no está abierto, no renderizamos nada (o bien podemos renderizar con display: none)
+
     if (!isOpen) return null;
 
     return (
