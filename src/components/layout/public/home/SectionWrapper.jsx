@@ -75,10 +75,21 @@ export default function SectionWrapper({ section, onSectionDeleted }) {
             return { success: false, message: err.message || "Error inesperado." };
         }
     };
-
-    const handleSelectContent = (code) => {
-        addItem(code);
-        setAdding(false);
+    /*Funcionaba por las dudas volver production
+        const handleSelectContent = (code) => {
+            addItem(code);
+            setAdding(false);
+        };
+        */
+    const handleSelectContent = async (code) => {
+        const result = await addItem(code);
+        if (result.success) {
+            // Recarga la sección completa para que BreakingNews reciba el nuevo item
+            await refreshSectionItems();
+            setAdding(false);
+        } else {
+            alert(result.message || "No se pudo añadir el artículo.");
+        }
     };
 
     const handleDeleteSection = async () => {
