@@ -224,7 +224,7 @@ const Header = ({ onOpenAuth }) => {
         <div className="container">
           <div className="logo">
             <Link to="/categoria/inicio">
-              <h1>RadioInternacional</h1>
+              <h1>RealidadNacional</h1>
             </Link>
           </div>
 

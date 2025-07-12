@@ -35,7 +35,7 @@ export default function Footer() {
         <div className="footer-content">
           {/* Logo y descripción */}
           <div className="footer-logo">
-            <h2>RadioInternacional</h2>
+            <h2>RealidadNacional</h2>
             <p>Tu portal de noticias confiable</p>
           </div>
 
@@ -120,7 +120,7 @@ export default function Footer() {
 
         {/* Pie de página inferior */}
         <div className="footer-bottom">
-          <p>© 2025 RadioInternacional - Todos los derechos reservados</p>
+          <p>© 2025 RealidadNacional - Todos los derechos reservados</p>
         </div>
       </div>
     </footer>
