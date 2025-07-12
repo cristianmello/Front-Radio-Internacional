@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import usePublicArticle from "../../../../hooks/usePublicArticle";
-import useCategories from "../../../../hooks/useCategories";
+import useCategories from "../../../../hooks/UseCategories";
 
 export default function EditArticleModal({ article: articleToEdit, onSave, onCancel, onUpdateSucess }) {
 
