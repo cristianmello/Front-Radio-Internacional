@@ -1111,6 +1111,13 @@ footer {
 /* ============================================= */
 /* === 1. ANUNCIOS EN CONTENIDO PRINCIPAL    === */
 /* ============================================= */
+.ad-section-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+
 .ad-large-container,
 .ad-biglarge-container {
     width: 100%;
