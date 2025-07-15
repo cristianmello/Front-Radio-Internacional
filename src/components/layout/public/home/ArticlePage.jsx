@@ -307,6 +307,8 @@ const ArticlePage = () => {
                                         value={editableContent}
                                         onEditorChange={(newContent) => setEditableContent(newContent)}
                                         init={{
+                                            language: 'es',
+                                            language_url: '/tinymce/langs/es.js',
                                             height: 600,
                                             menubar: true,
                                             plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media',
