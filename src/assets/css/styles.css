@@ -1175,9 +1175,12 @@ footer {
      * Para los anuncios horizontales que ocupan todo el ancho.
      * Esta es la corrección más importante.
     */
-    .ad-large-container,
-    .ad-biglarge-container {
+    .ad-large-container {
         max-height: 90px;
+    }
+
+    .ad-biglarge-container {
+        max-height: 145px;
     }
 
     /*
@@ -1193,6 +1196,13 @@ footer {
         padding-bottom: 10px;
     }
 }
+
+@media (max-width: 480px) {
+    .ad-biglarge-container {
+        max-height: 90px;
+    }
+}
+
 
 .field-note.warning-note {
     background-color: #fffbeb;
