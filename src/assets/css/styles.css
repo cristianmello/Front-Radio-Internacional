@@ -4864,6 +4864,7 @@ body.admin-mode .story-content h4.editable {
 }
 
 @media (max-width: 576px) {
+
     .main-content {
         background-color: transparent;
         border-radius: 0;
@@ -4966,6 +4967,9 @@ body.admin-mode .story-content h4.editable {
     .article-tags {
         flex-wrap: wrap;
         gap: 8px;
+    }
+    .ad-large-container, .ad-biglarge-container {
+        margin: 0 0 15px 0;
     }
 }
 
