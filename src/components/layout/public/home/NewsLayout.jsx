@@ -55,7 +55,7 @@ const NewsLayout = ({
   };
 
   const isInicio = category === "inicio";
-  const containerStyle = { gridTemplateColumns: isInicio ? "2fr 1fr" : "1fr" };
+  const containerStyle = { gridTemplateColumns: isInicio ? "3fr 1fr" : "1fr" };
 
   return (
     <div

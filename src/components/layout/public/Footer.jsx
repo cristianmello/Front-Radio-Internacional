@@ -36,7 +36,7 @@ export default function Footer() {
           {/* Logo y descripción */}
           <div className="footer-logo">
             <h2>Realidad Nacional</h2>
-            <p>Tu portal de noticias confiable</p>
+            <p>El interior tambien es capital.</p>
           </div>
 
           {/* Bloque de enlaces */}
