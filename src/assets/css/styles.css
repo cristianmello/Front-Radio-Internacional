@@ -513,7 +513,7 @@ main {
 }
 
 .news-layout.inicio {
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 2fr 1fr;
 }
 
 .main-content {
@@ -1824,7 +1824,7 @@ footer {
 
 .article-layout {
     display: grid;
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 30px;
     margin-bottom: 40px;
 }

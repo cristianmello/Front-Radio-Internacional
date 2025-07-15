@@ -64,7 +64,7 @@ const NewsLayout = ({
     ? "Mantente informado con las últimas noticias y análisis de Uruguay y el mundo."
     : `Encuentra las últimas noticias sobre ${currentCatName} en Realidad Nacional.`;
 
-  const containerStyle = { gridTemplateColumns: isInicio ? "3fr 1fr" : "1fr" };
+  const containerStyle = { gridTemplateColumns: isInicio ? "2fr 1fr" : "1fr" };
 
   return (
     <>
