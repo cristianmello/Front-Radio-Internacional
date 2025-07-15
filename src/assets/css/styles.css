@@ -5824,6 +5824,13 @@ body.admin-mode .editable-container:hover .delete-item-btn {
 
 /* Responsive styles for mobile */
 @media (max-width: 768px) {
+
+    .footer-section ul {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
     .content-section-footer {
         padding: 20px 15px;
         margin: 20px auto;
