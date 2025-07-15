@@ -307,15 +307,16 @@ const ArticlePage = () => {
                                         value={editableContent}
                                         onEditorChange={(newContent) => setEditableContent(newContent)}
                                         init={{
-                                            language: 'es',
-                                            language_url: '/tinymce/langs/es.js',
                                             height: 600,
                                             menubar: true,
-                                            plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media',
+                                            plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media quickbars',
                                             toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
-                                                'forecolor backcolor | bullist numlist outdent indent | ' +
+                                                'forecolor backcolor | bullist numlist outdent indent blockquote | ' +
                                                 'alignleft aligncenter alignright alignjustify | ' +
                                                 'link image media insertAdButton| table | removeformat | fullscreen preview | help',
+
+                                            quickbars_selection_toolbar: 'bold italic | quicklink blockquote',
+                                            quickbars_insert_toolbar: 'quickimage quicktable',
                                             image_uploadtab: true,
                                             images_upload_handler: imageUploadHandler,
                                             file_picker_types: 'image',
