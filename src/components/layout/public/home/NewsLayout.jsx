@@ -55,62 +55,76 @@ const NewsLayout = ({
   };
 
   const isInicio = category === "inicio";
+
+  const pageTitle = isInicio
+    ? "Realidad Nacional - Lo Último de Uruguay y el Mundo"
+    : `${currentCatName} - Realidad Nacional`;
+
+  const pageDescription = isInicio
+    ? "Mantente informado con las últimas noticias y análisis de Uruguay y el mundo."
+    : `Encuentra las últimas noticias sobre ${currentCatName} en Realidad Nacional.`;
+
   const containerStyle = { gridTemplateColumns: isInicio ? "3fr 1fr" : "1fr" };
 
   return (
-    <div
-      className={`news-layout ${isInicio ? "inicio" : ""}`}
-      id="destacados"
-      style={containerStyle}
-    >
-      {/* ================================================================== */}
-      {/* ZONA 1: CONTEXTO Y COMPONENTES PARA EL CONTENIDO PRINCIPAL         */}
-      {/* Este Provider asegura que NewsMain y sus modales funcionen bien.  */}
-      {/* ================================================================== */}
-      <SectionEditContext.Provider value={mainContext}>
+    <>
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
+      
+      <div
+        className={`news-layout ${isInicio ? "inicio" : ""}`}
+        id="destacados"
+        style={containerStyle}
+      >
+        {/* ================================================================== */}
+        {/* ZONA 1: CONTEXTO Y COMPONENTES PARA EL CONTENIDO PRINCIPAL         */}
+        {/* Este Provider asegura que NewsMain y sus modales funcionen bien.  */}
+        {/* ================================================================== */}
+        <SectionEditContext.Provider value={mainContext}>
 
-        {addingMain && (
-          <AddArticleModal
-            section={mainSection}
-            onSelect={code => { addMainItem(code); setAddingMain(false); }}
-            onCancel={() => setAddingMain(false)}
-          />
-        )}
-
-        {editingMain && (
-          <EditArticleModal
-            article={editingMain}
-            onSave={(formData) => editArticle(editingMain.id, formData)}
-            onCancel={() => setEditingMain(null)}
-            onUpdateSuccess={refreshMainItems}
-          />
-        )}
-
-        <NewsMain
-          sectionTitle={isInicio ? "Destacados" : `Destacados: ${currentCatName}`}
-          data={filteredMain}
-        />
-      </SectionEditContext.Provider>
-
-
-      {/* ================================================================== */}
-      {/* ZONA 2: SIDEBAR DINÁMICO                                          */}
-      {/* Esta zona es independiente. Cada widget del sidebar tendrá      */}
-      {/* su propio contexto interno gracias a SidebarWidget.             */}
-      {/* ================================================================== */}
-      {isInicio && (
-        <NewsSidebar>
-          {sidebarWidgets.map(widgetSection => (
-            <SidebarWidget
-              key={widgetSection.section_slug}
-              section={widgetSection}
-              onSectionDeleted={onSectionDeleted}
-              canEditGlobal={canEditCombined}
+          {addingMain && (
+            <AddArticleModal
+              section={mainSection}
+              onSelect={code => { addMainItem(code); setAddingMain(false); }}
+              onCancel={() => setAddingMain(false)}
             />
-          ))}
-        </NewsSidebar>
-      )}
-    </div>
+          )}
+
+          {editingMain && (
+            <EditArticleModal
+              article={editingMain}
+              onSave={(formData) => editArticle(editingMain.id, formData)}
+              onCancel={() => setEditingMain(null)}
+              onUpdateSuccess={refreshMainItems}
+            />
+          )}
+
+          <NewsMain
+            sectionTitle={isInicio ? "Destacados" : `Destacados: ${currentCatName}`}
+            data={filteredMain}
+          />
+        </SectionEditContext.Provider>
+
+
+        {/* ================================================================== */}
+        {/* ZONA 2: SIDEBAR DINÁMICO                                          */}
+        {/* Esta zona es independiente. Cada widget del sidebar tendrá      */}
+        {/* su propio contexto interno gracias a SidebarWidget.             */}
+        {/* ================================================================== */}
+        {isInicio && (
+          <NewsSidebar>
+            {sidebarWidgets.map(widgetSection => (
+              <SidebarWidget
+                key={widgetSection.section_slug}
+                section={widgetSection}
+                onSectionDeleted={onSectionDeleted}
+                canEditGlobal={canEditCombined}
+              />
+            ))}
+          </NewsSidebar>
+        )}
+      </div>
+    </>
   );
 };
 

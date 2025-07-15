@@ -169,14 +169,34 @@ const ArticlePage = () => {
     const displayedArticle = article || initialData;
 
     if (loading && !displayedArticle) {
-        return <main className="article-main"><div className="container">Cargando artículo...</div></main>;
+        return (
+            <>
+                <title>Cargando... - Realidad Nacional</title>
+                <main className="article-main"><div className="container">Cargando artículo...</div></main>;
+            </>
+        )
     }
 
-    if (error) return <main className="article-main"><div className="container">Error: {error}</div></main>;
-
+    if (error) {
+        return (
+            <>
+                <title>Error - Realidad Nacional</title>
+                <meta name="robots" content="noindex" />
+                <main className="article-main"><div className="container">Error: {error}</div></main>;
+            </>
+        )
+    }
     if (!displayedArticle) {
-        return <main className="article-main"><div className="container">Artículo no encontrado.</div></main>;
+        return (
+            <>
+                <title>Artículo no encontrado - Realidad Nacional</title>
+                <meta name="robots" content="noindex" />
+
+                <main className="article-main"><div className="container">Artículo no encontrado.</div></main>
+            </>
+        );
     }
+
     // Busca el nombre de la categoría
     const categoryObj = categories.find(
         (c) => c.category_code === displayedArticle.article_category_id
@@ -185,60 +205,79 @@ const ArticlePage = () => {
         ? categoryObj.category_name
         : '—';
 
+    // 3. Datos Estructurados (JSON-LD) para Google
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": displayedArticle.article_title,
+        "image": [displayedArticle.article_image_url],
+        "datePublished": displayedArticle.article_published_at,
+        "dateModified": displayedArticle.updated_at || displayedArticle.article_published_at,
+        "author": [{
+            "@type": "Organization",
+            "name": "Realidad Nacional",
+            "url": "https://www.realidadnacional.net"
+        }]
+    };
+
     return (
-        <main className="article-main">
-            {/* 5. BARRA DE HERRAMIENTAS DE EDICIÓN */}
-            {/* Solo es visible para usuarios con permisos y con el modo edición global activado */}
-            {/* --- BARRA DE HERRAMIENTAS DE EDICIÓN (ESTRUCTURA CORREGIDA) --- */}
-            {canEditArticle && editMode && (
-                // 1. Contenedor principal que SIEMPRE tiene la clase de posicionamiento.
-                <div className="article-admin-toolbar">
+        <>
+            <title>{`${displayedArticle.article_title} - Realidad Nacional`}</title>
+            <meta name="description" content={displayedArticle.article_excerpt} />
+            <main className="article-main">
 
-                    {!isEditingContent ? (
-                        // 2. El botón de editar ya no necesita la clase 'article-admin-toolbar'
-                        <button onClick={() => setIsEditingContent(true)}>
-                            <i className="fas fa-edit"></i> Editar Contenido
-                        </button>
-                    ) : (
-                        // 3. Los botones de guardar/cancelar están dentro del mismo contenedor
-                        <div className="edit-actions">
-                            <button onClick={handleSaveContent} disabled={isSaving}>
-                                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                <script type="application/ld+json">
+                    {JSON.stringify(structuredData)}
+                </script>
+                {canEditArticle && editMode && (
+                    // 1. Contenedor principal que SIEMPRE tiene la clase de posicionamiento.
+                    <div className="article-admin-toolbar">
+
+                        {!isEditingContent ? (
+                            // 2. El botón de editar ya no necesita la clase 'article-admin-toolbar'
+                            <button onClick={() => setIsEditingContent(true)}>
+                                <i className="fas fa-edit"></i> Editar Contenido
                             </button>
-                            <button onClick={handleCancelEdit} disabled={isSaving} className="btn-cancel-style"> {/* Clase opcional para estilo diferente */}
-                                Cancelar
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            <div className="container">
-                <div className="article-layout">
-                    <article className="article-content">
-
-                        {/* ... El encabezado del artículo (título, autor, fecha) no cambia ... */}
-                        <div className="article-header">
-                            <div className="breadcrumbs">
-                                <Link to="/">Inicio</Link> &gt;{" "}
-                                <span className="article-category">{categoryName}</span>
+                        ) : (
+                            // 3. Los botones de guardar/cancelar están dentro del mismo contenedor
+                            <div className="edit-actions">
+                                <button onClick={handleSaveContent} disabled={isSaving}>
+                                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                                </button>
+                                <button onClick={handleCancelEdit} disabled={isSaving} className="btn-cancel-style"> {/* Clase opcional para estilo diferente */}
+                                    Cancelar
+                                </button>
                             </div>
-                            <div className="article-meta-top">
-                                <span className="article-category-label">
-                                    {categoryName}
-                                </span>
-                                <span className="article-date">
-                                    {formatDistanceToNow(
-                                        parseISO(displayedArticle.article_published_at),
-                                        { locale: es, addSuffix: true }
-                                    )}
-                                </span>
-                            </div>
-                            <h1 className="article-title">{displayedArticle.article_title}</h1>
-                            {displayedArticle.article_slug && (
-                                <h2 className="article-subtitle">{displayedArticle.article_excerpt}</h2>
-                            )}
-                            {/* {article.author && (
+                        )}
+                    </div>
+                )}
+
+                <div className="container">
+                    <div className="article-layout">
+                        <article className="article-content">
+
+                            {/* ... El encabezado del artículo (título, autor, fecha) no cambia ... */}
+                            <div className="article-header">
+                                <div className="breadcrumbs">
+                                    <Link to="/">Inicio</Link> &gt;{" "}
+                                    <span className="article-category">{categoryName}</span>
+                                </div>
+                                <div className="article-meta-top">
+                                    <span className="article-category-label">
+                                        {categoryName}
+                                    </span>
+                                    <span className="article-date">
+                                        {formatDistanceToNow(
+                                            parseISO(displayedArticle.article_published_at),
+                                            { locale: es, addSuffix: true }
+                                        )}
+                                    </span>
+                                </div>
+                                <h1 className="article-title">{displayedArticle.article_title}</h1>
+                                {displayedArticle.article_slug && (
+                                    <h2 className="article-subtitle">{displayedArticle.article_excerpt}</h2>
+                                )}
+                                {/* {article.author && (
                                 <div className="article-author">
                                     <img
                                         src={displayedArticle.author.avatar}
@@ -251,88 +290,88 @@ const ArticlePage = () => {
                                     </div>
                                 </div>
                             )}*/}
-                        </div>
-
-                        {displayedArticle.article_image_url && (
-                            <div className="article-featured-image">
-                                <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
                             </div>
-                        )}
 
-                        {/* --- 6. CUERPO DEL ARTÍCULO EDITABLE --- */}
-                        <div className="article-body">
-                            {isEditingContent && canEditArticle ? (
-                                <Editor
-                                    apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-                                    onInit={(evt, editor) => editorRef.current = editor}
-                                    value={editableContent}
-                                    onEditorChange={(newContent) => setEditableContent(newContent)}
-                                    init={{
-                                        height: 600,
-                                        menubar: true,
-                                        plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media',
-                                        toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
-                                            'forecolor backcolor | bullist numlist outdent indent | ' +
-                                            'alignleft aligncenter alignright alignjustify | ' +
-                                            'link image media insertAdButton| table | removeformat | fullscreen preview | help',
-                                        image_uploadtab: true,
-                                        images_upload_handler: imageUploadHandler,
-                                        file_picker_types: 'image',
-                                        automatic_uploads: true,
-
-                                        extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
-                                        media_live_embeds: true,
-                                        content_style: `body {font-family:Helvetica,Arial,sans-serif; font-size:16px }iframe {width: 100% !important;max-width: 100%;height: auto !important;aspect-ratio: 16 / 9;border: none;}`,
-                                        setup: (editor) => {
-                                            editor.ui.registry.addButton('insertAdButton', {
-                                                text: 'Publicidad',
-                                                icon: 'bullhorn',
-                                                tooltip: 'Insertar Publicidad',
-                                                onAction: handleOpenInsertAdModal,
-                                            });
-                                        }
-                                    }}
-
-                                />
-                            ) : (
-                                <div className="rendered-content">
-                                    <RenderArticleContent htmlContent={displayedArticle.article_content} />
+                            {displayedArticle.article_image_url && (
+                                <div className="article-featured-image">
+                                    <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
                                 </div>
                             )}
-                        </div>
+
+                            {/* --- 6. CUERPO DEL ARTÍCULO EDITABLE --- */}
+                            <div className="article-body">
+                                {isEditingContent && canEditArticle ? (
+                                    <Editor
+                                        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                                        onInit={(evt, editor) => editorRef.current = editor}
+                                        value={editableContent}
+                                        onEditorChange={(newContent) => setEditableContent(newContent)}
+                                        init={{
+                                            height: 600,
+                                            menubar: true,
+                                            plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media',
+                                            toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
+                                                'forecolor backcolor | bullist numlist outdent indent | ' +
+                                                'alignleft aligncenter alignright alignjustify | ' +
+                                                'link image media insertAdButton| table | removeformat | fullscreen preview | help',
+                                            image_uploadtab: true,
+                                            images_upload_handler: imageUploadHandler,
+                                            file_picker_types: 'image',
+                                            automatic_uploads: true,
+
+                                            extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
+                                            media_live_embeds: true,
+                                            content_style: `body {font-family:Helvetica,Arial,sans-serif; font-size:16px }iframe {width: 100% !important;max-width: 100%;height: auto !important;aspect-ratio: 16 / 9;border: none;}`,
+                                            setup: (editor) => {
+                                                editor.ui.registry.addButton('insertAdButton', {
+                                                    text: 'Publicidad',
+                                                    icon: 'bullhorn',
+                                                    tooltip: 'Insertar Publicidad',
+                                                    onAction: handleOpenInsertAdModal,
+                                                });
+                                            }
+                                        }}
+
+                                    />
+                                ) : (
+                                    <div className="rendered-content">
+                                        <RenderArticleContent htmlContent={displayedArticle.article_content} />
+                                    </div>
+                                )}
+                            </div>
 
 
-                    </article>
-                    <aside className="article-sidebar">
-                        <div className="widget related-news">
-                            <h3>Noticias Relacionadas</h3>
-                            {loadingRelated && <p>Cargando...</p>}
-                            {error && <p className="error">{errorRelated}</p>}
-                            {!loadingRelated && !errorRelated && (
-                                <div className="related-news-list">
-                                    {relatedArticles.map((related) => (
-                                        // DESPUÉS (Recomendado)
-                                        <Link
-                                            to={`/articulos/${related.article_code}/${related.article_slug}`}
-                                            className="related-news-item"
-                                            key={related.article_code}
-                                            state={{
-                                                article: {
-                                                    ...related,
-                                                    article_published_at: related.date,
-                                                },
-                                            }}
-                                        >
-                                            <img src={related.image} alt={related.title} />
-                                            <div className="related-news-info">
-                                                <h4>{related.title}</h4>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        {/*
+                        </article>
+                        <aside className="article-sidebar">
+                            <div className="widget related-news">
+                                <h3>Noticias Relacionadas</h3>
+                                {loadingRelated && <p>Cargando...</p>}
+                                {error && <p className="error">{errorRelated}</p>}
+                                {!loadingRelated && !errorRelated && (
+                                    <div className="related-news-list">
+                                        {relatedArticles.map((related) => (
+                                            // DESPUÉS (Recomendado)
+                                            <Link
+                                                to={`/articulos/${related.article_code}/${related.article_slug}`}
+                                                className="related-news-item"
+                                                key={related.article_code}
+                                                state={{
+                                                    article: {
+                                                        ...related,
+                                                        article_published_at: related.date,
+                                                    },
+                                                }}
+                                            >
+                                                <img src={related.image} alt={related.title} />
+                                                <div className="related-news-info">
+                                                    <h4>{related.title}</h4>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            {/*
                         <div className="widget trending-now">
                             <h3>Trending Ahora</h3>
                             <div className="trending-list">
@@ -345,74 +384,75 @@ const ArticlePage = () => {
                             </div>
                         </div>
                         */}
-                        <NewsSidebar>
-                            {loadingSections && <p>Cargando widgets…</p>}
-                            {errorSections && <p className="form-error">{errorSections}</p>}
-                            {!loadingSections && !errorSections && sidebarWidgets.map(widget => (
-                                <SidebarWidget
-                                    key={widget.section_slug}
-                                    section={widget}
-                                    canEditGlobal={canEditGlobal}
-                                    onSectionDeleted={() => { /* refresh() si querés volver a cargar */ }}
-                                />
-                            ))}
-                        </NewsSidebar>
+                            <NewsSidebar>
+                                {loadingSections && <p>Cargando widgets…</p>}
+                                {errorSections && <p className="form-error">{errorSections}</p>}
+                                {!loadingSections && !errorSections && sidebarWidgets.map(widget => (
+                                    <SidebarWidget
+                                        key={widget.section_slug}
+                                        section={widget}
+                                        canEditGlobal={canEditGlobal}
+                                        onSectionDeleted={() => { /* refresh() si querés volver a cargar */ }}
+                                    />
+                                ))}
+                            </NewsSidebar>
 
-                    </aside>
-                </div>
-
-                <section className="more-to-read">
-                    <h2>Más para leer</h2>
-                    {loadingRelated && <p>Cargando...</p>}
-                    {errorRelated && <p className="error">{errorRelated}</p>}
-                    {!loadingRelated && !errorRelated && (
-                        <div className="more-articles">
-                            {relatedArticles.slice(0, 3).map((ma) => (
-                                <Link
-                                    to={`/articulos/${ma.article_code}/${ma.article_slug}`}
-                                    className="more-article-card"
-                                    key={ma.article_code}
-                                >
-                                    <img src={ma.image} alt={ma.title} />
-                                    <div className="more-article-content">
-                                        <span className="more-article-category">{ma.category}</span>
-                                        <h3>{ma.title}</h3>
-                                        <p>{ma.excerpt}</p>
-                                        <span className="more-article-link">Leer más</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </section>
-            </div >
-            {showInsertAdModal && (
-                <div className="modal-backdrop" onClick={() => setShowInsertAdModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <h3>Insertar Publicidad en el Artículo</h3>
-                                // Después (Correcto)
-                        <div className="ad-selection-list">
-                            {adsLoading && <p>Cargando anuncios...</p>}
-                            {adsError && <p className="error">{adsError}</p>}
-                            {!adsLoading && !adsError && (
-                                advertisements.length > 0 ? advertisements.map(ad => (
-                                    <div key={ad.ad_id} className="ad-selection-item" onClick={() => handleInsertAd(ad)}>
-                                        <img src={ad.ad_image_url} alt={ad.ad_name} />
-                                        <span>{ad.ad_name} ({ad.ad_type})</span>
-                                    </div>
-                                )) : <p>No hay anuncios disponibles para insertar.</p>
-                            )}
-                        </div>
-                        <button className="btn btn-secondary" onClick={() => setShowInsertAdModal(false)}>Cancelar</button>
+                        </aside>
                     </div>
+
+                    <section className="more-to-read">
+                        <h2>Más para leer</h2>
+                        {loadingRelated && <p>Cargando...</p>}
+                        {errorRelated && <p className="error">{errorRelated}</p>}
+                        {!loadingRelated && !errorRelated && (
+                            <div className="more-articles">
+                                {relatedArticles.slice(0, 3).map((ma) => (
+                                    <Link
+                                        to={`/articulos/${ma.article_code}/${ma.article_slug}`}
+                                        className="more-article-card"
+                                        key={ma.article_code}
+                                    >
+                                        <img src={ma.image} alt={ma.title} />
+                                        <div className="more-article-content">
+                                            <span className="more-article-category">{ma.category}</span>
+                                            <h3>{ma.title}</h3>
+                                            <p>{ma.excerpt}</p>
+                                            <span className="more-article-link">Leer más</span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                </div >
+                {showInsertAdModal && (
+                    <div className="modal-backdrop" onClick={() => setShowInsertAdModal(false)}>
+                        <div className="modal-content" onClick={e => e.stopPropagation()}>
+                            <h3>Insertar Publicidad en el Artículo</h3>
+                                // Después (Correcto)
+                            <div className="ad-selection-list">
+                                {adsLoading && <p>Cargando anuncios...</p>}
+                                {adsError && <p className="error">{adsError}</p>}
+                                {!adsLoading && !adsError && (
+                                    advertisements.length > 0 ? advertisements.map(ad => (
+                                        <div key={ad.ad_id} className="ad-selection-item" onClick={() => handleInsertAd(ad)}>
+                                            <img src={ad.ad_image_url} alt={ad.ad_name} />
+                                            <span>{ad.ad_name} ({ad.ad_type})</span>
+                                        </div>
+                                    )) : <p>No hay anuncios disponibles para insertar.</p>
+                                )}
+                            </div>
+                            <button className="btn btn-secondary" onClick={() => setShowInsertAdModal(false)}>Cancelar</button>
+                        </div>
+                    </div>
+                )}
+                {/* NOTIFICACIÓN TOAST */}
+                <div className={`notification ${notification.show ? 'show' : ''} notification-${notification.type}`}>
+                    {notification.type && <i className={iconMap[notification.type]}></i>}
+                    <span>{notification.message}</span>
                 </div>
-            )}
-            {/* NOTIFICACIÓN TOAST */}
-            <div className={`notification ${notification.show ? 'show' : ''} notification-${notification.type}`}>
-                {notification.type && <i className={iconMap[notification.type]}></i>}
-                <span>{notification.message}</span>
-            </div>
-        </main >
+            </main >
+        </>
     );
 };
 
