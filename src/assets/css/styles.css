@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #0056b3;
+    --primary-color: #0f4271;
     --secondary-color: #e63946;
     --accent-color: #f77f00;
     --text-color: #333;
@@ -32,7 +32,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 1250px;
+    max-width: 1360px;
     margin: 0 auto;
     padding: 0 15px;
 }
@@ -67,11 +67,12 @@ input[type="submit"] {
     border-radius: 4px;
     transition: var(--transition);
 }
-
+/*
 button:hover,
 input[type="submit"]:hover {
     background-color: var(--secondary-color);
 }
+*/
 
 input,
 textarea {
@@ -156,6 +157,11 @@ header {
     margin: 0;
 }
 
+.logo-img {
+    max-height: 54px;
+    width: auto;
+}
+
 .search-bar {
     display: flex;
     max-width: 400px;
@@ -180,7 +186,8 @@ header {
 
 .main-nav {
     padding: 10px 0;
-    background-color: var(--bg-color);
+    background-color: var(--primary-color);
+    transition: background-color 0.3s ease;
 }
 
 .nav-list {
@@ -194,15 +201,17 @@ header {
 }
 
 .nav-list li a {
-    color: var(--text-color);
+    color: #cccccc;
     font-weight: 500;
     padding: 5px 10px;
     display: block;
+    font-family: 'Poppins', sans-serif;
+
 }
 
 .nav-list li.active a,
 .nav-list li:hover a {
-    color: var(--primary-color);
+    color: var(--bg-color);
 }
 
 .nav-list li.active::after {
@@ -212,11 +221,17 @@ header {
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: var(--primary-color);
+    background-color: #5aa0e2
 }
 
 .nav-list .add-category {
     margin-left: auto;
+}
+
+@media (max-width: 768px) {
+    .main-nav {
+        background-color: var(--bg-color);
+    }
 }
 
 .add-category-btn {
@@ -2343,21 +2358,24 @@ footer {
 
 .auth-btn {
     background-color: var(--primary-color);
-    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 25px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    letter-spacing: 0.5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 19px;
+    letter-spacing: 0.1px;
 }
 
 .auth-btn:hover {
-    background-color: var(--secondary-color);
+    /*background-color: var(--secondary-color);*/
     transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    /*box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);*/
 }
 
 .login-btn {
@@ -4771,6 +4789,8 @@ body.admin-mode .story-content h4.editable {
         display: block;
         width: 100%;
         text-align: left;
+        font-family: 'Poppins', sans-serif;
+
     }
 
     .mobile-auth-btn:hover,
@@ -4968,7 +4988,9 @@ body.admin-mode .story-content h4.editable {
         flex-wrap: wrap;
         gap: 8px;
     }
-    .ad-large-container, .ad-biglarge-container {
+
+    .ad-large-container,
+    .ad-biglarge-container {
         margin: 0 0 15px 0;
     }
 }

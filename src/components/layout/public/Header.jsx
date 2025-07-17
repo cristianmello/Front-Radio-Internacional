@@ -18,6 +18,7 @@ import SelectAdvertisementToEditModal from "./home/SelectAdvertisementToEditModa
 import EditAdvertisementModal from "./home/EditAdvertisementModal";
 import EditContentArticleModal from "./home/EditContentArticleModal";
 import useCategories from "../../../hooks/UseCategories";
+import logoRealidadNacional from '../../../assets/img/logo-realidad-nacional.png';
 
 const Header = ({ onOpenAuth }) => {
   const { auth, logout, roles } = useAuth();
@@ -224,14 +225,18 @@ const Header = ({ onOpenAuth }) => {
         <div className="container">
           <div className="logo">
             <Link to="/categoria/inicio">
-              <h1>Realidad Nacional</h1>
+              <img
+                src={logoRealidadNacional}
+                alt="Realidad Nacional"
+                className="logo-img"
+              />
             </Link>
           </div>
 
           {/* Desktop auth buttons */}
           <div className="user-auth">
             {!auth?.user_code ? (
-              <button className="auth-btn login-btn" onClick={onOpenAuth}>Ingresar</button>
+              <button className="auth-btn login-btn" onClick={onOpenAuth}>INGRESAR</button>
             ) : (
               <>
                 <button className="auth-btn" onClick={() => navigate('/perfil')}>Perfil</button>
