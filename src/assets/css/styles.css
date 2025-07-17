@@ -186,7 +186,7 @@ header {
 }
 
 .main-nav {
-    padding: 10px 0;
+    padding: 13px 0;
     background-color: var(--primary-color);
     transition: background-color 0.3s ease;
 }
