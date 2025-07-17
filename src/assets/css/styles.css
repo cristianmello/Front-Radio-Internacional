@@ -4820,7 +4820,7 @@ body.admin-mode .story-content h4.editable {
 
     .nav-list li .mobile-auth-btn:hover,
     .nav-list li a:hover {
-        color: var(--primary-color);
+        color: var(--text-color);
     }
 
     .featured-article {
