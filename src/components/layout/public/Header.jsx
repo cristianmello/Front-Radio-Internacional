@@ -302,47 +302,47 @@ const Header = ({ onOpenAuth }) => {
               {canManageCategories && editMode && (
                 <ul className="nav-list actions-list">
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openAddCategory}>
+                    <button className="nav-list-btn-edit" onClick={openAddCategory}>
                       + Añadir categoría
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openRemoveCategory}>
+                    <button className="nav-list-btn-edit" onClick={openRemoveCategory}>
                       − Eliminar categoría
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openAddArticle}>
+                    <button className="nav-list-btn-edit" onClick={openAddArticle}>
                       + Crear articulo
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openSelectDraft}>
+                    <button className="nav-list-btn-edit" onClick={openSelectDraft}>
                       ✏️ Editar contenido de Artículo
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openAddAudio}>
+                    <button className="nav-list-btn-edit" onClick={openAddAudio}>
                       + Crear Audio
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openRemoveArticle}>
+                    <button className="nav-list-btn-edit" onClick={openRemoveArticle}>
                       − Eliminar de todo
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openAddAd}>
+                    <button className="nav-list-btn-edit" onClick={openAddAd}>
                       + Crear Publicidad
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openDeleteAd}>
+                    <button className="nav-list-btn-edit" onClick={openDeleteAd}>
                       − Eliminar Publicidad
                     </button>
                   </li>
                   <li className="mobile-action-item">
-                    <button className="add-category-btn" onClick={openSelectAdToEdit}>
+                    <button className="nav-list-btn-edit" onClick={openSelectAdToEdit}>
                       <i className="fas fa-edit" style={{ marginRight: '5px' }}></i>
                       Editar Publicidad
                     </button>
