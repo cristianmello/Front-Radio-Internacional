@@ -163,6 +163,12 @@ header {
     width: auto;
 }
 
+@media (max-width: 768px) {
+    .logo-img {
+        max-height: 47px;
+    }
+}
+
 .search-bar {
     display: flex;
     max-width: 400px;
