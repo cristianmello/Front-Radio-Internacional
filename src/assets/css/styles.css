@@ -67,6 +67,7 @@ input[type="submit"] {
     border-radius: 4px;
     transition: var(--transition);
 }
+
 /*
 button:hover,
 input[type="submit"]:hover {
@@ -236,7 +237,7 @@ header {
 
 .add-category-btn {
     cursor: pointer;
-    background-color: var(--primary-color);
+    background-color: #0e5fa9;
     color: white;
     border: none;
     padding: 10px 15px;
