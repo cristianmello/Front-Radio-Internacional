@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { AD_FORMATS } from '../../../../helpers/adFormats.js';
+import { compressImage  } from '../../../../helpers/ImageCompressor.jsx';
 
 /**
  * Modal para crear un nuevo anuncio, con el estilo y funcionalidad del modal de artículos.
@@ -28,9 +29,27 @@ const CreateAdvertisementModal = ({ onSave, onCancel }) => {
         }
     }, [formError]);
 
+    const handleImageFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+            setAdImageFile(null);
+            return;
+        }
 
+        setIsSubmitting(true); // Bloquea los botones mientras se procesa
+        setFormError('');
+        try {
+            // Comprimimos la imagen ANTES de guardarla en el estado
+            const compressedFile = await compressImage(file);
+            setAdImageFile(compressedFile);
+        } catch (error) {
+            setFormError("Hubo un error al procesar la imagen.");
+            setAdImageFile(null);
+        } finally {
+            setIsSubmitting(false); // Desbloquea los botones
+        }
+    };
 
-    // --- Patrón de Submit: Validamos, creamos FormData a partir del estado y llamamos a onSave. ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError('');
@@ -112,7 +131,8 @@ const CreateAdvertisementModal = ({ onSave, onCancel }) => {
                             </div>
                             <div className="edit-field">
                                 <label>Archivo de Imagen:</label>
-                                <input type="file" name="ad_image_file" accept="image/*" onChange={(e) => setAdImageFile(e.target.files[0])} />
+                                <input type="file" name="ad_image_file" accept="image/*" onChange={handleImageFileChange} disabled={isSubmitting}
+                                />
                             </div>
                             {adImageFile && (
                                 <div className="image-preview">
