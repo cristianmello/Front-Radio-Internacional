@@ -218,7 +218,7 @@ header {
 
 .nav-list li.active a,
 .nav-list li:hover a {
-    color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .nav-list li.active::after {
@@ -4820,7 +4820,7 @@ body.admin-mode .story-content h4.editable {
 
     .nav-list li .mobile-auth-btn:hover,
     .nav-list li a:hover {
-        color: var(--text-color);
+        color: var(--primary-color);
     }
 
     .featured-article {
