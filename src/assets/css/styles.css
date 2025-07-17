@@ -163,7 +163,7 @@ header {
     width: auto;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 375px) {
     .logo-img {
         max-height: 47px;
     }
@@ -218,7 +218,15 @@ header {
 
 .nav-list li.active a,
 .nav-list li:hover a {
-    color: var(--text-color);
+    color: var(--bg-color);
+}
+
+@media (max-width: 768px) {
+
+    .nav-list li.active a,
+    .nav-list li:hover a {
+        color: var(--text-color);
+    }
 }
 
 .nav-list li.active::after {
