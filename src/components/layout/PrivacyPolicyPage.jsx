@@ -10,12 +10,12 @@ const PrivacyPolicyPage = () => {
 
                 <h3>1. Marco Legal e Introducción</h3>
                 <p>
-                    Bienvenido a Radio Internacional. Tu privacidad es de suma importancia para nosotros. Esta Política de Privacidad se ajusta a lo dispuesto en la <strong>Ley N° 18.331 de 11 de agosto de 2008</strong> y el <strong>Decreto N° 414/009 de 21 de agosto de 2009</strong> sobre Protección de Datos Personales y Habeas Data. Su objetivo es informarte de manera clara y transparente sobre qué datos personales recopilamos, cómo los utilizamos, con quién los compartimos y cuáles son tus derechos.
+                    Bienvenido a Realidad Nacional. Tu privacidad es de suma importancia para nosotros. Esta Política de Privacidad se ajusta a lo dispuesto en la <strong>Ley N° 18.331 de 11 de agosto de 2008</strong> y el <strong>Decreto N° 414/009 de 21 de agosto de 2009</strong> sobre Protección de Datos Personales y Habeas Data. Su objetivo es informarte de manera clara y transparente sobre qué datos personales recopilamos, cómo los utilizamos, con quién los compartimos y cuáles son tus derechos.
                 </p>
 
                 <h3>2. Responsable del Tratamiento de Datos</h3>
                 <p>
-                    El responsable del tratamiento de tus datos es <strong>Radio Internacional</strong> ("nosotros", "nuestro"), con domicilio en Av. Sarandí 792, Rivera, Uruguay. Puedes contactarnos a través de nuestro <Link to="/contact">formulario de contacto</Link> o directamente en el correo electrónico: <a href="mailto:contacto@radiointernacional.com.uy">contacto@radiointernacional.com.uy</a>.
+                    El responsable del tratamiento de tus datos es <strong>Realidad Nacional</strong> ("nosotros", "nuestro"), con domicilio en Av. Sarandí 792, Rivera, Uruguay. {/*Puedes contactarnos a través de nuestro <Link to="/contact">formulario de contacto</Link> o directamente en el correo electrónico: <a href="mailto:contacto@radiointernacional.com.uy">contacto@radiointernacional.com.uy</a>.*/}
                 </p>
 
                 <h3>3. Información que Recopilamos</h3>

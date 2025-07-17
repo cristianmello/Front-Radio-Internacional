@@ -74,14 +74,15 @@ export default function Footer() {
             </div>
 
             {/* ------ COMPAÑÍA ------ */}
-            <div className="footer-section">
+            {/* <div className="footer-section">
               <h3>Compañía</h3>
               <ul>
-                <li><Link to="/about">Sobre nosotros</Link></li>
-                {/*<li><Link to="/team">Equipo editorial</Link></li>*/}
-                {/*<li><Link to="/contact">Contacto</Link></li>*/}
+                {/*<li><Link to="/about">Sobre nosotros</Link></li>
+                {/*<li><Link to="/team">Equipo editorial</Link></li>
+              {/*<li><Link to="/contact">Contacto</Link></li>
               </ul>
             </div>
+              */}
 
             {/* ------ LEGAL ------ */}
             <div className="footer-section">
