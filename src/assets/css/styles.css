@@ -163,7 +163,7 @@ header {
     width: auto;
 }
 
-@media (max-width: 375px) {
+@media (max-width: 427px) {
     .logo-img {
         max-height: 47px;
     }
