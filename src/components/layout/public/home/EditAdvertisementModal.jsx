@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import useAdvertisement from '../../../../hooks/useAdvertisement';
 import { AD_FORMATS } from '../../../../helpers/adFormats.js';
-
+import { compressImage } from '../../../../helpers/ImageCompressor.jsxa';
 /**
  * Modal COMPLETO para editar un anuncio existente.
  * @param {object} advertisement - El objeto de anuncio a editar (contiene al menos el id).
@@ -74,6 +74,22 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
             setAdEndDate(formatDateForInput(initialAdData.ad_end_date));
         }
     }, [initialAdData]);
+
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setFormError('');
+        setIsSubmitting(true);
+        try {
+            const compressed = await compressImage(file);
+            setAdImage(compressed);
+        } catch {
+            setFormError('Error al procesar la imagen, se usará la original.');
+            setAdImage(file);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     // 4. Lógica de guardado "inteligente": solo envía los campos modificados.
     const handleSubmit = async (e) => {
@@ -188,7 +204,7 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
                             </div>
                             <div className="edit-field">
                                 <label>Archivo de Imagen (opcional):</label>
-                                <input type="file" name="ad_image_file" accept="image/*" onChange={(e) => e.target.files[0] && setAdImage(e.target.files[0])} />
+                                <input type="file" name="ad_image_file" accept="image/*" onChange={handleImageChange} disabled={isSubmitting} />
                                 <small>Sube una nueva imagen solo para reemplazar la actual.</small>
                             </div>
                             {adImage && (

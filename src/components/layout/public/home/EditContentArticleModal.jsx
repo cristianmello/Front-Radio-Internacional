@@ -67,6 +67,6 @@ export default function EditContentArticleModal({ onSelect, onCancel }) {
 }
 
 EditContentArticleModal.propTypes = {
-  onSelect: PropTypes.func.isRequired,  // recibe (article_code, article_slug)
+  onSelect: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired
 };
