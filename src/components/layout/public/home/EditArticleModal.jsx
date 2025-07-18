@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import usePublicArticle from "../../../../hooks/usePublicArticle";
 import useCategories from "../../../../hooks/UseCategories";
+import { compressImage } from "../../../../helpers/ImageCompressor.js";
 
 export default function EditArticleModal({ article: articleToEdit, onSave, onCancel, onUpdateSucess }) {
 
@@ -51,6 +52,29 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
             // setIsPremium(initialData.article_is_premium);
         }
     }, [article]);
+
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setFormError('');
+        setIsSubmitting(true); // Bloquear botones mientras se comprime
+        try {
+            const compressedBlob = await compressImage(file);
+            const compressedFile = new File(
+                [compressedBlob],
+                file.name,
+                { type: compressedBlob.type }
+            );
+            setImage(compressedFile); // Guardar el archivo comprimido en el estado
+        } catch (err) {
+            console.error("Error al comprimir la imagen:", err);
+            setFormError('Error al procesar la imagen, se usará la original.');
+            setImage(file); // Fallback: usar el archivo original
+        } finally {
+            setIsSubmitting(false); // Desbloquear botones
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -154,9 +178,12 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
 
                     <div className="edit-field">
                         <label>Imagen:</label>
-                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => {
-                            if (e.target.files[0]) setImage(e.target.files[0]);
-                        }} />
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={handleImageChange}
+                            disabled={isSubmitting}
+                        />
                         <small>Sube una nueva imagen para reemplazar la actual.</small>
                     </div>
 
