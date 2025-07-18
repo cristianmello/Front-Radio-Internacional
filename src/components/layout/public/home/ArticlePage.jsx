@@ -122,7 +122,7 @@ const ArticlePage = () => {
         setIsSaving(true);
         const formData = new FormData();
         formData.append('article_content', editableContent);
-        console.log('[FRONTEND] Enviando contenido al backend...'); // Log final antes de enviar
+        console.log('[FRONTEND] Enviando contenido al backend...');
 
         const result = await editArticle(article.article_code, formData);
 
