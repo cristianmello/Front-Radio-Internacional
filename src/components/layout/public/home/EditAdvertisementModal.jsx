@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import useAdvertisement from '../../../../hooks/useAdvertisement';
 import { AD_FORMATS } from '../../../../helpers/adFormats.js';
-import { compressImage } from '../../../../helpers/ImageCompressor.jsxa';
+import { compressImage } from '../../../../helpers/ImageCompressor.js';
 /**
  * Modal COMPLETO para editar un anuncio existente.
  * @param {object} advertisement - El objeto de anuncio a editar (contiene al menos el id).

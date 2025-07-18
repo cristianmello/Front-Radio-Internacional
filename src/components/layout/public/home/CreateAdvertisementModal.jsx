@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { AD_FORMATS } from '../../../../helpers/adFormats.js';
-import { compressImage  } from '../../../../helpers/ImageCompressor.jsx';
+import { compressImage  } from '../../../../helpers/ImageCompressor.js';
 
 /**
  * Modal para crear un nuevo anuncio, con el estilo y funcionalidad del modal de artículos.
