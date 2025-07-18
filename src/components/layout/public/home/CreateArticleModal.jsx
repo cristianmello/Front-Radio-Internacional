@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import useAuth from "../../../../hooks/UseAuth";
 import Url from "../../../../helpers/Url";
 import useCategories from "../../../../hooks/UseCategories";
-import { compressImage  } from '../../../../helpers/ImageCompressor.js';
+import { compressImage } from '../../../../helpers/ImageCompressor.js';
 
 const defaultContentHTML = `
             <p>En un giro inesperado que ha sorprendido a la comunidad internacional, los líderes de dos naciones históricamente enfrentadas han firmado hoy un acuerdo de paz que pone fin a décadas de conflicto. El tratado, negociado en secreto durante los últimos seis meses, establece un marco para la cooperación económica, cultural y política entre ambos países.</p>
@@ -89,6 +89,10 @@ export default function CreateArticleModal({ onSave, onCancel }) {
         setIsSubmitting(true);
         try {
             const compressed = await compressImage(file);
+            Object.defineProperty(compressed, 'name', {
+                value: file.name,
+                writable: false
+            });
             setImageFile(compressed);
         } catch (err) {
             console.error(err);
