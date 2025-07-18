@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import useAuth from "../../../../hooks/UseAuth";
 import Url from "../../../../helpers/Url";
 import useCategories from "../../../../hooks/UseCategories";
-import { compressImage } from '../../../../helpers/ImageCompressor';
+import { compressImage  } from '../../../../helpers/ImageCompressor.js';
 
 const defaultContentHTML = `
             <p>En un giro inesperado que ha sorprendido a la comunidad internacional, los líderes de dos naciones históricamente enfrentadas han firmado hoy un acuerdo de paz que pone fin a décadas de conflicto. El tratado, negociado en secreto durante los últimos seis meses, establece un marco para la cooperación económica, cultural y política entre ambos países.</p>
@@ -119,8 +119,6 @@ export default function CreateArticleModal({ onSave, onCancel }) {
         formData.append("article_is_published", "false"); // Se envía como string
 
         if (imageFile) {
-            // --- CORRECCIÓN DEL CAMPO DE IMAGEN ---
-            // Se usa el nombre de campo que espera tu middleware multer: 'article_image_url'
             formData.append("article_image_url", imageFile);
         }
 
