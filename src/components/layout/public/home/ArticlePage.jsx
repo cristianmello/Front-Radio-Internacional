@@ -110,7 +110,8 @@ const ArticlePage = () => {
 
     const handleSaveContent = async () => {
         if (!article) return;
-
+        console.log('[FRONTEND] Contenido Original (del artículo):', article.article_content);
+        console.log('[FRONTEND] Contenido Nuevo (del editor):', editableContent);
         // Comprobación para no guardar si no hay cambios
         if (editableContent === article.article_content) {
             showNotification("No se detectaron cambios en el contenido.", "info");
@@ -121,6 +122,8 @@ const ArticlePage = () => {
         setIsSaving(true);
         const formData = new FormData();
         formData.append('article_content', editableContent);
+        console.log('[FRONTEND] Enviando contenido al backend...'); // Log final antes de enviar
+
         const result = await editArticle(article.article_code, formData);
 
         if (result.success) {
