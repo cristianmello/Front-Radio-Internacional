@@ -1,4 +1,5 @@
 
+
 // src/components/layout/public/home/EditArticleModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
@@ -197,4 +198,3 @@ EditArticleModal.propTypes = {
     onCancel: PropTypes.func.isRequired,
     onUpdateSuccess: PropTypes.func,
 };
-
