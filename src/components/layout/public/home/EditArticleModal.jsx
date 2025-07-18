@@ -1,9 +1,9 @@
-
 // src/components/layout/public/home/EditArticleModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import usePublicArticle from "../../../../hooks/usePublicArticle";
 import useCategories from "../../../../hooks/UseCategories";
+import { compressImage } from '../../../../helpers/ImageCompressor.js';
 
 export default function EditArticleModal({ article: articleToEdit, onSave, onCancel, onUpdateSucess }) {
 
@@ -50,6 +50,23 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
             // setIsPremium(initialData.article_is_premium);
         }
     }, [article]);
+
+    const handleArticleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setFormError('');
+        setIsSubmitting(true);
+        try {
+            const compressed = await compressImage(file);
+            setImage(compressed);
+        } catch (err) {
+            console.error(err);
+            setFormError('Error al procesar la imagen, se usará la original.');
+            setImage(file);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -153,9 +170,7 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
 
                     <div className="edit-field">
                         <label>Imagen:</label>
-                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => {
-                            if (e.target.files[0]) setImage(e.target.files[0]);
-                        }} />
+                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleArticleImageChange} disabled={isSubmitting} />
                         <small>Sube una nueva imagen para reemplazar la actual.</small>
                     </div>
 
@@ -197,4 +212,3 @@ EditArticleModal.propTypes = {
     onCancel: PropTypes.func.isRequired,
     onUpdateSuccess: PropTypes.func,
 };
-
