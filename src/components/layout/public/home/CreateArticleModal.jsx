@@ -88,11 +88,14 @@ export default function CreateArticleModal({ onSave, onCancel }) {
         setFormError('');
         setIsSubmitting(true);
         try {
-            const compressed = await compressImage(file);
-            Object.defineProperty(compressed, 'name', {
-                value: file.name,
-                writable: false
-            });
+            const compressedBlob = await compressImage(file);
+
+            // Creamos un File real con nombre y tipo correctos:
+            const compressedFile = new File(
+                [compressedBlob],
+                file.name,               // conservamos el nombre original
+                { type: compressedBlob.type }
+            );
             setImageFile(compressed);
         } catch (err) {
             console.error(err);
