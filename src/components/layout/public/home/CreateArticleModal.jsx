@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import useAuth from "../../../../hooks/UseAuth";
 import Url from "../../../../helpers/Url";
 import useCategories from "../../../../hooks/UseCategories";
+import { compressImage } from '../../../../helpers/NewImageCompressor';
 
 const defaultContentHTML = `
             <p>En un giro inesperado que ha sorprendido a la comunidad internacional, los líderes de dos naciones históricamente enfrentadas han firmado hoy un acuerdo de paz que pone fin a décadas de conflicto. El tratado, negociado en secreto durante los últimos seis meses, establece un marco para la cooperación económica, cultural y política entre ambos países.</p>
@@ -81,6 +82,27 @@ export default function CreateArticleModal({ onSave, onCancel }) {
         );
     }
 
+    const handleArticleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setFormError('');
+        setIsSubmitting(true);
+        try {
+            const compressed = await compressImage(file);
+            Object.defineProperty(compressed, 'name', {
+                value: file.name,
+                writable: false
+            });
+            setImageFile(compressed);
+        } catch (err) {
+            console.error(err);
+            setFormError('Error al procesar la imagen, se usará la original.');
+            setImageFile(file);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError("");
@@ -101,8 +123,6 @@ export default function CreateArticleModal({ onSave, onCancel }) {
         formData.append("article_is_published", "false"); // Se envía como string
 
         if (imageFile) {
-            // --- CORRECCIÓN DEL CAMPO DE IMAGEN ---
-            // Se usa el nombre de campo que espera tu middleware multer: 'article_image_url'
             formData.append("article_image_url", imageFile);
         }
 
@@ -153,7 +173,7 @@ export default function CreateArticleModal({ onSave, onCancel }) {
 
                     <h4>Imagen Principal</h4>
                     <div className="edit-field">
-                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImageFile(e.target.files[0])} />
+                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleArticleImageChange} disabled={isSubmitting} />
                     </div>
                     {imageFile && (
                         <div className="image-preview">
