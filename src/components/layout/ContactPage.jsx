@@ -3,7 +3,11 @@ import React from "react";
 
 const ContactPage = () => {
   return (
+
     <>
+      <title>Contacto - Realidad Nacional</title>
+      {/* Esta es la línea clave que debes añadir */}
+      <meta name="robots" content="noindex" />
       <main>
         <section className="contact-form">
           <h2>Contáctenos</h2>
