@@ -64,13 +64,18 @@ const NewsLayout = ({
     ? "Mantente informado con las últimas noticias y análisis de Uruguay y el mundo."
     : `Encuentra las últimas noticias sobre ${currentCatName} en Realidad Nacional.`;
 
+  const canonicalUrl = isInicio
+    ? 'https://realidadnacional.net/'
+    : `https://realidadnacional.net/categoria/${category}`;
+
   const containerStyle = { gridTemplateColumns: isInicio ? "2fr 1fr" : "1fr" };
 
   return (
     <>
       <title>{pageTitle}</title>
       <meta name="description" content={pageDescription} />
-      
+      <link rel="canonical" href={canonicalUrl} />
+
       <div
         className={`news-layout ${isInicio ? "inicio" : ""}`}
         id="destacados"
