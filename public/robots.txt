@@ -1,6 +1,8 @@
 User-agent: *
-# Bloquear el panel de administración para que no aparezca en búsquedas
+# Bloquear el panel de administración para que no se indexe
 Disallow: /admin/
+# Bloquear la página de contacto para que no se indexe
+Disallow: /contact/
 
-# Indicar la ubicación de tu mapa del sitio
-Sitemap: https://realidadnacional.net/sitemap.xml
+# Indicar la ubicación correcta del sitemap en tu API
+Sitemap: https://api.realidadnacional.net/sitemap.xml
