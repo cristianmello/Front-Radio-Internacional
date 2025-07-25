@@ -1,8 +1,109 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import LazySection from "./LazySection";
+import { useSidebar } from "../../../../context/SidebarContext";
+
+const HomePage = () => {
+    const sidebar = useSidebar();
+    const [category, setCategory] = useState("inicio");
+    const { sections, loading, error, refresh } = useOutletContext();
+
+    const destacadosRef = useRef(null);
+
+    useEffect(() => {
+        // El listener para el cambio de categoría se mantiene
+        const handleCategoryChange = e => setCategory(e.detail);
+        document.addEventListener("categoryChange", handleCategoryChange);
+
+        // 👇 2. AÑADIMOS UN NUEVO LISTENER PARA EL SCROLL
+        const handleScrollRequest = e => {
+            if (e.detail.targetId === "destacados" && destacadosRef.current) {
+                // Hacemos un pequeño timeout para dar tiempo a que la página se renderice
+                setTimeout(() => {
+                    destacadosRef.current.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+            }
+        };
+        document.addEventListener("scrollToSection", handleScrollRequest);
+
+        // Limpiamos ambos listeners al desmontar
+        return () => {
+            document.removeEventListener("categoryChange", handleCategoryChange);
+            document.removeEventListener("scrollToSection", handleScrollRequest);
+        };
+    }, []);
+
+
+    if (loading) return <div>Cargando secciones…</div>;
+    if (error) return <div>Error al cargar secciones: {error}</div>;
+
+    // Definimos qué tipos de widgets vamos a ignorar en esta página.
+    const sidebarWidgetTypes = ['sidebar', 'sideaudios', 'ad-small', 'ad-skyscraper', 'ad-verticalsm'];
+
+    // 1. Obtenemos todas las secciones que NO son para el sidebar.
+    const allMainSections = sections
+        .filter(sec => !sidebarWidgetTypes.includes(sec.section_type));
+
+    // 2. Encontramos la sección especial de 'maincontent' y las demás.
+    const mainContentSection = allMainSections.find(s => s.section_type === 'maincontent');
+    const fullWidthSections = allMainSections
+        .filter(s => s.section_type !== 'maincontent')
+        .sort((a, b) => a.section_position - b.section_position);
+
+    // 3. Dividimos las secciones de ancho completo en "antes" y "después" de la principal
+    //    para respetar el orden que tienes en tu administrador.
+    const sectionsBeforeMain = fullWidthSections.filter(s => s.section_position < (mainContentSection?.section_position || Infinity));
+    const sectionsAfterMain = fullWidthSections.filter(s => s.section_position > (mainContentSection?.section_position || -Infinity));
+
+    return (
+        <div className="homepage-content">
+            {/* Renderiza las secciones de ancho completo que van ANTES de la principal */}
+            {category === 'inicio' && sectionsBeforeMain.map(sec => (
+                <LazySection key={sec.section_slug} section={sec} categoryFilter={category} onSectionDeleted={refresh} />
+            ))}
+
+            {/* Si existe la sección principal, crea el layout de dos columnas */}
+            {mainContentSection && (
+                sidebar ? (
+                    // OPCIÓN 1: Si SÍ hay un sidebar, creamos el layout de dos columnas.
+                    <div className="home-main-layout">
+                        <LazySection
+                            section={mainContentSection}
+                            categoryFilter={category}
+                            onSectionDeleted={refresh}
+                        />
+                        {sidebar}
+                    </div>
+                ) : (
+                    // OPCIÓN 2: Si NO hay sidebar, renderizamos la sección principal directamente.
+                    // Ocupará el 100% del ancho por defecto.
+                    <LazySection
+                        section={mainContentSection}
+                        categoryFilter={category}
+                        onSectionDeleted={refresh}
+                    />
+                )
+            )}
+
+            {category === 'inicio' && sectionsAfterMain.map(sec => (
+                <LazySection key={sec.section_slug} section={sec} categoryFilter={category} onSectionDeleted={refresh} />
+            ))}
+        </div>
+    );
+};
+
+export default HomePage;
+
+
+
+/* Funciona antes de hacer los cambios /api/page/home
+import React, { useEffect, useRef, useState } from "react";
 import useSections from "../../../../hooks/useSections";
 import LazySection from "./LazySection";
 import NewsLayout from "./NewsLayout";
 import useAuth from "../../../../hooks/UseAuth";
+import { useOutletContext } from "react-router-dom";
+import { useSidebar } from "../../../../context/SidebarContext";
 
 const HomePage = () => {
     const { auth, roles } = useAuth();
@@ -44,7 +145,6 @@ const HomePage = () => {
 
     return (
         <div className="container">
-            {/* El renderizado ahora es más inteligente */}
             {sorted.map(sec => {
 
                 // Si la sección es el contenido principal, renderizamos el layout completo
@@ -83,92 +183,7 @@ const HomePage = () => {
 };
 
 export default HomePage;
-/*// HomePage.jsx
-import React, { useEffect, useState } from "react";
-import useSections from "../../../../hooks/useSections";
-import LazySection from "./LazySection";
-import NewsLayout from "./NewsLayout";
-import useAuth from "../../../../hooks/UseAuth";
-
-const HomePage = () => {
-    const { auth, roles } = useAuth();
-    const [category, setCategory] = useState("inicio");
-    const { sections, loading, error, setSections } = useSections(); // Asumimos que useSections exporta setSections
-
-    const canManageSections =
-        auth?.user_code &&
-        roles.some(r => ["editor", "admin", "superadmin"].includes(r));
 
 
-
-    useEffect(() => {
-        const handler = e => setCategory(e.detail);
-        document.addEventListener("categoryChange", handler);
-        return () => document.removeEventListener("categoryChange", handler);
-    }, []);
-
-    // Este log nos dirá exactamente qué secciones está intentando renderizar HomePage
-    console.log('%c[HomePage] Renderizando con estas secciones:', 'color: blue; font-weight: bold;', sections);
-    // ============================================
-
-    const handleSectionDeleted = (deletedSlug) => {
-        // ================= SENSOR 2 =================
-        console.log('%c[HomePage] ¡He recibido la orden de borrar!', 'color: green; font-size: 14px;', deletedSlug);
-        // ============================================
-        setSections(prevSections => {
-            const newSections = prevSections.filter(s => s.section_slug !== deletedSlug);
-            // ================= SENSOR 3 =================
-            console.log('%c[HomePage] Estado actualizado. Nuevas secciones:', 'color: green; font-weight: bold;', newSections);
-            // ============================================
-            return newSections;
-        });
-    };
-
-    if (loading) return <div>Cargando secciones…</div>;
-    if (error) return <div>Error al cargar secciones: {error}</div>;
-
-    const sorted = [...sections].sort((a, b) => a.section_position - b.section_position);
-    const firstSidebar = sorted.find(s => s.section_type === "sidebar");
-    const firstSideAudios = sorted.find(s => s.section_type === "sideaudios");
-    const sidebarSlug = firstSidebar ? firstSidebar.section_slug : null;
-    const audioSlug = firstSideAudios ? firstSideAudios.section_slug : null;
-
-    return (
-        <div className="container">
-            {sorted.map(sec => {
-                if (sec.section_type === "maincontent" && sidebarSlug) {
-                    return (
-                        <NewsLayout
-                            key={sec.section_slug}
-                            category={category}
-                            mainSlug={sec.section_slug}
-                            sidebarSlug={sidebarSlug}
-                            audioSlug={audioSlug}
-                            canEdit={canManageSections}
-                            onSectionDeleted={handleSectionDeleted}
-
-                        />
-                    );
-                }
-
-                if (sec.section_type === "sidebar") {
-                    return null;
-                }
-
-                return (
-                    <LazySection
-                        key={sec.section_slug}
-                        section={sec}
-                        categoryFilter={category}
-                        onSectionDeleted={handleSectionDeleted}
-
-                    />
-                );
-            })}
-        </div>
-    );
-};
-
-export default HomePage;
 */
 

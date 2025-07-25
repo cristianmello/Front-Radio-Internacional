@@ -6,6 +6,7 @@ import { useSectionActions } from "../../../../hooks/useSectionActions";
 // Componentes y Modales
 import BreakingNews from "./BreakingNews";
 import TrendingNews from "./TrendingNews";
+import NewsMain from './NewsMain';
 import FeaturedNews from "./FeaturedNews";
 import WorldNews from "./WorldNews";
 import MosaicNews from "./MosaicNews";
@@ -28,6 +29,7 @@ import useArticleActions from "../../../../hooks/useArticleActions";
 const componentMap = {
     breaking: BreakingNews,
     trending: TrendingNews,
+    maincontent: NewsMain,
     featured: FeaturedNews,
     world: WorldNews,
     mosaic: MosaicNews,
@@ -41,7 +43,7 @@ const componentMap = {
     'ad-verticalsm': AdBanner,
 };
 
-export default function SectionWrapper({ section, onSectionDeleted }) {
+export default function SectionWrapper({ section, onSectionDeleted, categoryFilter }) {
     const editMode = useEditMode();
     const { auth, roles } = useAuth();
 
@@ -75,21 +77,10 @@ export default function SectionWrapper({ section, onSectionDeleted }) {
             return { success: false, message: err.message || "Error inesperado." };
         }
     };
-    /*Funcionaba por las dudas volver production
-        const handleSelectContent = (code) => {
-            addItem(code);
-            setAdding(false);
-        };
-        */
-    const handleSelectContent = async (code) => {
-        const result = await addItem(code);
-        if (result.success) {
-            // Recarga la sección completa para que BreakingNews reciba el nuevo item
-            await refreshSectionItems();
-            setAdding(false);
-        } else {
-            alert(result.message || "No se pudo añadir el artículo.");
-        }
+    
+   const handleSelectContent = (code) => {
+        addItem(code);
+        setAdding(false);
     };
 
     const handleDeleteSection = async () => {
@@ -114,7 +105,7 @@ export default function SectionWrapper({ section, onSectionDeleted }) {
         ModalComponent = AddArticleModal;
     }
 
-    const canDeleteSection = canEdit && !section.is_protected;
+    //const canDeleteSection = canEdit && !section.is_protected;
 
     const editContextValue = {
         canEdit,
@@ -151,6 +142,7 @@ export default function SectionWrapper({ section, onSectionDeleted }) {
                 section={section}
                 sectionTitle={section.section_title?.trim() ? section.section_title : null}
                 data={items}
+                categoryFilter={categoryFilter}
             />
 
             {/* Modal para editar Artículos */}

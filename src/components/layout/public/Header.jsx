@@ -4,7 +4,6 @@ import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../../hooks/UseAuth";
 import AddCategoryModal from "./home/AddCategoryModal";
 import DeleteCategoryModal from "./home/DeleteCategoryModal";
-import Url from "../../../helpers/Url";
 import { useEditMode } from "../../../context/EditModeContext";
 import CreateArticleModal from "./home/CreateArticleModal";
 import CreateAudioModal from "./home/CreateAudioModal";
@@ -73,21 +72,20 @@ const Header = ({ onOpenAuth }) => {
   }, [mobileMenuOpen]);
 
   const handleCategoryClick = (e, { slug, path }) => {
+    // Esto se mantiene igual
     const event = new CustomEvent("categoryChange", { detail: slug });
     document.dispatchEvent(event);
 
     navigate(path);
+
+    // --- EL CAMBIO ESTÁ AQUÍ ---
     if (slug === "inicio") {
-      // Scroll al tope
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      // Scroll a sección destacados
-      setTimeout(() => {
-        const target = document.getElementById("destacados");
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 100);
+      // En lugar de buscar el ID, ahora disparamos un evento personalizado
+      // para que la página que corresponda se encargue del scroll.
+      const scrollEvent = new CustomEvent("scrollToSection", { detail: { targetId: "destacados" } });
+      document.dispatchEvent(scrollEvent);
     }
 
     if (mobileMenuOpen) setMobileMenuOpen(false);
@@ -260,22 +258,33 @@ const Header = ({ onOpenAuth }) => {
           ) : (
             <>
               <ul className={`nav-list ${mobileMenuOpen ? "show" : ""}`}>
-                {categories.map(cat => (
-                  <li key={cat.category_code} data-category={cat.category_slug}
-                    className={location.pathname === `/categoria/${cat.category_slug}` ? "active" : ""}
-                  >
-                    <NavLink
-                      to={`/categoria/${cat.category_slug}`}
-                      onClick={e => handleCategoryClick(e, {
-                        slug: cat.category_slug,
-                        path: `/categoria/${cat.category_slug}`
-                      })}
-                      state={{ preventScrollReset: true }}
+                {categories.map(cat => {
+                  // AQUÍ ESTÁ LA LÓGICA
+                  // Si el slug de la categoría es 'inicio', la ruta es '/', si no, es '/categoria/...'
+                  const linkPath = cat.category_slug === 'inicio' ? '/' : `/categoria/${cat.category_slug}`;
+
+                  // Esta otra lógica es para marcar el link como "activo" correctamente
+                  const isActive = location.pathname === linkPath;
+
+                  return (
+                    <li
+                      key={cat.category_code}
+                      data-category={cat.category_slug}
+                      className={isActive ? "active" : ""}
                     >
-                      {cat.category_name}
-                    </NavLink>
-                  </li>
-                ))}
+                      <NavLink
+                        to={linkPath} // Usamos la ruta correcta
+                        onClick={e => handleCategoryClick(e, {
+                          slug: cat.category_slug,
+                          path: linkPath
+                        })}
+                        state={{ preventScrollReset: true }}
+                      >
+                        {cat.category_name}
+                      </NavLink>
+                    </li>
+                  );
+                })}
 
                 {mobileMenuOpen && mobileAuthItems.map(item => (
                   <li key={item.slug} className="mobile-auth-item">

@@ -9,6 +9,7 @@ import Url from '../../../helpers/Url';
 import useAuth from '../../../hooks/UseAuth';
 import useSections from '../../../hooks/useSections'
 import { EditModeContext } from '../../../context/EditModeContext';
+import GlobalAudioPlayer from './home/GlobalAudioPlayer';
 
 export default function PublicLayout() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -18,11 +19,42 @@ export default function PublicLayout() {
     const [editMode, setEditMode] = useState(false);
 
     const { auth, roles, login, register, recoverPassword, resendVerificationEmail } = useAuth();
+    const location = useLocation();
 
     const canManageSections =
         auth?.user_code &&
         roles?.some(r => ["editor", "admin", "superadmin"].includes(r));
 
+    // 1. Definimos qué tipos de sección son para el sidebar.
+    const sidebarWidgetTypes = ['sidebar', 'sideaudios', 'ad-small', 'ad-skyscraper', 'ad-verticalsm'];
+
+    // 2. Filtramos y ordenamos las secciones del sidebar. Esto se hace una sola vez aquí.
+    const sidebarWidgets = sections
+        .filter(s => sidebarWidgetTypes.includes(s.section_type))
+        .sort((a, b) => a.section_position - b.section_position);
+
+    // 3. Decidimos si la página actual debe tener el layout con sidebar.
+    // Lo mostramos en la home ('/') y en las páginas de artículos ('/articulos/...').
+    const showSidebarLayout = location.pathname === '/' || location.pathname.startsWith('/articulos/');
+
+    const sidebarComponent = showSidebarLayout && sidebarWidgets.length > 0 ? (
+        <div className="persistent-sidebar">
+            <NewsSidebar>
+                {sidebarWidgets.map(widgetSection => (
+                    <SidebarWidget
+                        key={widgetSection.section_slug}
+                        section={widgetSection}
+                        onSectionDeleted={refreshSections}
+                        canEditGlobal={canManageSections && editMode}
+                    />
+                ))}
+            </NewsSidebar>
+        </div>
+    ) : null;
+
+    const handleSectionDeleted = () => {
+        refreshSections();
+    };
 
     // LOGIN
     const handleLogin = async ({ user_mail, user_password }) => {
@@ -69,73 +101,81 @@ export default function PublicLayout() {
     };
 
     return (
-        <EditModeContext.Provider value={editMode}>
-            <Header onOpenAuth={() => setIsAuthOpen(true)} />
+        <SidebarContext.Provider value={sidebarComponent}>
 
-            <AuthModal
-                isOpen={isAuthOpen}
-                onClose={() => {
-                    setIsAuthOpen(false);
-                    setAuthError('');
-                }}
-                onLogin={handleLogin}
-                onRegister={handleRegister}
-                onRecover={handleRecover}
-                onResendVerification={resendVerificationEmail}
-            />
+            <EditModeContext.Provider value={editMode}>
+                <Header onOpenAuth={() => setIsAuthOpen(true)} />
 
-            <main>
-                <Outlet context={{
-                    sections,
-                    loading: secLoading,
-                    error: secError,
-                    refresh
-                }} />
-
-            </main>
-
-            <Footer />
-
-            {/* Botón Modo Editor */}
-            {canManageSections && (
-                <button
-                    className="admin-btn"
-                    id="adminModeBtn"
-                    onClick={() => setEditMode(prev => !prev)}
-                >
-                    <i className="fas fa-cog"></i> Modo Editor
-                </button>
-            )}
-
-
-            {/* Toolbar de edición */}
-            {canManageSections && (
-
-                <div className={`edit-toolbar ${editMode ? 'active' : ''}`}>
-                    <div className="toolbar-title">Herramientas de Edición</div>
-                    <div className="edit-actions">
-                        <button id="saveChangesBtn">Guardar Cambios</button>
-                        <button id="discardChangesBtn">Descartar Cambios</button>
-                        <button
-                            id="addSectionBtn"
-                            onClick={() => setShowSectionModal(true)}
-                        >
-                            Añadir Sección
-                        </button>
-                    </div>
-                </div>
-            )}
-            {/* Modal para crear sección */}
-            {canManageSections && showSectionModal && (
-                <AddSectionModal
-                    onConfirm={handleCreateSection}
-                    onCancel={() => setShowSectionModal(false)}
+                <AuthModal
+                    isOpen={isAuthOpen}
+                    onClose={() => {
+                        setIsAuthOpen(false);
+                        setAuthError('');
+                    }}
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    onRecover={handleRecover}
+                    onResendVerification={resendVerificationEmail}
                 />
-            )}
 
-            {/* Opcional: mostrar estado de carga o error de secciones */}
-            {secLoading && <p>Cargando secciones…</p>}
-            {secError && <p className="form-error">{secError}</p>}
-        </EditModeContext.Provider>
+                <main>
+                    {/* El page-wrapper ahora está en el CSS, no necesita div extra */}
+                    <div className="page-wrapper">
+                        <Outlet context={{
+                            sections,
+                            loading: secLoading,
+                            error: secError,
+                            refresh: refreshSections
+                        }} />
+                    </div>
+                </main>
+
+                <Footer />
+
+                <GlobalAudioPlayer />
+
+                {/* Botón Modo Editor */}
+                {canManageSections && (
+                    <button
+                        className="admin-btn"
+                        id="adminModeBtn"
+                        onClick={() => setEditMode(prev => !prev)}
+                    >
+                        <i className="fas fa-cog"></i> Modo Editor
+                    </button>
+                )}
+
+
+                {/* Toolbar de edición */}
+                {canManageSections && (
+
+                    <div className={`edit-toolbar ${editMode ? 'active' : ''}`}>
+                        <div className="toolbar-title">Herramientas de Edición</div>
+                        <div className="edit-actions">
+                            <button id="saveChangesBtn">Guardar Cambios</button>
+                            <button id="discardChangesBtn">Descartar Cambios</button>
+                            <button
+                                id="addSectionBtn"
+                                onClick={() => setShowSectionModal(true)}
+                            >
+                                Añadir Sección
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {/* Modal para crear sección */}
+                {canManageSections && showSectionModal && (
+                    <AddSectionModal
+                        onConfirm={handleCreateSection}
+                        onCancel={() => setShowSectionModal(false)}
+                    />
+                )}
+
+                {/* Opcional: mostrar estado de carga o error de secciones */}
+                {secLoading && <p>Cargando secciones…</p>}
+                {secError && <p className="form-error">{secError}</p>}
+            </EditModeContext.Provider>
+        </SidebarContext.Provider>
+
     );
 }

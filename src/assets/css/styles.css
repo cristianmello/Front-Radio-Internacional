@@ -68,19 +68,37 @@ input[type="submit"] {
     transition: var(--transition);
 }
 
-/*
-button:hover,
-input[type="submit"]:hover {
-    background-color: var(--secondary-color);
-}
-*/
-
 input,
 textarea {
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-family: inherit;
+}
+
+.page-wrapper {
+    width: 100%;
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 2rem 15px;
+}
+
+.home-main-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin: 2rem 0;
+    align-items: start;
+}
+
+.persistent-sidebar {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .home-main-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* CSS para hacer responsivos los iframes/videos dentro del contenido del artículo. */
@@ -1146,21 +1164,25 @@ footer {
 .ad-biglarge-container {
     width: 100%;
     max-width: 1000px;
-    margin: 15px auto;
     background: transparent;
     box-shadow: none;
+    margin: 15px auto;
     border-radius: 8px;
+    overflow: hidden;
 }
 
 .ad-large-container {
-    aspect-ratio: 1000 / 120;
     height: 120px;
+    /* Mantenemos la altura fija */
+    /* aspect-ratio: 1000 / 120; <-- ELIMINADO */
 }
 
 .ad-biglarge-container {
-    aspect-ratio: 1000 / 180;
     height: 180px;
+    /* Mantenemos la altura fija (y la corregimos para que sea más grande) */
+    /* aspect-ratio: 1000 / 180; <-- ELIMINADO */
 }
+
 
 /* ============================================= */
 /* === 2. ANUNCIOS EN SIDEBAR                === */
@@ -1171,16 +1193,18 @@ footer {
     width: 100%;
 }
 
+
 .ad-large-container img,
 .ad-biglarge-container img,
 .ad-skyscraper-container img,
 .ad-small-container img,
 .ad-verticalsm-container img {
-    display: block;
     width: 100%;
     height: 100%;
+
+    /* LA MAGIA: La imagen cubre el espacio sin deformarse,
+       recortando los lados si es necesario para mantener su proporción. */
     object-fit: cover;
-    padding-bottom: 15px;
 }
 
 .ad-skyscraper-container {
@@ -1196,21 +1220,30 @@ footer {
     aspect-ratio: 380 / 450;
 }
 
+@media (max-width: 768px) {
+    .page-wrapper.with-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .persistent-sidebar {
+        /* El sidebar ocupa el ancho completo y se va a la segunda fila. */
+        grid-column: 1 / -1;
+        grid-row: 2 / 3;
+        max-width: 100%;
+    }
+}
+
 /* ============================================= */
 /* === 3. ESTILOS PARA PANTALLAS PEQUEÑAS      === */
 /* ============================================= */
 @media (max-width: 768px) {
 
-    /*
-     * Para los anuncios horizontales que ocupan todo el ancho.
-     * Esta es la corrección más importante.
-    */
     .ad-large-container {
-        max-height: 90px;
+        height: 90px;
     }
 
     .ad-biglarge-container {
-        max-height: 145px;
+        height: 145px;
     }
 
     /*
@@ -1226,13 +1259,6 @@ footer {
         padding-bottom: 10px;
     }
 }
-
-@media (max-width: 480px) {
-    .ad-biglarge-container {
-        max-height: 116px;
-    }
-}
-
 
 .field-note.warning-note {
     background-color: #fffbeb;
@@ -1252,85 +1278,6 @@ footer {
     font-size: 1.1em;
 }
 
-/* Para el tipo 'ad-banner'
-.ad-container {
-    width: 100%;
-    margin: 1.5rem 0;
-    text-align: center;
-    background: #f7f7f7;
-    padding: 1rem;
-    position: relative;
-}
-
-.ad-banner-container,
-.ad-skyscraper-container,
-.ad-large-container,
-.ad-small-container {
-    position: relative;
-}
-
-.ad-large-container {
-    width: 100%;
-    padding: 20px 0;
-    margin-bottom: 20px;
-    background: #f7f7f7;
-    text-align: center;
-    aspect-ratio: 916 / 120;
-}
-
-.ad-large-container img {
-    width: 100%;
-    max-width: 1000px;
-    height: auto;
-    max-height: 120px;
-    display: block;
-    margin: 0 auto;
-}
-
-.ad-skyscraper-container {
-    padding: 15px;
-    aspect-ratio: 380 / 600;
-    margin: 0 auto;
-    max-width: 380px;
-}
-
-.ad-skyscraper-container img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.ad-small-container {
-    padding: 15px;
-    aspect-ratio: 380 / 280;
-    max-width: 380px;
-    margin: 0 auto;
-}
-
-.ad-small-container img {
-    width: 100%;
-    height: auto;
-    display: block;
-    max-height: 225px;
-
-}
-
-@media (max-width: 480px) {
-
-    .ad-container {
-        padding: 0.5rem;
-    }
-
-    .ad-banner-container,
-    .ad-skyscraper-container,
-    .ad-large-container,
-    .ad-small-container {
-        max-width: 100%;
-        aspect-ratio: auto;
-
-    }
-}
- */
 /* Shorts Section Styles */
 .shorts-section {
     margin-bottom: 40px;
@@ -1417,6 +1364,136 @@ footer {
 .short-views {
     font-size: 0.8rem;
     color: var(--text-lighter);
+}
+
+/* REPRODUCTOR DE AUDIO PERSONALIZADO */
+
+.custom-audio-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    background-color: #f1f3f4;
+    padding: 10px 20px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.play-pause-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+.play-pause-btn:hover {
+    color: var(--primary-color, #0f4271);
+}
+
+.player-timeline {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.player-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.player-info .audio-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40vw;
+}
+
+.player-info .time-display {
+    font-size: 0.85rem;
+    font-family: monospace;
+    color: #666;
+}
+
+.player-volume {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+input[type="range"].progress-bar,
+input[type="range"].volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #ccc;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+input[type="range"].volume-slider {
+    width: 80px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--primary-color, #0f4271);
+    border-radius: 50%;
+    margin-top: -5px;
+    /* Centrar el thumb verticalmente */
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--primary-color, #0f4271);
+    border-radius: 50%;
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .custom-audio-player {
+        flex-wrap: wrap;
+        padding: 10px 15px;
+        gap: 10px;
+    }
+
+    .player-timeline {
+        order: -1;
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+    .player-info .audio-title {
+        max-width: 60vw;
+    }
+
+    .player-controls {
+        /* Se mantiene a la izquierda */
+    }
+
+    .player-volume {
+        margin-left: auto;
+        /* Empuja el control de volumen a la derecha */
+    }
 }
 
 /* Audio News Widget Styles */
