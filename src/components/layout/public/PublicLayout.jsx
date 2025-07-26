@@ -41,16 +41,12 @@ export default function PublicLayout() {
 
     const sidebarComponent = showSidebarLayout && sidebarWidgets.length > 0 ? (
         <div className="persistent-sidebar">
-            <NewsSidebar>
-                {sidebarWidgets.map(widgetSection => (
-                    <SidebarWidget
-                        key={widgetSection.section_slug}
-                        section={widgetSection}
-                        onSectionDeleted={refreshSections}
-                        canEditGlobal={canManageSections && editMode}
-                    />
-                ))}
-            </NewsSidebar>
+            <NewsSidebar
+                sectionTitle="Widgets"
+                data={sidebarWidgets}
+                onSectionDeleted={refreshSections}
+                canEditGlobal={canManageSections && editMode}
+            />
         </div>
     ) : null;
 

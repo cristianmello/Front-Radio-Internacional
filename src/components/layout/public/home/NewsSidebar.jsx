@@ -1,26 +1,47 @@
 // src/components/layout/public/home/NewsSidebar.jsx
 import React from "react";
 import PropTypes from 'prop-types';
+import SidebarWidget from "./SidebarWidget";
 
 /**
  * Componente de presentación puro que sirve como el contenedor principal 
  * para todos los widgets del sidebar.
- * @param {React.ReactNode} children - Los componentes hijos a renderizar dentro del sidebar.
+ * @param {Array} data - Array de secciones a renderizar en el sidebar.
+ * @param {Function} onSectionDeleted - Callback para refrescar al borrar.
+ * @param {boolean} canEditGlobal - Flag para modo edición global.
  */
-const NewsSidebar = ({ children }) => {
+const NewsSidebar = ({
+    sectionTitle = "Widgets",
+    data = [],
+    onSectionDeleted,
+    canEditGlobal
+}) => {
+    if (!data.length) return null;
+
     return (
         <aside className="sidebar">
-            {children}
+            <h4>{sectionTitle}</h4>
+            {data.map(section => (
+                <SidebarWidget
+                    key={section.section_slug}
+                    section={section}
+                    onSectionDeleted={onSectionDeleted}
+                    canEditGlobal={canEditGlobal}
+                />
+            ))}
         </aside>
     );
 };
 
-// Añadimos PropTypes para documentar que espera recibir 'children'.
 NewsSidebar.propTypes = {
-    children: PropTypes.node,
+    sectionTitle: PropTypes.string,
+    data: PropTypes.arrayOf(PropTypes.object),
+    onSectionDeleted: PropTypes.func,
+    canEditGlobal: PropTypes.bool,
 };
 
 export default NewsSidebar;
+
 
 /*// src/components/layout/public/home/NewsSidebar.jsx
 import React from "react";
