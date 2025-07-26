@@ -54,17 +54,17 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
 
     const items = section.items || [];
 
-    let actions = {
-        setItems: () => { },
-        reorderItems: () => { },
-        addItem: () => Promise.resolve({ success: false }),
-        removeItem: () => Promise.resolve({ success: false }),
-        deleteSection: () => Promise.resolve({ success: false }),
-    };
+    const sectionActions = useSectionActions(section.section_slug, onSectionDeleted, canEdit);
 
-    if (canEdit) {
-        actions = useSectionActions(section.section_slug, onSectionDeleted, canEdit);
-    }
+    const actions = canEdit
+        ? sectionActions
+        : {
+            setItems: () => { },
+            reorderItems: () => { },
+            addItem: () => Promise.resolve({ success: false }),
+            removeItem: () => Promise.resolve({ success: false }),
+            deleteSection: () => Promise.resolve({ success: false }),
+        };
     const {
         setItems,
         reorderItems,
