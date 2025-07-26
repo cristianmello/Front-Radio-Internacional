@@ -28,7 +28,7 @@ const GlobalAudioPlayer = () => {
     // Este efecto se activa cuando cambia el audio del contexto global
     useEffect(() => {
         if (playingAudio && audioRef.current) {
-            audioRef.current.src = playingAudio.url;
+            audioRef.current.src = playingAudio.audio_url; 
             audioRef.current.play().catch(error => console.error("Error al reproducir audio:", error));
             setIsPlaying(true);
         } else if (!playingAudio && audioRef.current) {
@@ -104,7 +104,7 @@ const GlobalAudioPlayer = () => {
 
             <div className="player-timeline">
                 <div className="player-info">
-                    <span className="audio-title">Reproduciendo: {playingAudio.title}</span>
+                    <span className="audio-title">Reproduciendo: {playingAudio.audio_title}</span>
                     <span className="time-display">{formatTime(currentTime)} / {formatTime(duration)}</span>
                 </div>
                 <input
