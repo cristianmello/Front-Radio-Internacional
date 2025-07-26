@@ -51,7 +51,9 @@ const editModalMap = {
 };
 */
 const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
-    const { items, addItem, removeItem, deleteSection, refresh } = useSectionActions(section.section_slug, onSectionDeleted);
+    const items = section.items || [];
+
+    const { addItem, removeItem, deleteSection } = useSectionActions(section.section_slug, onSectionDeleted);
     const [isAdding, setIsAdding] = useState(false);
 
     const [editingArticle, setEditingArticle] = useState(null);
@@ -94,9 +96,9 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
             {isAdding && AddModal && (
                 <AddModal
                     section={section}
-
-                    onSelect={(code) => { addItem(code); setIsAdding(false); }}
-                    onCancel={() => setIsAdding(false)}
+                    onSelect={(code) => {
+                        addItem(code).then(() => onSectionDeleted());
+                    }} onCancel={() => setIsAdding(false)}
                 />
             )}
 
@@ -107,7 +109,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
                     article={editingArticle}
                     onSave={(formData) => editArticle(editingArticle.id, formData)}
                     onCancel={() => setEditingArticle(null)}
-                    onUpdateSuccess={refresh}
+                    onUpdateSuccess={onSectionDeleted}
                 />
             )}
 
@@ -116,7 +118,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
                     advertisement={editingAd}
                     onSave={(formData) => adHook.editAdvertisement(editingAd.ad_id, formData)}
                     onCancel={() => setEditingAd(null)}
-                    onUpdateSuccess={refresh}
+                    onUpdateSuccess={onSectionDeleted}
                 />
             )}
 
@@ -126,7 +128,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
                     audioId={editingAudio.audio_code}
                     onSave={(formData) => audioHook.editAudio(editingAudio.audio_code, formData)}
                     onCancel={() => setEditingAudio(null)}
-                    onUpdateSuccess={refresh}
+                    onUpdateSuccess={onSectionDeleted}
                 />
             )}
 
