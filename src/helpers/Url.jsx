@@ -1,5 +1,5 @@
 const Url = {
-  url: "http://192.168.1.14:3000"
+  url: import.meta.env.VITE_API_URL
 };
 
 export default Url;
