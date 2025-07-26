@@ -15,7 +15,9 @@ export default function useCategories() {
     setError(null);
     try {
 
-      const res = await fetch(`${Url.url}/api/categories`, { cache: 'no-cache' });
+      const res = await fetch(`${Url.url}/api/categories`, {
+        cache: options.force ? 'no-cache' : 'default'
+      });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Error al cargar categorías');
       setCategories(body.data);
