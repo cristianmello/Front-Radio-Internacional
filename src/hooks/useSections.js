@@ -46,6 +46,9 @@ export default function useSections() {
             const payload = { section_title: title, section_type: type };
             const res = await authFetch(`${Url.url}/api/sections`, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(payload),
             });
             if (!res.ok) {
@@ -53,7 +56,7 @@ export default function useSections() {
                 throw new Error(errorJson.message || 'Error al crear sección');
             }
             // Después de crear, disparamos el evento para que la lista se refresque.
-         //   window.dispatchEvent(new Event('sectionsUpdated'));
+            window.dispatchEvent(new Event('sectionsUpdated'));
             return { success: true };
         } catch (err) {
             console.error('[useSections] createSection:', err);

@@ -222,7 +222,7 @@ const Header = ({ onOpenAuth }) => {
       <div className="header-top">
         <div className="container">
           <div className="logo">
-            <Link to="/categoria/inicio">
+            <Link to="/">
               <img
                 src={logoRealidadNacional}
                 alt="Realidad Nacional"

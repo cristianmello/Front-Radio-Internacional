@@ -17,7 +17,7 @@ import NewsSidebar from './home/NewsSidebar';
 export default function PublicLayout() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authError, setAuthError] = useState('');
-    const { sections, loading: secLoading, error: secError, refresh: refreshSections } = useSections();
+    const {sections, loading: secLoading, error: secError, refresh: refreshSections, createSection } = useSections();
     const [showSectionModal, setShowSectionModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
 
