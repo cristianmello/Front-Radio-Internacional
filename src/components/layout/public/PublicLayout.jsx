@@ -16,7 +16,7 @@ import NewsSidebar from './home/NewsSidebar';
 export default function PublicLayout() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authError, setAuthError] = useState('');
-    const { sections, loading: secLoading, error: secError, refresh: refreshSections, createSection } = useSections();
+    const { sections, categories, loading, error, refresh: refreshSections, createSection } = useSections();
     const [showSectionModal, setShowSectionModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
 
@@ -129,8 +129,8 @@ export default function PublicLayout() {
                     <div className="page-wrapper">
                         <Outlet context={{
                             sections,
-                            loading: secLoading,
-                            error: secError,
+                            loading: loading,
+                            error: error,
                             refresh: refreshSections
                         }} />
                     </div>
@@ -178,8 +178,8 @@ export default function PublicLayout() {
                 )}
 
                 {/* Opcional: mostrar estado de carga o error de secciones */}
-                {secLoading && <p>Cargando secciones…</p>}
-                {secError && <p className="form-error">{secError}</p>}
+                {loading && <p>Cargando secciones…</p>}
+                {error && <p className="form-error">{error}</p>}
             </EditModeContext.Provider>
         </SidebarContext.Provider>
 
