@@ -15,6 +15,7 @@ import RenderArticleContent from './RenderArticleContent';
 import useSections from '../../../../hooks/useSections';
 import useAdvertisements from '../../../../hooks/useAdvertisements';
 import useCategories from '../../../../hooks/UseCategories';
+import { useSidebar } from '../../../../context/SidebarContext';
 
 const iconMap = {
     success: 'fas fa-check-circle',
@@ -23,6 +24,8 @@ const iconMap = {
 };
 
 const ArticlePage = () => {
+
+    const sidebar = useSidebar();
     const { code, slug } = useParams();
     const location = useLocation();
     const initialData = location.state?.article;
@@ -50,6 +53,7 @@ const ArticlePage = () => {
     const [isSaving, setIsSaving] = useState(false);
 
     const { advertisements, loading: adsLoading, error: adsError } = useAdvertisements();
+
     const [showInsertAdModal, setShowInsertAdModal] = useState(false);
 
     const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
@@ -343,8 +347,9 @@ const ArticlePage = () => {
                                 )}
                             </div>
 
-
                         </article>
+                        {sidebar}
+
                         <aside className="article-sidebar">
                             <div className="widget related-news">
                                 <h3>Noticias Relacionadas</h3>
@@ -387,19 +392,6 @@ const ArticlePage = () => {
                             </div>
                         </div>
                         */}
-                            <NewsSidebar>
-                                {loadingSections && <p>Cargando widgets…</p>}
-                                {errorSections && <p className="form-error">{errorSections}</p>}
-                                {!loadingSections && !errorSections && sidebarWidgets.map(widget => (
-                                    <SidebarWidget
-                                        key={widget.section_slug}
-                                        section={widget}
-                                        canEditGlobal={canEditGlobal}
-                                        onSectionDeleted={() => { /* refresh() si querés volver a cargar */ }}
-                                    />
-                                ))}
-                            </NewsSidebar>
-
                         </aside>
                     </div>
 
