@@ -10,11 +10,14 @@ import useAuth from '../../../hooks/UseAuth';
 import useSections from '../../../hooks/useSections'
 import { EditModeContext } from '../../../context/EditModeContext';
 import GlobalAudioPlayer from './home/GlobalAudioPlayer';
+import { SidebarContext } from '../../../context/SidebarContext';
+import SidebarWidget from './home/SidebarWidget';
+import NewsSidebar from './home/NewsSidebar';
 
 export default function PublicLayout() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authError, setAuthError] = useState('');
-    const { sections, loading: secLoading, error: secError, refresh, createSection } = useSections();
+    const { sections, loading: secLoading, error: secError, refresh: refreshSections } = useSections();
     const [showSectionModal, setShowSectionModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
 
