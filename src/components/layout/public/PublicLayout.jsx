@@ -110,7 +110,7 @@ export default function PublicLayout() {
                     categories={categories}
                     categoriesLoading={loading}
                     categoriesError={error}
-                    onCategoriesUpdate={refresh}
+                    onCategoriesUpdate={refreshSections}
                 />
 
                 <AuthModal
