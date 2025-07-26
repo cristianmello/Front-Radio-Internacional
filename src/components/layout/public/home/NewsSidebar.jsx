@@ -20,7 +20,6 @@ const NewsSidebar = ({
 
     return (
         <aside className="sidebar">
-            <h4>{sectionTitle}</h4>
             {data.map(section => (
                 <SidebarWidget
                     key={section.section_slug}
