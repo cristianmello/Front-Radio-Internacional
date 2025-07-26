@@ -53,16 +53,19 @@ const editModalMap = {
 const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
     const items = section.items || [];
 
-    let addItem, removeItem, deleteSection;
-    if (canEditGlobal) {
-        ({ addItem, removeItem, deleteSection } =
-            useSectionActions(section.section_slug, onSectionDeleted));
-    } else {
-        // para no romper llamadas posteriores
-        addItem = () => Promise.resolve();
-        removeItem = () => Promise.resolve();
-        deleteSection = () => Promise.resolve();
-    } const [isAdding, setIsAdding] = useState(false);
+    // 1) Llamamos SIEMPRE al hook, en primer lugar
+    const {
+        addItem: _addItem,
+        removeItem: _removeItem,
+        deleteSection: _deleteSection
+    } = useSectionActions(section.section_slug, onSectionDeleted);
+
+    // 2) Según canEditGlobal, usamos las funciones reales o no‑ops
+    const addItem = canEditGlobal ? _addItem : () => Promise.resolve();
+    const removeItem = canEditGlobal ? _removeItem : () => Promise.resolve();
+    const deleteSection = canEditGlobal ? _deleteSection : () => Promise.resolve();
+
+    const [isAdding, setIsAdding] = useState(false);
 
     const [editingArticle, setEditingArticle] = useState(null);
     const [editingAd, setEditingAd] = useState(null);
