@@ -79,7 +79,7 @@ const AudioNewsWidget = ({ sectionTitle, data: audios = [] }) => {
                   </svg>
                 </button>
               )}
-              <h5 className="audio-title">{audio.title || 'Título no disponible'}</h5>
+              <h5 className="audio-title">{audio.audio_title || 'Título no disponible'}</h5>
             </div>
 
             {/* YA NO HAY REPRODUCTOR DE AUDIO AQUÍ */}
