@@ -54,24 +54,8 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
 
     const items = section.items || [];
 
-    const sectionActions = useSectionActions(section.section_slug, onSectionDeleted, canEdit);
-
-    const actions = canEdit
-        ? sectionActions
-        : {
-            setItems: () => { },
-            reorderItems: () => { },
-            addItem: () => Promise.resolve({ success: false }),
-            removeItem: () => Promise.resolve({ success: false }),
-            deleteSection: () => Promise.resolve({ success: false }),
-        };
-    const {
-        setItems,
-        reorderItems,
-        addItem,
-        removeItem,
-        deleteSection,
-    } = actions;
+    const { setItems, reorderItems, addItem, removeItem, deleteSection } =
+        useSectionActions(section.section_slug, onSectionDeleted);
 
     const [adding, setAdding] = useState(false);
 

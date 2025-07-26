@@ -8,7 +8,7 @@ import useAuth from './UseAuth';
  * @param {string} slug - El slug de la sección a gestionar.
  * @param {function} onDeleted - Callback opcional tras eliminar la sección.
  */
-export function useSectionActions(slug, onDeleted, enabled = true) {
+export function useSectionActions(slug, onDeleted) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true); // 1. Añadido estado de carga
     const [error, setError] = useState(null);   // 2. Añadido estado de error
@@ -41,9 +41,8 @@ export function useSectionActions(slug, onDeleted, enabled = true) {
 
     // 4. El useEffect ahora es más limpio y solo llama a la función de fetch
     useEffect(() => {
-        if (!enabled) return;
         fetchItems();
-    }, [fetchItems, enabled]);
+    }, [fetchItems]);
 
     /* EL QUE FUNCIONA CORRECTAMENTE  
       const addItem = async (code) => {
