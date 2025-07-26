@@ -53,8 +53,16 @@ const editModalMap = {
 const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
     const items = section.items || [];
 
-    const { addItem, removeItem, deleteSection } = useSectionActions(section.section_slug, onSectionDeleted);
-    const [isAdding, setIsAdding] = useState(false);
+    let addItem, removeItem, deleteSection;
+    if (canEditGlobal) {
+        ({ addItem, removeItem, deleteSection } =
+            useSectionActions(section.section_slug, onSectionDeleted));
+    } else {
+        // para no romper llamadas posteriores
+        addItem = () => Promise.resolve();
+        removeItem = () => Promise.resolve();
+        deleteSection = () => Promise.resolve();
+    } const [isAdding, setIsAdding] = useState(false);
 
     const [editingArticle, setEditingArticle] = useState(null);
     const [editingAd, setEditingAd] = useState(null);

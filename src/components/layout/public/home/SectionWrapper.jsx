@@ -54,9 +54,19 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
 
     const items = section.items || [];
 
-    // 1. Obtenemos la función 'refresh' del hook y la renombramos para evitar colisiones.
-    const { setItems, reorderItems, addItem, removeItem, deleteSection } =
-        useSectionActions(section.section_slug, onSectionDeleted);
+    let setItems, reorderItems, addItem, removeItem, deleteSection;
+
+    if (canEdit) {
+        ({ setItems, reorderItems, addItem, removeItem, deleteSection } =
+            useSectionActions(section.section_slug, onSectionDeleted));
+    } else {
+        // Para evitar errores si se usan estas funciones fuera del modo edición
+        setItems = () => { };
+        reorderItems = () => { };
+        addItem = () => Promise.resolve({ success: false });
+        removeItem = () => Promise.resolve({ success: false });
+        deleteSection = () => Promise.resolve({ success: false });
+    }
 
     const [adding, setAdding] = useState(false);
 
@@ -153,7 +163,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
                     article={editingArticle}
                     onSave={(formData) => editArticle(editingArticle.id, formData)}
                     onCancel={() => setEditingArticle(null)}
-                    onUpdateSuccess={onSectionDeleted} 
+                    onUpdateSuccess={onSectionDeleted}
                 />
             )}
 
