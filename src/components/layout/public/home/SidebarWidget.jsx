@@ -54,16 +54,20 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
     const items = section.items || [];
 
     // 1) Llamamos SIEMPRE al hook, en primer lugar
-    const {
-        addItem: _addItem,
-        removeItem: _removeItem,
-        deleteSection: _deleteSection
-    } = useSectionActions(section.section_slug, onSectionDeleted, canEdit);
+    let _addItem = () => Promise.resolve();
+    let _removeItem = () => Promise.resolve();
+    let _deleteSection = () => Promise.resolve();
 
-    // 2) Según canEditGlobal, usamos las funciones reales o no‑ops
-    const addItem = canEditGlobal ? _addItem : () => Promise.resolve();
-    const removeItem = canEditGlobal ? _removeItem : () => Promise.resolve();
-    const deleteSection = canEditGlobal ? _deleteSection : () => Promise.resolve();
+    if (canEditGlobal) {
+        const actions = useSectionActions(section.section_slug, onSectionDeleted, canEditGlobal);
+        _addItem = actions.addItem;
+        _removeItem = actions.removeItem;
+        _deleteSection = actions.deleteSection;
+    }
+
+    const addItem = _addItem;
+    const removeItem = _removeItem;
+    const deleteSection = _deleteSection;
 
     const [isAdding, setIsAdding] = useState(false);
 
