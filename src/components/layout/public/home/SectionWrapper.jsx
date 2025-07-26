@@ -60,7 +60,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
         addItem: _addItem,
         removeItem: _removeItem,
         deleteSection: _deleteSection
-    } = useSectionActions(section.section_slug, onSectionDeleted);
+    } = useSectionActions(section.section_slug, onSectionDeleted, canEdit);
 
     // 2) Si no puede editar, reemplazamos por no-ops
     const setItems = canEdit ? _setItems : () => { };

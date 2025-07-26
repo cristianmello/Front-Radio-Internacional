@@ -58,7 +58,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
         addItem: _addItem,
         removeItem: _removeItem,
         deleteSection: _deleteSection
-    } = useSectionActions(section.section_slug, onSectionDeleted);
+    } = useSectionActions(section.section_slug, onSectionDeleted, canEdit);
 
     // 2) Según canEditGlobal, usamos las funciones reales o no‑ops
     const addItem = canEditGlobal ? _addItem : () => Promise.resolve();
