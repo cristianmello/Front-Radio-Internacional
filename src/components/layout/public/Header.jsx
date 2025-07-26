@@ -19,11 +19,11 @@ import EditContentArticleModal from "./home/EditContentArticleModal";
 import useCategories from "../../../hooks/UseCategories";
 import logoRealidadNacional from '../../../assets/img/logo-realidad-nacional.png';
 
-const Header = ({ onOpenAuth }) => {
+const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError }) => {
   const { auth, logout, roles } = useAuth();
 
   const editMode = useEditMode();
-  const { categories, loading, error, addCategory, deleteCategory } = useCategories();
+  const { addCategory, deleteCategory } = useCategories();
 
   const { addArticle, deleteArticle } = useArticleActions();
   const { addAudio } = useAudio();
@@ -251,10 +251,10 @@ const Header = ({ onOpenAuth }) => {
 
       <nav className="main-nav">
         <div className="container">
-          {loading ? (
+          {categoriesLoading ? (
             <p>Cargando categorías…</p>
-          ) : error ? (
-            <p className="error">Error: {error}</p>
+          ) : categoriesError ? (
+            <p className="error">Error: {categoriesError}</p>
           ) : (
             <>
               <ul className={`nav-list ${mobileMenuOpen ? "show" : ""}`}>

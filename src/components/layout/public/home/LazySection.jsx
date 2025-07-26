@@ -2,22 +2,21 @@ import React from 'react';
 import { useInView } from 'react-intersection-observer';
 import SectionWrapper from './SectionWrapper';
 
-// 1. Aceptamos el objeto 'props' completo en lugar de desestructurar campos específicos.
-const LazySection = (props) => {
+// 1. Recibimos 'className' por separado y el resto de las props en un objeto.
+const LazySection = ({ className, ...props }) => {
     const { ref, inView } = useInView({
         triggerOnce: true,
         rootMargin: '200px 0px',
     });
 
     return (
-        <div ref={ref}>
+        // 2. Aplicamos la 'className' que recibimos al div.
+        <div ref={ref} className={className}>
             {inView ? (
-                // 2. Usamos {...props} para pasar TODAS las propiedades recibidas
-                //    (incluyendo 'section', 'key', y nuestra crucial 'onSectionDeleted')
-                //    directamente al componente SectionWrapper.
+                // 3. Pasamos el resto de las props a SectionWrapper.
                 <SectionWrapper {...props} />
             ) : (
-                // Un placeholder con altura para evitar saltos en el layout mientras carga
+                // El placeholder se mantiene igual.
                 <div style={{ minHeight: '400px' }} />
             )}
         </div>

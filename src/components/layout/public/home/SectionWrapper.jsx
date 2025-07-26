@@ -52,8 +52,10 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
         roles.some(r => ["editor", "admin", "superadmin"].includes(r)) &&
         editMode;
 
+    const items = section.items || [];
+
     // 1. Obtenemos la función 'refresh' del hook y la renombramos para evitar colisiones.
-    const { items, setItems, reorderItems, addItem, removeItem, deleteSection, refresh: refreshSectionItems } =
+    const { setItems, reorderItems, addItem, removeItem, deleteSection } =
         useSectionActions(section.section_slug, onSectionDeleted);
 
     const [adding, setAdding] = useState(false);
@@ -77,8 +79,8 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
             return { success: false, message: err.message || "Error inesperado." };
         }
     };
-    
-   const handleSelectContent = (code) => {
+
+    const handleSelectContent = (code) => {
         addItem(code);
         setAdding(false);
     };
@@ -149,10 +151,9 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
             {editingArticle && (
                 <EditArticleModal
                     article={editingArticle}
-                    // Misma corrección: envolvemos la llamada
                     onSave={(formData) => editArticle(editingArticle.id, formData)}
                     onCancel={() => setEditingArticle(null)}
-                    onUpdateSuccess={refreshSectionItems}
+                    onUpdateSuccess={onSectionDeleted} 
                 />
             )}
 
@@ -164,7 +165,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
                         adHook.editAdvertisement(editingAdvertisement.ad_id, formData)
                     }
                     onCancel={() => setEditingAdvertisement(null)}
-                    onUpdateSuccess={refreshSectionItems}
+                    onUpdateSuccess={onSectionDeleted}
                 />
             )}
         </SectionEditContext.Provider>

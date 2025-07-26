@@ -5,7 +5,6 @@ import Header from './Header';
 import Footer from './Footer';
 import AuthModal from './AuthModal';
 import AddSectionModal from './home/AddSectionModal';
-import Url from '../../../helpers/Url';
 import useAuth from '../../../hooks/UseAuth';
 import useSections from '../../../hooks/useSections'
 import { EditModeContext } from '../../../context/EditModeContext';
@@ -17,7 +16,7 @@ import NewsSidebar from './home/NewsSidebar';
 export default function PublicLayout() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authError, setAuthError] = useState('');
-    const {sections, loading: secLoading, error: secError, refresh: refreshSections, createSection } = useSections();
+    const { sections, loading: secLoading, error: secError, refresh: refreshSections, createSection } = useSections();
     const [showSectionModal, setShowSectionModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
 
@@ -105,9 +104,13 @@ export default function PublicLayout() {
 
     return (
         <SidebarContext.Provider value={sidebarComponent}>
-
             <EditModeContext.Provider value={editMode}>
-                <Header onOpenAuth={() => setIsAuthOpen(true)} />
+                <Header
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                    categories={categories}
+                    categoriesLoading={loading}
+                    categoriesError={error}
+                />
 
                 <AuthModal
                     isOpen={isAuthOpen}

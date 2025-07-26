@@ -40,7 +40,7 @@ const addModalMap = {
     'ad-verticalsm': AddAdvertisementModal,
 
 };
-
+/*
 // Mapeo de tipos de sección a modales de "EDITAR"
 const editModalMap = {
     'sideaudios': EditAudioModal,
@@ -49,13 +49,11 @@ const editModalMap = {
     'ad-skyscraper': EditAdvertisementModal,
     'ad-verticalsm': EditAdvertisementModal,
 };
-
+*/
 const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
     const { items, addItem, removeItem, deleteSection, refresh } = useSectionActions(section.section_slug, onSectionDeleted);
     const [isAdding, setIsAdding] = useState(false);
 
-    // --- CORRECCIÓN CLAVE: ESTADOS SEPARADOS PARA CADA TIPO DE EDICIÓN ---
-    // Igual que hicimos en NewsLayout, separamos la lógica.
     const [editingArticle, setEditingArticle] = useState(null);
     const [editingAd, setEditingAd] = useState(null);
     const [editingAudio, setEditingAudio] = useState(null);
@@ -150,147 +148,3 @@ SidebarWidget.propTypes = {
 };
 
 export default SidebarWidget;
-
-/*import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useSectionActions } from '../../../../hooks/useSectionActions';
-import { SectionEditContext } from '../../../../context/SectionEditContext';
-
-// Importa todos los posibles componentes visuales y modales del sidebar
-import AudioNewsWidget from './AudioNewsWidget';
-import AdBanner from './AdBanner';
-import SidebarArticleList from './SidebarArticleList';
-import AddAdvertisementModal from './AddAdvertisementModal';
-import AddAudioModal from './AddAudioModal';
-import AddArticleModal from './AddArticleModal';
-// Importa los modales de edición que necesitarás
-import EditAdvertisementModal from './EditAdvertisementModal';
-import EditAudioModal from './EditAudioModal';
-import EditArticleModal from './EditArticleModal';
-
-// Hooks para la lógica de edición
-import useAdvertisement from '../../../../hooks/useAdvertisement';
-import useAudio from '../../../../hooks/UseAudio';
-import useArticle from '../../../../hooks/UseArticle';
-
-
-// Mapeo de tipos de sección a componentes VISUALES
-const componentMap = {
-    'sideaudios': AudioNewsWidget,
-    'sidebar': SidebarArticleList,
-    'ad-small': AdBanner,
-    'ad-skyscraper': AdBanner,
-};
-
-// Mapeo de tipos de sección a modales de "AÑADIR"
-const addModalMap = {
-    'sideaudios': AddAudioModal,
-    'sidebar': AddArticleModal,
-    'ad-small': AddAdvertisementModal,
-    'ad-skyscraper': AddAdvertisementModal,
-};
-
-// Mapeo de tipos de sección a modales de "EDITAR"
-const editModalMap = {
-    'sideaudios': EditAudioModal,
-    'sidebar': EditArticleModal,
-    'ad-small': EditAdvertisementModal,
-    'ad-skyscraper': EditAdvertisementModal,
-};
-
-const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
-    const { items, addItem, removeItem, deleteSection, refresh } = useSectionActions(section.section_slug, onSectionDeleted);
-    const [isAdding, setIsAdding] = useState(false);
-
-    // --- CORRECCIÓN CLAVE: ESTADOS SEPARADOS PARA CADA TIPO DE EDICIÓN ---
-    // Igual que hicimos en NewsLayout, separamos la lógica.
-    const [editingArticle, setEditingArticle] = useState(null);
-    const [editingAd, setEditingAd] = useState(null);
-    const [editingAudio, setEditingAudio] = useState(null);
-
-    // Inicializamos los hooks para tener sus funciones disponibles
-    const articleHook = useArticle();
-    const adHook = useAdvertisement();
-    const audioHook = useAudio();
-
-    const Component = componentMap[section.section_type];
-    const AddModal = addModalMap[section.section_type];
-
-    if (!Component) return null;
-
-    // --- FUNCIÓN onEdit INTELIGENTE Y ESTANDARIZADA ---
-    const handleEdit = (item) => {
-        if (item.ad_id) {
-            setEditingAd(item); // Guardamos el objeto completo del anuncio
-        } else if (item.audio_code) {
-            setEditingAudio(item); // Guardamos el objeto completo del audio
-        } else if (item.article_code) {
-            // Para artículos, creamos el objeto estandarizado que EditArticleModal espera
-            setEditingArticle({ id: item.article_code, slug: item.article_slug });
-        }
-    };
-
-    const contextValue = {
-        canEdit: canEditGlobal,
-        onAddItem: canEditGlobal && AddModal ? () => setIsAdding(true) : null,
-        onRemove: canEditGlobal ? removeItem : null,
-        onEdit: canEditGlobal ? handleEdit : null, // Pasamos la nueva función de manejo
-        onDeleteSection: canEditGlobal && !section.is_protected ? deleteSection : null,
-    };
-
-    return (
-        <SectionEditContext.Provider value={contextValue}>
-            {isAdding && AddModal && (
-                <AddModal
-                    onSelect={(code) => { addItem(code); setIsAdding(false); }}
-                    onCancel={() => setIsAdding(false)}
-                />
-            )}
-
-
-            {editingArticle && (
-                <EditArticleModal
-                    article={editingArticle}
-                    onSave={(formData) => articleHook.editArticle(editingArticle.id, formData)}
-                    onCancel={() => setEditingArticle(null)}
-                    onUpdateSuccess={refresh}
-                />
-            )}
-
-            {editingAd && (
-                <EditAdvertisementModal
-                    advertisement={editingAd}
-                    onSave={(formData) => adHook.editAdvertisement(editingAd.ad_id, formData)}
-                    onCancel={() => setEditingAd(null)}
-                    onUpdateSuccess={refresh}
-                />
-            )}
-
-            {editingAudio && (
-                <EditAudioModal
-                    // Pasamos el ID del audio. Asumimos que el modal lo usa para fetchear datos.
-                    audioId={editingAudio.audio_code}
-                    onSave={(formData) => audioHook.editAudio(editingAudio.audio_code, formData)}
-                    onCancel={() => setEditingAudio(null)}
-                    onUpdateSuccess={refresh}
-                />
-            )}
-
-            <Component
-                section={section}
-                sectionTitle={section.section_title}
-                data={items}
-            />
-        </SectionEditContext.Provider>
-    );
-};
-
-
-SidebarWidget.propTypes = {
-    section: PropTypes.object.isRequired,
-    onSectionDeleted: PropTypes.func,
-    canEditGlobal: PropTypes.bool,
-};
-
-export default SidebarWidget;
-*/

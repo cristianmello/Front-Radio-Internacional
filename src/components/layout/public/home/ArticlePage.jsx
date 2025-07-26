@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -9,13 +9,10 @@ import useAuth from '../../../../hooks/UseAuth';
 import { useEditMode } from '../../../../context/EditModeContext';
 import { Editor } from '@tinymce/tinymce-react';
 import Url from '../../../../helpers/Url';
-import NewsSidebar from './NewsSidebar';
-import SidebarWidget from './SidebarWidget';
 import RenderArticleContent from './RenderArticleContent';
-import useSections from '../../../../hooks/useSections';
 import useAdvertisements from '../../../../hooks/useAdvertisements';
 import useCategories from '../../../../hooks/UseCategories';
-import { useSidebar } from '../../../../context/SidebarContext';
+import { SidebarContext } from '../../../../context/SidebarContext';
 
 const iconMap = {
     success: 'fas fa-check-circle',
@@ -25,8 +22,8 @@ const iconMap = {
 
 const ArticlePage = () => {
 
-    const sidebar = useSidebar();
-    const { code, slug } = useParams();
+    const sidebar = useContext(SidebarContext);
+     const { code, slug } = useParams();
     const location = useLocation();
     const initialData = location.state?.article;
 
@@ -38,14 +35,6 @@ const ArticlePage = () => {
     const { auth, roles, authFetch } = useAuth();
     const editMode = useEditMode(); // Hook para saber si el modo editor global está activo
     const canEditArticle = auth?.user_code && roles.some(r => ["editor", "admin", "superadmin"].includes(r));
-
-    // —— SECTIONS FOR SIDEBAR ——  
-    const { sections, loading: loadingSections, error: errorSections } = useSections();
-    const sidebarWidgetTypes = ['sidebar', 'sideaudios', 'ad-small', 'ad-skyscraper'];
-    const sidebarWidgets = (sections || [])
-        .filter(s => sidebarWidgetTypes.includes(s.section_type))
-        .sort((a, b) => a.section_position - b.section_position);
-    const canEditGlobal = canEditArticle && editMode;
 
     // 2. Estados para controlar el modo de edición del contenido
     const [isEditingContent, setIsEditingContent] = useState(false);
