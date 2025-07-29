@@ -38,15 +38,30 @@ export default function AddAdvertisementModal({ onSelect, onCancel }) {
     };
 
     const handleSelect = async (adId) => {
-        setItemStates(prev => ({ ...prev, [adId]: { status: 'loading' } }));
+        setItemStates(prev => ({
+            ...prev,
+            [adId]: { status: 'loading' }
+        }));
 
-        const result = await onSelect(adId);
+        let result;
+        try {
+            result = await onSelect(adId);
+        } catch (err) {
+            result = { success: false, message: err.message || 'Error desconocido' };
+        }
 
         if (result && result.success) {
+            setItemStates(prev => ({
+                ...prev,
+                [adId]: { status: 'idle' }
+            }));
         } else {
             setItemStates(prev => ({
                 ...prev,
-                [adId]: { status: 'error', message: result.message }
+                [adId]: {
+                    status: 'error',
+                    message: result?.message || 'Error al añadir la publicidad'
+                }
             }));
         }
     };
