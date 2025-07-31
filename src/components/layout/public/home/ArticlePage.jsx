@@ -193,6 +193,10 @@ const ArticlePage = () => {
         }]
     };
 
+    const handleFacebookClick = () => {
+        window.open('https://www.facebook.com/people/Ivan-Mourelle-II/pfbid035pdoERG4oXaNH4hUQzqnFMg9QYPMcxgz53BKrQDrgP3gBkqVxFu4ipSHCH2t54d2l', '_blank', 'noopener,noreferrer');
+    };
+
     return (
         <>
             <title>{`${displayedArticle.article_title} - Realidad Nacional`}</title>
@@ -271,9 +275,10 @@ const ArticlePage = () => {
                                 </div>
                             )}
                             <div class="social-share-sticky">
-                                <a href="https://www.facebook.com/people/Ivan-Mourelle-II/pfbid035pdoERG4oXaNH4hUQzqnFMg9QYPMcxgz53BKrQDrgP3gBkqVxFu4ipSHCH2t54d2l" target="_blank" rel="noopener noreferrer" class="share-btn facebook">
-                                    <i class="fab fa-facebook-f"></i>
-                                </a>                                {/* <button class="share-btn twitter"><i class="fab fa-twitter"></i></button>
+                                <button className="share-btn facebook" onClick={handleFacebookClick}>
+                                    <i className="fab fa-facebook-f"></i>
+                                </button>
+                                {/* <button class="share-btn twitter"><i class="fab fa-twitter"></i></button>
                                 <button class="share-btn whatsapp"><i class="fab fa-whatsapp"></i></button>
                                 <button class="share-btn telegram"><i class="fab fa-telegram-plane"></i></button>
                                 <button class="share-btn email"><i class="fas fa-envelope"></i></button>*/}
