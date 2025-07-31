@@ -330,7 +330,6 @@ const ArticlePage = () => {
                             </div>
 
                         </article>
-                        {sidebar}
 
                         <aside className="article-sidebar">
                             <div className="widget related-news">
@@ -361,6 +360,8 @@ const ArticlePage = () => {
                                     </div>
                                 )}
                             </div>
+                            {sidebar}
+
                             {/*
                         <div className="widget trending-now">
                             <h3>Trending Ahora</h3>
