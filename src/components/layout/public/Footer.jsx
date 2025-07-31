@@ -91,16 +91,14 @@ export default function Footer({ categories = [], loading, error }) {
                 {/*<li><Link to="/cookies">Política de cookies</Link></li>*/}
               </ul>
             </div>
-          </div>
-
-          {/* ------ REDES SOCIALES ------ */}
-          <div className="footer-social">
-            <h3>Síguenos</h3>
-            <div className="social-icons">
-              <a href="https://www.facebook.com/radionternacionalamyfm/" target="_blank" rel="noreferrer">
-                <i className="fab fa-facebook-f"></i>
-              </a>
-              {/* <a href="https://twitter.com" target="_blank" rel="noreferrer">
+            
+            <div className="footer-social">
+              <h3>Síguenos</h3>
+              <div className="social-icons">
+                <a href="https://www.facebook.com/radionternacionalamyfm/" target="_blank" rel="noreferrer">
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+                {/* <a href="https://twitter.com" target="_blank" rel="noreferrer">
                 <i className="fab fa-twitter"></i>
               </a>
               <a href="https://instagram.com" target="_blank" rel="noreferrer">
@@ -113,9 +111,12 @@ export default function Footer({ categories = [], loading, error }) {
                 <i className="fab fa-linkedin-in"></i>
               </a>
               */}
+              </div>
             </div>
           </div>
+          {/* ------ REDES SOCIALES ------ */}
         </div>
+
 
         {/* Pie de página inferior */}
         <div className="footer-bottom">
