@@ -151,7 +151,7 @@ const ArticlePage = () => {
         return (
             <>
                 <title>Cargando... - Realidad Nacional</title>
-                <main className="article-main"><div className="container">Cargando artículo...</div></main>;
+                <main className="article-main"> Cargando artículo...</main>;
             </>
         )
     }
