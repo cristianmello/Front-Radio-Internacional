@@ -46,6 +46,8 @@ const ArticlePage = () => {
     const [showInsertAdModal, setShowInsertAdModal] = useState(false);
 
     const editorRef = useRef(null);
+    const articleContentRef = useRef(null);
+    const socialShareRef = useRef(null);
 
     // 3. Cuando el artículo se carga, se inicializa el estado del contenido ditable
     useEffect(() => {
@@ -230,7 +232,7 @@ const ArticlePage = () => {
                 )}
 
                 <div className="article-layout">
-                    <article className="article-content">
+                    <article className="article-content" ref={articleContentRef}>
 
                         {/* ... El encabezado del artículo (título, autor, fecha) no cambia ... */}
                         <div className="article-header">
@@ -273,7 +275,7 @@ const ArticlePage = () => {
                                 <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
                             </div>
                         )}
-                        <div class="social-share-sticky">
+                        <div class="social-share-sticky" ref={socialShareRef}>
                             <button className="share-btn facebook" onClick={handleFacebookClick}>
                                 <i className="fab fa-facebook-f"></i>
                             </button>
