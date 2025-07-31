@@ -104,7 +104,7 @@ const GlobalAudioPlayer = () => {
 
             <div className="player-timeline">
                 <div className="player-info">
-                    <span className="audio-title">Reproduciendo: {playingAudio.audio_title}</span>
+                    <span className="audio-title">Reproduciendo: {playingAudio.title}</span>
                     <span className="time-display">{formatTime(currentTime)} / {formatTime(duration)}</span>
                 </div>
                 <input

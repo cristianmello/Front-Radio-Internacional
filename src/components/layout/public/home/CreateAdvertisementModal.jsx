@@ -2,14 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { AD_FORMATS } from '../../../../helpers/adFormats.js';
 import { compressImage } from "../../../../helpers/ImageCompressor.js";
+import { useNotification } from '../../../../context/NotificationContext'; // <-- 1. Importar hook
 
-/**
- * Modal para crear un nuevo anuncio, con el estilo y funcionalidad del modal de artículos.
- * @param {function} onSave - Función que se llama con el FormData al guardar.
- * @param {function} onCancel - Función que se llama para cerrar el modal.
- */
 const CreateAdvertisementModal = ({ onSave, onCancel }) => {
     const modalContentRef = useRef(null);
+    const { showNotification } = useNotification();
 
     const [adName, setAdName] = useState('');
     const [adType, setAdType] = useState('image');
@@ -89,11 +86,15 @@ const CreateAdvertisementModal = ({ onSave, onCancel }) => {
 
         const result = await onSave(formData);
 
-        if (result && !result.success) {
-            setFormError(result.message || "Ocurrió un error inesperado.");
-        } else {
+        if (result?.success) {
+            showNotification('Anuncio creado con éxito.', 'success');
             onCancel(); // Cierra el modal en caso de éxito
+        } else {
+            const errorMessage = result?.message || "Ocurrió un error inesperado.";
+            setFormError(errorMessage); // Mantenemos el error local para mostrarlo en el formulario
+            showNotification(errorMessage, 'error'); // Y también mostramos la notificación global
         }
+
         setIsSubmitting(false);
     };
 

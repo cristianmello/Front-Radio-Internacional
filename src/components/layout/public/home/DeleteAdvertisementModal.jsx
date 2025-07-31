@@ -5,19 +5,21 @@ import { es } from 'date-fns/locale';
 import useAdvertisements from '../../../../hooks/useAdvertisements';
 import useAuth from '../../../../hooks/UseAuth';
 import Url from '../../../../helpers/Url';
+import { useNotification } from '../../../../context/NotificationContext';
 
 /**
  * Modal para listar y eliminar anuncios permanentemente.
  * Muestra el rango de fechas de la campaña en lugar del ID.
  */
 export default function DeleteAdvertisementModal({ onCancel }) {
+    const { showNotification } = useNotification();
+
     const [filters, setFilters] = useState({ page: 1, limit: 10, sortBy: 'updated_at', order: 'DESC' });
     const { advertisements, pagination, loading, error, refresh } = useAdvertisements(filters);
     const { authFetch } = useAuth();
 
     const [deletingId, setDeletingId] = useState(null);
     const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
-    const [localError, setLocalError] = useState(null);
 
     const handlePageChange = (newPage) => {
         if (pagination && newPage > 0 && newPage <= pagination.totalPages) {
@@ -27,16 +29,16 @@ export default function DeleteAdvertisementModal({ onCancel }) {
 
     const handleDelete = async (adId) => {
         setDeletingId(adId);
-        setLocalError(null);
         try {
             const res = await authFetch(`${Url.url}/api/advertisements/${adId}`, {
                 method: 'DELETE',
             });
             const body = await res.json();
             if (!res.ok) throw new Error(body.message || "Error eliminando el anuncio");
+            showNotification('Anuncio eliminado con éxito.', 'success'); // Notificación de éxito
             refresh();
         } catch (err) {
-            setLocalError(err.message);
+            showNotification(err.message, 'error'); // Notificación de error
         } finally {
             setDeletingId(null);
             setConfirmingDeleteId(null);
@@ -55,7 +57,6 @@ export default function DeleteAdvertisementModal({ onCancel }) {
 
                 {loading && !deletingId && <p>Cargando anuncios…</p>}
                 {error && <p className="form-error">Error: {error}</p>}
-                {localError && <p className="form-error">Error al eliminar: {localError}</p>}
 
                 {!loading && !error && (
                     <ul className="item-list">

@@ -3,15 +3,10 @@ import PropTypes from 'prop-types';
 import useAdvertisement from '../../../../hooks/useAdvertisement';
 import { AD_FORMATS } from '../../../../helpers/adFormats.js';
 import { compressImage } from '../../../../helpers/ImageCompressor.js';
-/**
- * Modal COMPLETO para editar un anuncio existente.
- * @param {object} advertisement - El objeto de anuncio a editar (contiene al menos el id).
- * @param {function} onSave - Función que se llama con el FormData de los campos cambiados.
- * @param {function} onCancel - Función para cerrar el modal.
- * @param {function} onUpdateSuccess - Función para refrescar la lista en el componente padre.
- */
-export default function EditAdvertisementModal({ advertisement: adToEdit, onSave, onCancel, onUpdateSuccess }) {
+import { useNotification } from '../../../../context/NotificationContext';
 
+export default function EditAdvertisementModal({ advertisement: adToEdit, onSave, onCancel, onUpdateSuccess }) {
+    const { showNotification } = useNotification();
     const modalContentRef = useRef(null);
 
     const { advertisement: initialAdData, loading, error } = useAdvertisement(adToEdit.ad_id);
@@ -151,19 +146,24 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
 
         // Si no se modificó ningún campo, cerramos el modal sin llamar a la API.
         if ([...formData.entries()].length === 0) {
+            showNotification("No se detectaron cambios.", "info");
             onCancel();
-            setIsSubmitting(false);
             return;
         }
 
+        setIsSubmitting(true);
         const result = await onSave(formData);
 
-        if (result && result.success) {
+        if (result?.success) {
+            showNotification('Anuncio actualizado con éxito.', 'success');
             if (onUpdateSuccess) onUpdateSuccess();
             onCancel();
         } else {
-            setFormError(result?.message || "Ocurrió un error inesperado.");
+            const errorMessage = result?.message || "Ocurrió un error inesperado.";
+            setFormError(errorMessage);
+        
         }
+        
         setIsSubmitting(false);
     };
 

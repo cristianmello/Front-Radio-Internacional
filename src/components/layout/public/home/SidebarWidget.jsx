@@ -50,10 +50,11 @@ const editModalMap = {
     'ad-verticalsm': EditAdvertisementModal,
 };
 */
-const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
+const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories }) => {
     const items = section.items || [];
 
-    const { addItem, removeItem, deleteSection, refresh } = useSectionActions(section.section_slug, onSectionDeleted);
+    // LÍNEA CORRECTA
+    const { addItem, removeItem, deleteSection } = useSectionActions(section.section_slug, section.items, onSectionDeleted);
 
     const [isAdding, setIsAdding] = useState(false);
 
@@ -79,7 +80,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
             setEditingAudio(item); // Guardamos el objeto completo del audio
         } else if (item.article_code) {
             // Para artículos, creamos el objeto estandarizado que EditArticleModal espera
-            setEditingArticle({ id: item.article_code, slug: item.article_slug });
+            setEditingArticle({ id: item.article_code, slug: item.slug });
         }
     };
 
@@ -93,13 +94,17 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
 
     return (
         <SectionEditContext.Provider value={contextValue}>
-            {/* Modal de Añadir (sin cambios) */}
             {isAdding && AddModal && (
                 <AddModal
                     section={section}
-                    onSelect={(code) => {
-                        addItem(code).then(() => onSectionDeleted());
-                    }} onCancel={() => setIsAdding(false)}
+                    onSelect={async (code) => {
+                        const result = await addItem(code);
+                        if (result.success) {
+                            onSectionDeleted();
+                        }
+                        return result;
+                    }}
+                    onCancel={() => setIsAdding(false)}
                 />
             )}
 
@@ -111,6 +116,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
                     onSave={(formData) => editArticle(editingArticle.id, formData)}
                     onCancel={() => setEditingArticle(null)}
                     onUpdateSuccess={onSectionDeleted}
+                    categories={categories}
                 />
             )}
 
@@ -130,6 +136,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
                     onSave={(formData) => audioHook.editAudio(editingAudio.audio_code, formData)}
                     onCancel={() => setEditingAudio(null)}
                     onUpdateSuccess={onSectionDeleted}
+                    categories={categories}
                 />
             )}
 
@@ -138,6 +145,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal }) => {
                 section={section}
                 sectionTitle={section.section_title}
                 data={items}
+                categories={categories}
             />
         </SectionEditContext.Provider>
     );

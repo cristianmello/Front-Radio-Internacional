@@ -1,13 +1,12 @@
 // src/components/layout/public/home/CreateAudioModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import Url from "../../../../helpers/Url";
-import useCategories from "../../../../hooks/UseCategories";
+import { useNotification } from "../../../../context/NotificationContext";
 
-export default function CreateAudioModal({ onSave, onCancel }) {
+export default function CreateAudioModal({ onSave, onCancel, categories = [] }) {
     const modalContentRef = useRef(null);
 
-    const { categories, loading: loadingCategories, error: errorCategories } = useCategories();
+    const { showNotification } = useNotification();
 
     // Estados del formulario, adaptados para audio
     const [title, setTitle] = useState("");
@@ -37,23 +36,6 @@ export default function CreateAudioModal({ onSave, onCancel }) {
         setSlug(generateSlug(title));
     }, [title]);
 
-    // Muestra un estado de carga mientras se obtienen las categorías
-    if (loadingCategories) {
-        return (
-            <div className="modal-edit active">
-                <div className="modal-edit-content">Cargando categorías...</div>
-            </div>
-        );
-    }
-    // Muestra un error si no se pudieron cargar las categorías
-    if (errorCategories) {
-        return (
-            <div className="modal-edit active">
-                <div className="modal-edit-content">Error cargando categorías.</div>
-            </div>
-        );
-    }
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError("");
@@ -82,12 +64,15 @@ export default function CreateAudioModal({ onSave, onCancel }) {
 
         const result = (await onSave(formData)) || {};
 
-        if (!result.success) {
-            console.error("Error al crear la nota de audio:", result);
-            setFormError(result.message || "Ocurrió un error. Revisa la consola.");
+        if (result?.success) {
+            showNotification('Nota de audio creada con éxito.', 'success');
+            onCancel();
         } else {
-            onCancel(); // Cierra el modal si todo fue exitoso
+            const errorMessage = result?.message || "Ocurrió un error inesperado.";
+            setFormError(errorMessage);
+            showNotification(errorMessage, 'error');
         }
+
         setIsSubmitting(false);
     };
 
@@ -105,15 +90,15 @@ export default function CreateAudioModal({ onSave, onCancel }) {
                     <h4>Información Básica</h4>
                     <div className="edit-field">
                         <label>Título:</label>
-                        <input type="text" value={title} required onChange={(e) => setTitle(e.target.value)} />
+                        <input type="text" value={title} required onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} />
                     </div>
                     <div className="edit-field">
                         <label>Slug (auto):</label>
-                        <input type="text" value={slug} readOnly />
+                        <input type="text" value={slug} readOnly disabled />
                     </div>
                     <div className="edit-field">
                         <label>Categoría:</label>
-                        <select value={categoryId} required onChange={(e) => setCategoryId(e.target.value)}>
+                        <select value={categoryId} required onChange={(e) => setCategoryId(e.target.value)} disabled={isSubmitting}>
                             <option value="" disabled>-- Elige una --</option>
                             {filteredCategories.map((cat) => (
                                 <option key={cat.category_code} value={cat.category_code}>
@@ -125,7 +110,7 @@ export default function CreateAudioModal({ onSave, onCancel }) {
 
                     <h4>Archivo de Audio</h4>
                     <div className="edit-field">
-                        <input type="file" accept="audio/*" required onChange={(e) => setAudioFile(e.target.files[0])} />
+                        <input type="file" accept="audio/*" required onChange={(e) => setAudioFile(e.target.files[0])} disabled={isSubmitting} />
                     </div>
                     {audioFile && (
                         <div className="audio-preview" style={{ marginTop: '10px' }}>
@@ -155,4 +140,5 @@ export default function CreateAudioModal({ onSave, onCancel }) {
 CreateAudioModal.propTypes = {
     onSave: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
+    categories: PropTypes.array.isRequired,
 };

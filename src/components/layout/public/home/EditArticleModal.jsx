@@ -1,20 +1,16 @@
-
-
 // src/components/layout/public/home/EditArticleModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import usePublicArticle from "../../../../hooks/usePublicArticle";
-import useCategories from "../../../../hooks/UseCategories";
 import { compressImage } from "../../../../helpers/ImageCompressor.js";
+import { useNotification } from '../../../../context/NotificationContext';
 
-export default function EditArticleModal({ article: articleToEdit, onSave, onCancel, onUpdateSucess }) {
-
+export default function EditArticleModal({ article: articleToEdit, onSave, onCancel, onUpdateSuccess, categories = [] }) {
     const modalContentRef = useRef(null);
+    const { showNotification } = useNotification();
 
     const { article, loading: loadingArticle, error: errorArticle } = usePublicArticle(articleToEdit?.id, articleToEdit?.slug);
-    const { categories, loading: loadingCategories, error: errorCategories } = useCategories();
 
-    // Ref para almacenar el estado inicial del artículo y comparar cambios
     const initialRef = useRef(null);
 
     // Estados del formulario
@@ -35,7 +31,7 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
         if (article) {
             const initialData = {
                 article_title: article.article_title || "",
-                article_category_id: article.article_category_id || "",
+                article_category_id: article.category?.category_code || article.article_category_id || "",
                 article_image_url: article.article_image_url || "",
                 article_excerpt: article.article_excerpt || "",
                 //article_is_published: article.article_is_published || false,
@@ -79,7 +75,6 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError("");
-        setIsSubmitting(true);
 
         const updates = {};
 
@@ -115,28 +110,32 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
 
         // Si no hay cambios ni en texto ni en imagen, no se hace nada.
         if (Object.keys(updates).length === 0 && !(image instanceof File)) {
+            showNotification("No se detectaron cambios.", "info");
             onCancel();
-            setIsSubmitting(false);
             return;
         }
+
+        setIsSubmitting(true);
 
         // 3. Llama a la función onSave (que usa editArticle del hook)
         const result = await onSave(formData);
 
         if (result && result.success) {
-            // Llama a la función del padre para que refresque su lista
-            if (onUpdateSucess) {
-                onUpdateSucess();
+            showNotification('Artículo actualizado con éxito.', 'success');
+            if (onUpdateSuccess) {
+                onUpdateSuccess();
             } onCancel(); // Cierra el modal
         } else {
-            setFormError(result?.message || "Ocurrió un error al actualizar.");
+            const errorMessage = result?.message || "Ocurrió un error al actualizar.";
+            setFormError(errorMessage);
+            showNotification(errorMessage, 'error');
         }
 
         setIsSubmitting(false);
     };
 
-    const isLoading = loadingArticle || loadingCategories;
-    const componentError = errorArticle || errorCategories;
+    const isLoading = loadingArticle;
+    const componentError = errorArticle;
 
     if (isLoading) {
         return <div className="modal-edit active"><div className="modal-edit-content">Cargando...</div></div>;

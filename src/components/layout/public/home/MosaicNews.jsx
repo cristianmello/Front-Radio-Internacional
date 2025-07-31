@@ -65,7 +65,7 @@ const MosaicNews = ({
     const handleCardClick = (item) => {
         if (canEdit) return;
 
-        navigate(`/articulos/${item.article_code}/${item.article_slug}`, {
+        navigate(`/articulos/${item.article_code}/${item.slug}`, {
             state: {
                 article: {
                     ...item,

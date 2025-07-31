@@ -1,12 +1,10 @@
 // src/components/layout/public/Footer.jsx
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import useCategories from "../../../hooks/UseCategories";
 
-export default function Footer() {
+export default function Footer({ categories = [], loading, error }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { categories, loading, error } = useCategories();
 
   const handleCategoryClick = (e, slug) => {
     e.preventDefault();

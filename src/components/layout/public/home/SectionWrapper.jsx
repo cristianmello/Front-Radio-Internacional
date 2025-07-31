@@ -43,7 +43,7 @@ const componentMap = {
     'ad-verticalsm': AdBanner,
 };
 
-export default function SectionWrapper({ section, onSectionDeleted, categoryFilter }) {
+export default function SectionWrapper({ section, onSectionDeleted, categoryFilter, categories }) {
     const editMode = useEditMode();
     const { auth, roles } = useAuth();
 
@@ -55,7 +55,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
     const items = section.items || [];
 
     const { setItems, reorderItems, addItem, removeItem, deleteSection } =
-        useSectionActions(section.section_slug, onSectionDeleted);
+        useSectionActions(section.section_slug, section.items, onSectionDeleted);
 
     const [adding, setAdding] = useState(false);
 
@@ -79,9 +79,12 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
         }
     };
 
-    const handleSelectContent = (code) => {
-        addItem(code);
-        setAdding(false);
+    const handleSelectContent = async (code) => {
+        const result = await addItem(code);
+        if (result.success) {
+            setAdding(false);
+        }
+        return result;
     };
 
     const handleDeleteSection = async () => {
@@ -117,7 +120,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
                 setEditingAdvertisement(item);
             }
             else if (item.article_code) {
-                setEditingArticle({ id: item.article_code, slug: item.article_slug });
+                setEditingArticle({ id: item.article_code, slug: item.slug });
             }
         } : null,
         onDeleteSection: canEdit && !section.is_protected ? handleDeleteSection : null,
@@ -144,6 +147,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
                 sectionTitle={section.section_title?.trim() ? section.section_title : null}
                 data={items}
                 categoryFilter={categoryFilter}
+                categories={categories}
             />
 
             {/* Modal para editar Artículos */}
@@ -153,6 +157,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
                     onSave={(formData) => editArticle(editingArticle.id, formData)}
                     onCancel={() => setEditingArticle(null)}
                     onUpdateSuccess={onSectionDeleted}
+                    categories={categories}
                 />
             )}
 

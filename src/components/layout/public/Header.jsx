@@ -16,14 +16,14 @@ import DeleteAdvertisementModal from "./home/DeleteAdvertisementModal";
 import SelectAdvertisementToEditModal from "./home/SelectAdvertisementToEditModal";
 import EditAdvertisementModal from "./home/EditAdvertisementModal";
 import EditContentArticleModal from "./home/EditContentArticleModal";
-import useCategories from "../../../hooks/UseCategories";
 import logoRealidadNacional from '../../../assets/img/logo-realidad-nacional.png';
+import useCategoryActions from "../../../hooks/useCategoryActions";
 
-const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError }) => {
+const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, onCategoriesUpdate }) => {
   const { auth, logout, roles } = useAuth();
 
   const editMode = useEditMode();
-  const { addCategory, deleteCategory } = useCategories();
+  const { addCategory, deleteCategory, isActionLoading } = useCategoryActions(onCategoriesUpdate);
 
   const { addArticle, deleteArticle } = useArticleActions();
   const { addAudio } = useAudio();
@@ -125,66 +125,56 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError }) 
   const cancelSelectDraft = () => setShowSelectDraftModal(false);
 
   const handleConfirmAdd = async data => {
-    const { success, message } = await addCategory(data);
-    if (!success) alert('Error al crear categoría: ' + message);
-    else cancelAdd();
+    const result = await addCategory(data);
+    if (result.success) {
+      cancelAdd();
+    }
+    return result;
   };
 
   const handleConfirmDelete = async slug => {
-    const { success, message } = await deleteCategory(slug);
-    if (!success) alert('Error al eliminar categoría: ' + message);
-    else cancelDelete();
+    const result = await deleteCategory(slug);
+    if (result.success) {
+      cancelDelete();
+    }
+    return result;
   };
 
   const handleConfirmAddArticle = async formData => {
-    // formData es un FormData con todos los campos del artículo
     const result = await addArticle(formData);
-    if (!result.success) {
-      alert('Error al crear artículo: ' + result.message);
-    } else {
+    if (result.success) {
       cancelAddArticle();
     }
     return result;
   };
 
   const handleConfirmDeleteArticle = async articleCode => {
-    const { success, message } = await deleteArticle(articleCode);
-    if (!success) alert('Error al eliminar artículo: ' + message);
-    else cancelRemoveArticle();
+    const result = await deleteArticle(articleCode);
+    if (result.success) {
+      cancelRemoveArticle();
+    }
+    return result;
   };
 
   const handleConfirmAddAudio = async formData => {
     const result = await addAudio(formData);
-    if (!result.success) {
-      alert('Error al crear nota de audio: ' + result.message);
-    } else {
+    if (result.success) {
       cancelAddAudio();
     }
     return result;
   };
 
   const handleConfirmAddAd = async formData => {
-    // El hook se encarga de la lógica de la API
     const result = await addAdvertisement(formData);
-    if (!result.success) {
-      alert('Error al crear el anuncio: ' + result.message);
-    } else {
-      alert('Anuncio creado con éxito.');
-      cancelAddAd(); // Cierra el modal si todo fue bien
+    if (result.success) {
+      cancelAddAd();
     }
     return result;
   };
 
   const handleConfirmDeleteAd = async (adId) => {
-    // La lógica de confirmación ya la tienes en el modal, aquí solo llamamos al hook
     const result = await deleteAdvertisement(adId);
-    if (result.success) {
-      alert('Anuncio eliminado con éxito.');
-      // Opcional: si quieres que la lista del modal se refresque,
-      // tendrías que añadir una función de 'refresh' al hook y llamarla aquí.
-    } else {
-      alert('Error al eliminar el anuncio: ' + result.message);
-    }
+    return result;
   };
 
   const handleAdSelectedForEdit = (ad) => {
@@ -365,9 +355,9 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError }) 
       </nav>
       {showAddModal && <AddCategoryModal onConfirm={handleConfirmAdd} onCancel={cancelAdd} />}
       {showDeleteModal && <DeleteCategoryModal categories={categories} onConfirm={handleConfirmDelete} onCancel={cancelDelete} />}
-      {ShowAddArticleModal && <CreateArticleModal onSave={handleConfirmAddArticle} onCancel={cancelAddArticle} />}
+      {ShowAddArticleModal && <CreateArticleModal onSave={handleConfirmAddArticle} onCancel={cancelAddArticle} categories={categories} />}
       {ShowDeleteArticleModal && <DeleteDraftModal onConfirm={handleConfirmDeleteArticle} onCancel={cancelRemoveArticle} />}
-      {showAddAudioModal && <CreateAudioModal onSave={handleConfirmAddAudio} onCancel={cancelAddAudio} />}
+      {showAddAudioModal && <CreateAudioModal onSave={handleConfirmAddAudio} onCancel={cancelAddAudio} categories={categories} />}
       {showAddAdModal && <CreateAdvertisementModal onSave={handleConfirmAddAd} onCancel={cancelAddAd} />}
       {showDeleteAdModal && <DeleteAdvertisementModal onConfirm={handleConfirmDeleteAd} onCancel={cancelDeleteAd} />}
       {showSelectAdModal && (<SelectAdvertisementToEditModal onSelect={handleAdSelectedForEdit} onCancel={cancelSelectAdToEdit} />)}

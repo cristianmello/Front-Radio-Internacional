@@ -2,11 +2,8 @@
 // src/components/layout/public/home/CreateArticleModal.jsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
-import useAuth from "../../../../hooks/UseAuth";
-import Url from "../../../../helpers/Url";
-import useCategories from "../../../../hooks/UseCategories";
 import { compressImage } from "../../../../helpers/ImageCompressor.js";
-
+import { useNotification } from "../../../../context/NotificationContext";
 const defaultContentHTML = `
             <p>En un giro inesperado que ha sorprendido a la comunidad internacional, los líderes de dos naciones históricamente enfrentadas han firmado hoy un acuerdo de paz que pone fin a décadas de conflicto. El tratado, negociado en secreto durante los últimos seis meses, establece un marco para la cooperación económica, cultural y política entre ambos países.</p>
             
@@ -31,10 +28,9 @@ const defaultContentHTML = `
             <p>Este tratado de paz marca un punto de inflexión para una región que ha sufrido conflictos intermitentes durante más de cincuenta años, con un costo humano estimado en más de 100,000 vidas y millones de desplazados. Los ciudadanos de ambas naciones han expresado esperanza de que este acuerdo traiga finalmente una paz duradera y prosperidad compartida.</p>
 `;
 
-export default function CreateArticleModal({ onSave, onCancel }) {
+export default function CreateArticleModal({ onSave, onCancel, categories = [] }) {
     const modalContentRef = useRef(null);
-    const { categories, loading: loadingCategories, error: errorCategories } = useCategories();
-    const { auth } = useAuth();
+    const { showNotification } = useNotification();
 
     // Estados del formulario
     const [title, setTitle] = useState("");
@@ -66,21 +62,6 @@ export default function CreateArticleModal({ onSave, onCancel }) {
                 .replace(/\s+/g, "-");
         setSlug(generateSlug(title));
     }, [title]);
-
-    if (loadingCategories) {
-        return (
-            <div className="modal-edit active">
-                <div className="modal-edit-content">Cargando categorías...</div>
-            </div>
-        );
-    }
-    if (errorCategories) {
-        return (
-            <div className="modal-edit active">
-                <div className="modal-edit-content">Error cargando categorías.</div>
-            </div>
-        );
-    }
 
     const handleArticleImageChange = async (e) => {
         const file = e.target.files[0];
@@ -131,11 +112,13 @@ export default function CreateArticleModal({ onSave, onCancel }) {
 
         const result = (await onSave(formData)) || {};
 
-        if (!result.success) {
-            console.error("Error al crear artículo:", result);
-            setFormError(result.message || "Ocurrió un error. Revisa la consola.");
+        if (result?.success) {
+            showNotification('Borrador de artículo creado con éxito.', 'success');
+            onCancel(); // El padre se encarga de cerrar el modal
         } else {
-            onCancel();
+            const errorMessage = result?.message || "Ocurrió un error inesperado.";
+            setFormError(errorMessage);
+            showNotification(errorMessage, 'error');
         }
         setIsSubmitting(false);
     };
@@ -206,4 +189,5 @@ export default function CreateArticleModal({ onSave, onCancel }) {
 CreateArticleModal.propTypes = {
     onSave: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
+    categories: PropTypes.array.isRequired,
 };

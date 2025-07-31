@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import useAuth from "../../../../hooks/UseAuth";
 import Url from "../../../../helpers/Url";
+import { useNotification } from "../../../../context/NotificationContext";
 
 // Hook especializado para gestionar borradores de audio
 function useDraftAudios() {
@@ -44,14 +45,13 @@ export default function DeleteAudioModal({ onCancel }) {
     // Usamos el hook para obtener y refrescar la lista de borradores
     const { audios, loading, error, refresh } = useDraftAudios();
     const { authFetch } = useAuth();
+    const { showNotification } = useNotification();
 
     const [deletingCode, setDeletingCode] = useState(null);
-    const [localError, setLocalError] = useState(null);
     const [confirmingDelete, setConfirmingDelete] = useState(null);
 
     const handleDelete = async (code) => {
         setDeletingCode(code);
-        setLocalError(null);
         try {
             const res = await authFetch(`${Url.url}/api/audios/${code}`, {
                 method: "DELETE",
@@ -59,11 +59,11 @@ export default function DeleteAudioModal({ onCancel }) {
             const body = await res.json();
             if (!res.ok) throw new Error(body.message || "Error eliminando el borrador");
 
-            // Si el borrado es exitoso, refrescamos la lista para que desaparezca
+            showNotification('Borrador de audio eliminado con éxito.', 'success');
             refresh();
 
         } catch (err) {
-            setLocalError(err.message);
+            showNotification(err.message, 'error');
         } finally {
             setDeletingCode(null);
             setConfirmingDelete(null);
@@ -81,7 +81,6 @@ export default function DeleteAudioModal({ onCancel }) {
 
                 {loading && <p>Cargando borradores…</p>}
                 {error && <p className="error">Error: {error}</p>}
-                {localError && <p className="error">Error al eliminar: {localError}</p>}
 
                 {!loading && !error && (
                     <>

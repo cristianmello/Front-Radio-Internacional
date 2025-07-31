@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import useAdvertisements from '../../../../hooks/useAdvertisements';
 import { format } from 'date-fns';
+import { useNotification } from '../../../../context/NotificationContext';
 
-/**
- * Modal para buscar y seleccionar un anuncio existente para añadir a una sección.
- * @param {function} onSelect - Se llama con el ID del anuncio seleccionado.
- * @param {function} onCancel - Se llama para cerrar el modal.
- */
 export default function AddAdvertisementModal({ onSelect, onCancel }) {
+    const { showNotification } = useNotification()
+
     const modalContentRef = useRef(null);
 
     const [filters, setFilters] = useState({ page: 1, limit: 5, sortBy: 'updated_at', order: 'DESC' });
@@ -49,12 +47,14 @@ export default function AddAdvertisementModal({ onSelect, onCancel }) {
         } catch (err) {
             result = { success: false, message: err.message || 'Error desconocido' };
         }
+        if (result?.success || result?.status === 'success') {
+            showNotification('¡Publicidad añadida a la sección correctamente!', 'success');
 
-        if (result && result.success) {
             setItemStates(prev => ({
                 ...prev,
                 [adId]: { status: 'idle' }
             }));
+            onCancel();
         } else {
             setItemStates(prev => ({
                 ...prev,

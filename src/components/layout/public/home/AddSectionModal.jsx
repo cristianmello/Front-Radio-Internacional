@@ -1,6 +1,6 @@
 // src/components/layout/public/home/AddSectionModal.jsx
 import React, { useState } from "react";
-
+import { useNotification } from '../../../../context/NotificationContext';
 const SECTION_TYPES = [
     { value: "breaking", label: "Últimas Noticias" },
     { value: "trending", label: "Tendencias" },
@@ -29,20 +29,41 @@ export default function AddSectionModal({ onConfirm, onCancel }) {
     const [title, setTitle] = useState("");
     const [type, setType] = useState(SECTION_TYPES[0].value);
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const { showNotification } = useNotification();
 
-    const handleSubmit = e => {
+    const handleSubmit = async e => {
         e.preventDefault();
-        // Validar título solo si se escribió algo
         if (title.trim() !== "" && title.trim().length < 3) {
             setError("El título debe tener al menos 3 caracteres");
             return;
         }
-        // Construir payload: incluir type siempre, título solo si no vacío
-        const payload = { type };
-        if (title.trim() !== "") {
-            payload.title = title.trim();
+
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const payload = { type };
+            if (title.trim() !== "") {
+                payload.title = title.trim();
+            }
+            const result = await onConfirm(payload); // Llama a la función del padre
+
+            if (result.success) {
+                showNotification('¡Sección creada exitosamente!', 'success');
+                // El padre se encarga de cerrar el modal, así que no llamamos a onCancel() aquí.
+            } else {
+                const errorMessage = result.message || 'No se pudo crear la sección.';
+                setError(errorMessage);
+                showNotification(errorMessage, 'error');
+            }
+        } catch (err) {
+            const errorMessage = err.message || 'Error inesperado.';
+            setError(errorMessage);
+            showNotification(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
         }
-        onConfirm(payload);
     };
 
     return (
@@ -61,6 +82,7 @@ export default function AddSectionModal({ onConfirm, onCancel }) {
                             placeholder="Dejar vacío para título predeterminado"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
+                            disabled={isLoading}
                         />
                     </div>
                     <div className="edit-field">
@@ -69,6 +91,7 @@ export default function AddSectionModal({ onConfirm, onCancel }) {
                             id="sectionType"
                             value={type}
                             onChange={e => setType(e.target.value)}
+                            disabled={isLoading}
                         >
                             {SECTION_TYPES.map(({ value, label }) => (
                                 <option key={value} value={value}>
@@ -83,11 +106,12 @@ export default function AddSectionModal({ onConfirm, onCancel }) {
                             className="btn-cancel"
                             id="cancelSectionBtn"
                             onClick={onCancel}
+                            disabled={isLoading}
                         >
                             Cancelar
                         </button>
-                        <button type="submit" className="btn-save" id="createSectionBtn">
-                            Crear
+                        <button type="submit" className="btn-save" id="createSectionBtn" disabled={isLoading}>
+                            {isLoading ? <i className="fas fa-spinner fa-spin"></i> : 'Crear'}
                         </button>
                     </div>
                 </form>

@@ -6,7 +6,7 @@ import { useSidebar } from "../../../../context/SidebarContext";
 const HomePage = () => {
     const sidebar = useSidebar();
     const [category, setCategory] = useState("inicio");
-    const { sections, loading, error, refresh } = useOutletContext();
+    const { sections, categories, loading, error, refresh } = useOutletContext();
 
     const destacadosRef = useRef(null);
 
@@ -59,7 +59,7 @@ const HomePage = () => {
         <div className="homepage-content">
             {/* Renderiza las secciones de ancho completo que van ANTES de la principal */}
             {category === 'inicio' && sectionsBeforeMain.map(sec => (
-                <LazySection key={sec.section_slug} section={sec} categoryFilter={category} onSectionDeleted={refresh} />
+                <LazySection key={sec.section_slug} section={sec} categoryFilter={category} onSectionDeleted={refresh} categories={categories} />
             ))}
 
             {/* Si existe la sección principal, crea el layout de dos columnas */}
@@ -71,6 +71,7 @@ const HomePage = () => {
                             section={mainContentSection}
                             categoryFilter={category}
                             onSectionDeleted={refresh}
+                            categories={categories}
                         />
                         {sidebar}
                     </div>
@@ -81,12 +82,13 @@ const HomePage = () => {
                         section={mainContentSection}
                         categoryFilter={category}
                         onSectionDeleted={refresh}
+                        categories={categories}
                     />
                 )
             )}
 
             {category === 'inicio' && sectionsAfterMain.map(sec => (
-                <LazySection key={sec.section_slug} section={sec} categoryFilter={category} onSectionDeleted={refresh} />
+                <LazySection key={sec.section_slug} section={sec} categoryFilter={category} onSectionDeleted={refresh} categories={categories} />
             ))}
         </div>
     );

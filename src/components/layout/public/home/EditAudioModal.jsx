@@ -2,20 +2,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import useAudio from "../../../../hooks/UseAudio";
-import useCategories from "../../../../hooks/UseCategories";
+import { useNotification } from "../../../../context/NotificationContext";
 
-export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSuccess }) {
+export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSuccess, categories = [] }) {
     const modalContentRef = useRef(null);
+    const { showNotification } = useNotification();
 
     const { audio, loading: loadingAudio, error: errorAudio } = useAudio(audioId);
-    const { categories, loading: loadingCategories, error: errorCategories } = useCategories();
 
     const initialRef = useRef(null);
 
     // Estados del formulario adaptados para Audio
     const [title, setTitle] = useState("");
     const [categoryId, setCategoryId] = useState("");
-    const [newAudioFile, setNewAudioFile] = useState(null); // Para el nuevo archivo de audio
+    const [newAudioFile, setNewAudioFile] = useState(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formError, setFormError] = useState("");
@@ -44,7 +44,6 @@ export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSucc
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError("");
-        setIsSubmitting(true);
 
         const updates = {};
 
@@ -65,27 +64,32 @@ export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSucc
         }
 
         if (Object.keys(updates).length === 0 && !newAudioFile) {
+            showNotification("No se detectaron cambios.", "info");
             onCancel();
-            setIsSubmitting(false);
             return;
         }
 
+        setIsSubmitting(true);
         const result = await onSave(formData);
 
         if (result && result.success) {
+            showNotification('Nota de audio actualizada con éxito.', 'success');
+
             if (onUpdateSuccess) {
                 onUpdateSuccess();
             }
             onCancel();
         } else {
-            setFormError(result?.message || "Ocurrió un error al actualizar la nota de audio.");
+            const errorMessage = result?.message || "Ocurrió un error al actualizar.";
+            setFormError(errorMessage);
+            showNotification(errorMessage, 'error');
         }
 
         setIsSubmitting(false);
     };
 
-    const isLoading = loadingAudio || loadingCategories;
-    const componentError = errorAudio || errorCategories;
+    const isLoading = loadingAudio;
+    const componentError = errorAudio;
 
     if (isLoading) {
         return <div className="modal-edit active"><div className="modal-edit-content">Cargando...</div></div>;
@@ -150,4 +154,5 @@ EditAudioModal.propTypes = {
     onSave: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
     onUpdateSuccess: PropTypes.func,
+    categories: PropTypes.array.isRequired,
 };

@@ -1,5 +1,5 @@
 // src/components/layout/public/home/NewsMain.jsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -33,9 +33,18 @@ const SortableArticleItem = ({ item, children }) => {
 
 const ITEMS_PER_PAGE = 8;
 
-const NewsMain = ({ sectionTitle, data = [] }) => {
+const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
     const { canEdit, onAddItem, onRemove, onEdit, setItems, reorderItems } = useSectionEdit();
     const [currentPage, setCurrentPage] = useState(1);
+
+    const filteredItems = categoryFilter && categoryFilter !== 'inicio'
+        ? data.filter(item => item.category_slug === categoryFilter)
+        : data;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [categoryFilter]);
+
 
     // Creamos una referencia para el contenedor principal de la sección
     const sectionRef = useRef(null);
@@ -64,10 +73,10 @@ const NewsMain = ({ sectionTitle, data = [] }) => {
         }
     };
 
-    const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    const pageItems = data.slice(startIndex, endIndex);
+    const pageItems = filteredItems.slice(startIndex, endIndex);
 
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
@@ -82,7 +91,7 @@ const NewsMain = ({ sectionTitle, data = [] }) => {
     const handleItemClick = (item) => {
         if (canEdit) return;
 
-        navigate(`/articulos/${item.article_code}/${item.article_slug}`, {
+        navigate(`/articulos/${item.article_code}/${item.slug}`, {
             state: {
                 article: {
                     ...item,
@@ -108,7 +117,7 @@ const NewsMain = ({ sectionTitle, data = [] }) => {
                 {/* OJO: El SortableContext debe recibir el array COMPLETO de datos, no solo los de la página actual */}
                 <SortableContext items={data.map(item => item.article_code)} strategy={rectSortingStrategy}>
                     <div className="news-list">
-                        {pageItems.length > 0 ? (
+                        {filteredItems.length > 0 ? (
                             pageItems.map(item => {
                                 const formattedDate = item.date
                                     ? format(new Date(item.date), "d 'de' MMMM, yyyy", { locale: es })
@@ -141,7 +150,7 @@ const NewsMain = ({ sectionTitle, data = [] }) => {
                                                 </picture>
                                             </div>
                                             <div className="news-item-content">
-                                                {item.category && <span className="category">{item.category}</span>}
+                                                {item.category_name && <span className="category">{item.category_name}</span>}
                                                 <h3>
                                                     {item.title}
                                                 </h3>
@@ -194,37 +203,36 @@ const NewsMain = ({ sectionTitle, data = [] }) => {
                     </div>
                 </SortableContext>
             </DndContext>
-            {
-                totalPages > 1 && (
-                    <div className="pagination">
-                        <button
-                            className="pagination-btn"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            ←
-                        </button>
+            {totalPages > 1 && (
+                <div className="pagination">
+                    <button
+                        className="pagination-btn"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        ←
+                    </button>
 
-                        {/* Lógica de renderizado de botones de página */}
-                        {[...Array(totalPages).keys()].map(pageNumber => (
-                            <button
-                                key={pageNumber + 1}
-                                className={`pagination-btn ${currentPage === pageNumber + 1 ? 'active' : ''}`}
-                                onClick={() => handlePageChange(pageNumber + 1)}
-                            >
-                                {pageNumber + 1}
-                            </button>
-                        ))}
-
+                    {/* Lógica de renderizado de botones de página */}
+                    {[...Array(totalPages).keys()].map(pageNumber => (
                         <button
-                            className="pagination-btn"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            key={pageNumber + 1}
+                            className={`pagination-btn ${currentPage === pageNumber + 1 ? 'active' : ''}`}
+                            onClick={() => handlePageChange(pageNumber + 1)}
                         >
-                            →
+                            {pageNumber + 1}
                         </button>
-                    </div>
-                )}
+                    ))}
+
+                    <button
+                        className="pagination-btn"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        →
+                    </button>
+                </div>
+            )}
         </section >
     );
 };

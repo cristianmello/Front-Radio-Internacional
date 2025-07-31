@@ -59,7 +59,7 @@ const FeaturedNews = ({ sectionTitle = "Destacados", data = [] }) => {
     const handleItemClick = (item) => {
         if (canEdit) return;
 
-        navigate(`/articulos/${item.article_code}/${item.article_slug}`, {
+        navigate(`/articulos/${item.article_code}/${item.slug}`, {
             state: {
                 article: {
                     ...item,
@@ -93,9 +93,9 @@ const FeaturedNews = ({ sectionTitle = "Destacados", data = [] }) => {
                             {data.map((item) => {
                                 const {
                                     article_code,
-                                    article_slug,
+                                    slug,
                                     image,
-                                    category,
+                                    category_name,
                                     title,
                                     excerpt,
                                     author,
@@ -133,7 +133,7 @@ const FeaturedNews = ({ sectionTitle = "Destacados", data = [] }) => {
                                             </div>
 
                                             <div className="news-item-content">
-                                                <span className="category">{category}</span>
+                                                <span className="category">{category_name}</span>
                                                 <h3>{title}</h3>
                                                 <p className="excerpt">{excerpt}</p>
                                                 <div className="article-meta">
@@ -141,7 +141,7 @@ const FeaturedNews = ({ sectionTitle = "Destacados", data = [] }) => {
                                                     <span className="date">{date}</span>
                                                 </div>
                                                 <Link
-                                                    to={`/articulos/${article_code}/${article_slug}`}
+                                                    to={`/articulos/${article_code}/${slug}`}
                                                     className="read-more"
                                                     state={{
                                                         article: {
@@ -197,7 +197,7 @@ FeaturedNews.propTypes = {
         PropTypes.shape({
             article_code: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
             image: PropTypes.string,
-            category: PropTypes.string,
+            category_name: PropTypes.string,
             title: PropTypes.string,
             excerpt: PropTypes.string,
             author: PropTypes.string,

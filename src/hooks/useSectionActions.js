@@ -3,27 +3,18 @@ import { useState, useEffect, useCallback } from 'react';
 import Url from '../helpers/Url';
 import useAuth from './UseAuth';
 
-/**
- * Hook para gestionar los ítems de una sección específica.
- * @param {string} slug - El slug de la sección a gestionar.
- * @param {function} onDeleted - Callback opcional tras eliminar la sección.
- */
-export function useSectionActions(slug, onDeleted) {
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true); // 1. Añadido estado de carga
-    const [error, setError] = useState(null);   // 2. Añadido estado de error
+export function useSectionActions(slug, initialItems, onDeleted) {
+    const [items, setItems] = useState(initialItems || []); 
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const { authFetch } = useAuth();
 
     // 3. Lógica de fetch envuelta en useCallback para estabilidad y reutilización
     const fetchItems = useCallback(async () => {
-        if (!slug) {
-            setLoading(false);
-            return;
-        }
+        if (!slug) return;
         setLoading(true);
         setError(null);
         try {
-            // Se usa 'no-cache' para que siempre traiga los datos más frescos del servidor
             const res = await authFetch(`${Url.url}/api/sections/${slug}`, { cache: 'no-cache' });
             if (!res.ok) {
                 const errBody = await res.json().catch(() => ({}));
@@ -35,14 +26,9 @@ export function useSectionActions(slug, onDeleted) {
             console.error(`[useSectionActions:${slug}] load:`, err);
             setError(err.message);
         } finally {
-            setLoading(false);
+            setLoading(false); // <-- Lo desactivamos al terminar
         }
     }, [slug, authFetch]);
-
-    // 4. El useEffect ahora es más limpio y solo llama a la función de fetch
-    useEffect(() => {
-        fetchItems();
-    }, [fetchItems]);
 
     /* EL QUE FUNCIONA CORRECTAMENTE  
       const addItem = async (code) => {
@@ -65,6 +51,11 @@ export function useSectionActions(slug, onDeleted) {
             }
         };
         */
+
+    useEffect(() => {
+        setItems(initialItems || []);
+    }, [initialItems]);
+
     const addItem = async (code) => {
         try {
             // La única línea que cambia es la URL, que ahora no incluye "/items"

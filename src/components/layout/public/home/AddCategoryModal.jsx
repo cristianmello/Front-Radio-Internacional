@@ -1,10 +1,13 @@
 // src/components/layout/public/AddCategoryModal.jsx
 import React, { useState } from 'react';
+import { useNotification } from '../../../../context/NotificationContext';
 
 export default function AddCategoryModal({ onConfirm, onCancel }) {
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { showNotification } = useNotification();
 
     // Función para generar un slug a partir de un texto
     const generateSlug = (text) => {
@@ -25,20 +28,38 @@ export default function AddCategoryModal({ onConfirm, onCancel }) {
         setSlug(generateSlug(newName)); // Genera el slug automáticamente
     };
 
-    const handleSubmit = e => {
+    const handleSubmit = async e => {
         e.preventDefault();
         if (!name.trim()) {
             setError('El nombre de la categoría es obligatorio');
             return;
         }
-        // Ya no es necesario validar la longitud mínima del slug si no es editable,
-        // porque siempre se generará a partir del nombre y si el nombre es corto, el slug también lo será.
-        // Si aún quisieras una validación de longitud para el slug, se podría hacer aquí.
 
-        onConfirm({
-            category_name: name.trim(),
-            category_slug: slug.trim() || undefined
-        });
+        setIsLoading(true);
+        setError(''); // Limpiar errores previos
+
+        try {
+            const result = await onConfirm({
+                category_name: name.trim(),
+                category_slug: slug.trim()
+            });
+
+            if (result.success) {
+                showNotification('¡Categoría creada exitosamente!', 'success');
+                // onCancel() se llama desde el componente padre (Header)
+            } else {
+                // Muestra el error de la API en el formulario y en una notificación
+                const errorMessage = result.message || 'No se pudo crear la categoría.';
+                setError(errorMessage);
+                showNotification(errorMessage, 'error');
+            }
+        } catch (err) {
+            const errorMessage = err.message || 'Error inesperado.';
+            setError(errorMessage);
+            showNotification(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -58,6 +79,7 @@ export default function AddCategoryModal({ onConfirm, onCancel }) {
                             placeholder="Escribe el nombre"
                             value={name}
                             onChange={handleChangeName}
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -70,9 +92,9 @@ export default function AddCategoryModal({ onConfirm, onCancel }) {
                             id="categorySlug"
                             placeholder="Se generará automáticamente"
                             value={slug}
-                            readOnly // Hace el campo de solo lectura
-                            disabled // Deshabilita el campo para interacción
-                            className="disabled-input" // Opcional: para estilos CSS de deshabilitado
+                            readOnly
+                            disabled
+                            className="disabled-input"
                         />
                     </div>
 
@@ -81,14 +103,20 @@ export default function AddCategoryModal({ onConfirm, onCancel }) {
                             type="button"
                             className="btn-cancel"
                             onClick={onCancel}
+                            disabled={isLoading}
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             className="btn-save"
+                            disabled={isLoading}
                         >
-                            Crear
+                            {isLoading ? (
+                                <i className="fas fa-spinner fa-spin"></i>
+                            ) : (
+                                'Crear'
+                            )}
                         </button>
                     </div>
                 </form>

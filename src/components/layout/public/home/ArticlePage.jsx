@@ -11,7 +11,7 @@ import { Editor } from '@tinymce/tinymce-react';
 import Url from '../../../../helpers/Url';
 import RenderArticleContent from './RenderArticleContent';
 import useAdvertisements from '../../../../hooks/useAdvertisements';
-import useCategories from '../../../../hooks/UseCategories';
+import { useNotification } from '../../../../context/NotificationContext';
 import { SidebarContext } from '../../../../context/SidebarContext';
 
 const iconMap = {
@@ -23,14 +23,14 @@ const iconMap = {
 const ArticlePage = () => {
 
     const sidebar = useContext(SidebarContext);
-     const { code, slug } = useParams();
+    const { code, slug } = useParams();
     const location = useLocation();
     const initialData = location.state?.article;
+    const { showNotification } = useNotification();
 
     const { article, loading, error, refresh } = usePublicArticle(code, slug);
     const { editArticle } = useArticleActions();
     const { relatedArticles, loadingRelated, errorRelated } = useRelatedArticles(code);
-    const { categories, loading: loadingCats, error: errorCats } = useCategories();
 
     const { auth, roles, authFetch } = useAuth();
     const editMode = useEditMode(); // Hook para saber si el modo editor global está activo
@@ -45,23 +45,9 @@ const ArticlePage = () => {
 
     const [showInsertAdModal, setShowInsertAdModal] = useState(false);
 
-    const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-    const notificationTimer = useRef(null);
     const editorRef = useRef(null);
 
-
-    // --- PASO 4: AÑADIR LA FUNCIÓN showNotification ---
-    const showNotification = (message, type = 'info', duration = 3000) => {
-        if (notificationTimer.current) {
-            clearTimeout(notificationTimer.current);
-        }
-        setNotification({ show: true, message, type });
-        notificationTimer.current = setTimeout(() => {
-            setNotification({ show: false, message: '', type });
-        }, duration);
-    };
-
-    // 3. Cuando el artículo se carga, se inicializa el estado del contenido editable
+    // 3. Cuando el artículo se carga, se inicializa el estado del contenido ditable
     useEffect(() => {
         if (article) {
             setEditableContent(article.article_content);
@@ -190,13 +176,7 @@ const ArticlePage = () => {
         );
     }
 
-    // Busca el nombre de la categoría
-    const categoryObj = categories.find(
-        (c) => c.category_code === displayedArticle.article_category_id
-    );
-    const categoryName = categoryObj
-        ? categoryObj.category_name
-        : '—';
+    const categoryName = displayedArticle?.category?.category_name || displayedArticle?.category_name || '—';
 
     // 3. Datos Estructurados (JSON-LD) para Google
     const structuredData = {
@@ -430,11 +410,6 @@ const ArticlePage = () => {
                         </div>
                     </div>
                 )}
-                {/* NOTIFICACIÓN TOAST */}
-                <div className={`notification ${notification.show ? 'show' : ''} notification-${notification.type}`}>
-                    {notification.type && <i className={iconMap[notification.type]}></i>}
-                    <span>{notification.message}</span>
-                </div>
             </main >
         </>
     );

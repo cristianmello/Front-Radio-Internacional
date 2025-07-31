@@ -10,7 +10,6 @@ import useSections from '../../../hooks/useSections'
 import { EditModeContext } from '../../../context/EditModeContext';
 import GlobalAudioPlayer from './home/GlobalAudioPlayer';
 import { SidebarContext } from '../../../context/SidebarContext';
-import SidebarWidget from './home/SidebarWidget';
 import NewsSidebar from './home/NewsSidebar';
 
 export default function PublicLayout() {
@@ -46,6 +45,7 @@ export default function PublicLayout() {
                 data={sidebarWidgets}
                 onSectionDeleted={refreshSections}
                 canEditGlobal={canManageSections && editMode}
+                categories={categories}
             />
         </div>
     ) : null;
@@ -90,12 +90,17 @@ export default function PublicLayout() {
     };
 
     // CREAR NUEVA SECCIÓN
-    const handleCreateSection = async ({ title, type }) => {
-        try {
-            await createSection({ title, type });
+    const handleCreateSection = async (payload) => {
+        // 1. Llama a la función del hook y guarda el resultado
+        const result = await createSection(payload);
+
+        // 2. Si tiene éxito, el layout se encarga de cerrar el modal
+        if (result.success) {
             setShowSectionModal(false);
-        } catch {
         }
+
+        // 3. Retorna siempre el resultado para que el modal lo reciba
+        return result;
     };
 
     return (
@@ -126,6 +131,7 @@ export default function PublicLayout() {
                     <div className="page-wrapper">
                         <Outlet context={{
                             sections,
+                            categories,
                             loading: loading,
                             error: error,
                             refresh: refreshSections
@@ -133,7 +139,7 @@ export default function PublicLayout() {
                     </div>
                 </main>
 
-                <Footer />
+                <Footer categories={categories} loading={loading} error={error} />
 
                 <GlobalAudioPlayer />
 

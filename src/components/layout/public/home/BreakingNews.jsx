@@ -82,7 +82,7 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
                             {topStoriesData.map(item => (
                                 <SortableItemWrapper key={item.article_code} item={item}>
                                     {/* Aquí recreamos la tarjeta de noticia con todos sus estilos y datos */}
-                                    <div className={`news-card small-card ${!canEdit ? 'clickable' : ''}`} onClick={() => !canEdit && navigate(`/articulos/${item.article_code}/${item.article_slug}`)}>
+                                    <div className={`news-card small-card ${!canEdit ? 'clickable' : ''}`} onClick={() => !canEdit && navigate(`/articulos/${item.article_code}/${item.slug}`)}>
                                         <div className="story-image">
                                             {item.is_premium && <div className="badge premium">Premium</div>}
                                             <img src={item.image || "/placeholder.jpg"} alt={item.title} loading="lazy" />
@@ -91,7 +91,7 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
                                             <span className="category">{item.category}</span>
                                             <h4>{item.title}</h4>
                                             <p className="excerpt">{item.excerpt}</p>
-                                            <Link to={`/articulos/${item.article_code}/${item.article_slug}`} className="read-more">Leer más</Link>
+                                            <Link to={`/articulos/${item.article_code}/${item.slug}`} className="read-more">Leer más</Link>
                                             {canEdit && (
                                                 <div className="item-actions">
                                                     <button className="edit-item-btn" title="Editar" onClick={(e) => { e.stopPropagation(); onEdit(item); }}><i className="fas fa-pen"></i></button>

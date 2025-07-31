@@ -12,11 +12,11 @@ const FeaturedArticle = ({ data = [] }) => {
 
     const {
         article_code,
-        article_slug,
+        slug,
         title,
         excerpt,
         image,
-        category,
+        category_name,
         author,
         date,
         readTime,
@@ -31,7 +31,7 @@ const FeaturedArticle = ({ data = [] }) => {
         if (canEdit) return;
 
         // Navegamos a la página del artículo
-        navigate(`/articulos/${article_code}/${article_slug}`, {
+        navigate(`/articulos/${article_code}/${slug}`, {
             state: {
                 article: {
                     ...data,
@@ -81,7 +81,7 @@ const FeaturedArticle = ({ data = [] }) => {
                 <span
                     className="category"
                     data-editable-id={`cat-${article_code}`}>
-                    {category}
+                    {slug}
                 </span>
                 <h3 data-editable-id={`title-${article_code}`}>
                     {title}
@@ -103,7 +103,7 @@ const FeaturedArticle = ({ data = [] }) => {
                 </div>
 
                 <Link
-                    to={`/articulos/${article_code}/${article_slug}`}
+                    to={`/articulos/${article_code}/${slug}`}
                     className="read-more"
                     // 👇 Añadimos el state para la carga optimista en ArticlePage
                     state={{

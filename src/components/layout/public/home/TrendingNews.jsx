@@ -69,7 +69,7 @@ const TrendingNews = ({ sectionTitle = "Tendencias", data = [] }) => {
   const handleCardClick = (item) => {
     if (canEdit) return;
 
-    navigate(`/articulos/${item.article_code}/${item.article_slug}`, {
+    navigate(`/articulos/${item.article_code}/${item.slug}`, {
       state: {
         article: {
           ...item,
@@ -113,11 +113,11 @@ const TrendingNews = ({ sectionTitle = "Tendencias", data = [] }) => {
               {data.map((item) => {
                 const {
                   article_code,
-                  article_slug,
+                  slug,
                   title,
                   excerpt,
                   image,
-                  category,
+                  category_name,
                   date,
                   url
                 } = item;
@@ -143,7 +143,7 @@ const TrendingNews = ({ sectionTitle = "Tendencias", data = [] }) => {
                           />
                           <img
                             src={image || "/placeholder.jpg"}
-                            alt={category}
+                            alt={title}
                             loading="lazy" // Lazy load
                             className="news-card-image"
                           />
@@ -151,6 +151,7 @@ const TrendingNews = ({ sectionTitle = "Tendencias", data = [] }) => {
 
                       </div>
                       <div className="news-content">
+
                         <h4>{title}</h4>
                         <p className="excerpt">{excerpt}</p>
                         <div className="article-meta">
@@ -158,7 +159,7 @@ const TrendingNews = ({ sectionTitle = "Tendencias", data = [] }) => {
 
                         </div>
                         <Link
-                          to={`/articulos/${article_code}/${article_slug}`}
+                          to={`/articulos/${article_code}/${slug}`}
                           className="read-more"
                           state={{
                             article: {
