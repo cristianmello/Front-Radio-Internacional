@@ -945,7 +945,7 @@ footer {
 .footer-section ul {
     display: grid;
     grid-auto-flow: column;
-    grid-template-rows: repeat(3, auto);
+    grid-template-rows: repeat(2, auto);
     gap: 8px 20px;
 }
 
