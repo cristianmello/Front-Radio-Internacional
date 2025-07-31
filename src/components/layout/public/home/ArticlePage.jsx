@@ -46,8 +46,6 @@ const ArticlePage = () => {
     const [showInsertAdModal, setShowInsertAdModal] = useState(false);
 
     const editorRef = useRef(null);
-    const articleContentRef = useRef(null);
-    const socialShareRef = useRef(null);
 
     // 3. Cuando el artículo se carga, se inicializa el estado del contenido ditable
     useEffect(() => {
@@ -55,35 +53,6 @@ const ArticlePage = () => {
             setEditableContent(article.article_content);
         }
     }, [article]);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const articleEl = articleContentRef.current;
-            const socialEl = socialShareRef.current;
-
-            if (!articleEl || !socialEl) return;
-
-            const articleRect = articleEl.getBoundingClientRect();
-
-            // Calculamos el punto donde el botón debe detenerse.
-            // Por ejemplo, 100px (el 'top' del sticky) + 40px (altura del botón) = 140px.
-            const stopPoint = 140;
-
-            // Si la parte de abajo del artículo está por encima de nuestro punto de parada...
-            if (articleRect.bottom <= stopPoint) {
-                // El botón se "pega" al final.
-                socialEl.classList.add('stuck-at-bottom');
-            } else {
-                // El botón vuelve a ser 'sticky'.
-                socialEl.classList.remove('stuck-at-bottom');
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-
-        // Limpiamos el evento al desmontar el componente para evitar problemas de memoria.
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     // Verificamos si el usuario actual tiene permisos para editar
 
@@ -261,7 +230,7 @@ const ArticlePage = () => {
                 )}
 
                 <div className="article-layout">
-                    <article className="article-content" ref={articleContentRef}>
+                    <article className="article-content">
 
                         {/* ... El encabezado del artículo (título, autor, fecha) no cambia ... */}
                         <div className="article-header">
@@ -304,7 +273,7 @@ const ArticlePage = () => {
                                 <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
                             </div>
                         )}
-                        <div class="social-share-sticky" ref={socialShareRef}>
+                        <div class="social-share-sticky">
                             <button className="share-btn facebook" onClick={handleFacebookClick}>
                                 <i className="fab fa-facebook-f"></i>
                             </button>

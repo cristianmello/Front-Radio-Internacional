@@ -1955,7 +1955,6 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .article-content {
-    position: relative;
     background-color: var(--bg-color);
     border-radius: 8px;
     padding: 20px;
@@ -2080,12 +2079,6 @@ input[type="range"]::-moz-range-thumb {
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
-
-.social-share-sticky.stuck-at-bottom {
-    position: absolute;
-    top: auto;
-    bottom: 20px;
 }
 
 .share-btn {
