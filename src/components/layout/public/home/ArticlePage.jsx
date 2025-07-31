@@ -151,7 +151,7 @@ const ArticlePage = () => {
         return (
             <>
                 <title>Cargando... - Realidad Nacional</title>
-                <main className="article-main"> Cargando artículo...</main>;
+                <main className="article-main"><div className="container">Cargando artículo...</div></main>;
             </>
         )
     }
@@ -229,32 +229,31 @@ const ArticlePage = () => {
                     </div>
                 )}
 
-                <div className="container">
-                    <div className="article-layout">
-                        <article className="article-content">
+                <div className="article-layout">
+                    <article className="article-content">
 
-                            {/* ... El encabezado del artículo (título, autor, fecha) no cambia ... */}
-                            <div className="article-header">
-                                <div className="breadcrumbs">
-                                    <Link to="/">Inicio</Link> &gt;{" "}
-                                    <span className="article-category">{categoryName}</span>
-                                </div>
-                                <div className="article-meta-top">
-                                    <span className="article-category-label">
-                                        {categoryName}
-                                    </span>
-                                    <span className="article-date">
-                                        {formatDistanceToNow(
-                                            parseISO(displayedArticle.article_published_at),
-                                            { locale: es, addSuffix: true }
-                                        )}
-                                    </span>
-                                </div>
-                                <h1 className="article-title">{displayedArticle.article_title}</h1>
-                                {displayedArticle.article_slug && (
-                                    <h2 className="article-subtitle">{displayedArticle.article_excerpt}</h2>
-                                )}
-                                {/* {article.author && (
+                        {/* ... El encabezado del artículo (título, autor, fecha) no cambia ... */}
+                        <div className="article-header">
+                            <div className="breadcrumbs">
+                                <Link to="/">Inicio</Link> &gt;{" "}
+                                <span className="article-category">{categoryName}</span>
+                            </div>
+                            <div className="article-meta-top">
+                                <span className="article-category-label">
+                                    {categoryName}
+                                </span>
+                                <span className="article-date">
+                                    {formatDistanceToNow(
+                                        parseISO(displayedArticle.article_published_at),
+                                        { locale: es, addSuffix: true }
+                                    )}
+                                </span>
+                            </div>
+                            <h1 className="article-title">{displayedArticle.article_title}</h1>
+                            {displayedArticle.article_slug && (
+                                <h2 className="article-subtitle">{displayedArticle.article_excerpt}</h2>
+                            )}
+                            {/* {article.author && (
                                 <div className="article-author">
                                     <img
                                         src={displayedArticle.author.avatar}
@@ -267,102 +266,102 @@ const ArticlePage = () => {
                                     </div>
                                 </div>
                             )}*/}
-                            </div>
+                        </div>
 
-                            {displayedArticle.article_image_url && (
-                                <div className="article-featured-image">
-                                    <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
-                                </div>
-                            )}
-                            <div class="social-share-sticky">
-                                <button className="share-btn facebook" onClick={handleFacebookClick}>
-                                    <i className="fab fa-facebook-f"></i>
-                                </button>
-                                {/* <button class="share-btn twitter"><i class="fab fa-twitter"></i></button>
+                        {displayedArticle.article_image_url && (
+                            <div className="article-featured-image">
+                                <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
+                            </div>
+                        )}
+                        <div class="social-share-sticky">
+                            <button className="share-btn facebook" onClick={handleFacebookClick}>
+                                <i className="fab fa-facebook-f"></i>
+                            </button>
+                            {/* <button class="share-btn twitter"><i class="fab fa-twitter"></i></button>
                                 <button class="share-btn whatsapp"><i class="fab fa-whatsapp"></i></button>
                                 <button class="share-btn telegram"><i class="fab fa-telegram-plane"></i></button>
                                 <button class="share-btn email"><i class="fas fa-envelope"></i></button>*/}
-                            </div>
+                        </div>
 
-                            {/* --- 6. CUERPO DEL ARTÍCULO EDITABLE --- */}
-                            <div className="article-body">
-                                {isEditingContent && canEditArticle ? (
-                                    <Editor
-                                        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-                                        onInit={(evt, editor) => editorRef.current = editor}
-                                        value={editableContent}
-                                        onEditorChange={(newContent) => setEditableContent(newContent)}
-                                        init={{
-                                            height: 600,
-                                            menubar: true,
-                                            plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media quickbars',
-                                            toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
-                                                'forecolor backcolor | bullist numlist outdent indent blockquote | ' +
-                                                'alignleft aligncenter alignright alignjustify | ' +
-                                                'link image media insertAdButton| table | removeformat | fullscreen preview | help',
+                        {/* --- 6. CUERPO DEL ARTÍCULO EDITABLE --- */}
+                        <div className="article-body">
+                            {isEditingContent && canEditArticle ? (
+                                <Editor
+                                    apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                                    onInit={(evt, editor) => editorRef.current = editor}
+                                    value={editableContent}
+                                    onEditorChange={(newContent) => setEditableContent(newContent)}
+                                    init={{
+                                        height: 600,
+                                        menubar: true,
+                                        plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media quickbars',
+                                        toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
+                                            'forecolor backcolor | bullist numlist outdent indent blockquote | ' +
+                                            'alignleft aligncenter alignright alignjustify | ' +
+                                            'link image media insertAdButton| table | removeformat | fullscreen preview | help',
 
-                                            quickbars_selection_toolbar: 'bold italic | quicklink blockquote',
-                                            quickbars_insert_toolbar: 'quickimage quicktable',
-                                            image_uploadtab: true,
-                                            images_upload_handler: imageUploadHandler,
-                                            file_picker_types: 'image',
-                                            automatic_uploads: true,
+                                        quickbars_selection_toolbar: 'bold italic | quicklink blockquote',
+                                        quickbars_insert_toolbar: 'quickimage quicktable',
+                                        image_uploadtab: true,
+                                        images_upload_handler: imageUploadHandler,
+                                        file_picker_types: 'image',
+                                        automatic_uploads: true,
 
-                                            extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
-                                            media_live_embeds: true,
-                                            content_style: `body {font-family:Helvetica,Arial,sans-serif; font-size:16px }iframe {width: 100% !important;max-width: 100%;height: auto !important;aspect-ratio: 16 / 9;border: none;}`,
-                                            setup: (editor) => {
-                                                editor.ui.registry.addButton('insertAdButton', {
-                                                    text: 'Publicidad',
-                                                    icon: 'bullhorn',
-                                                    tooltip: 'Insertar Publicidad',
-                                                    onAction: handleOpenInsertAdModal,
-                                                });
-                                            }
-                                        }}
+                                        extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
+                                        media_live_embeds: true,
+                                        content_style: `body {font-family:Helvetica,Arial,sans-serif; font-size:16px }iframe {width: 100% !important;max-width: 100%;height: auto !important;aspect-ratio: 16 / 9;border: none;}`,
+                                        setup: (editor) => {
+                                            editor.ui.registry.addButton('insertAdButton', {
+                                                text: 'Publicidad',
+                                                icon: 'bullhorn',
+                                                tooltip: 'Insertar Publicidad',
+                                                onAction: handleOpenInsertAdModal,
+                                            });
+                                        }
+                                    }}
 
-                                    />
-                                ) : (
-                                    <div className="rendered-content">
-                                        <RenderArticleContent htmlContent={displayedArticle.article_content} />
-                                    </div>
-                                )}
-                            </div>
+                                />
+                            ) : (
+                                <div className="rendered-content">
+                                    <RenderArticleContent htmlContent={displayedArticle.article_content} />
+                                </div>
+                            )}
+                        </div>
 
-                        </article>
+                    </article>
 
-                        <aside className="article-sidebar">
-                            <div className="widget related-news">
-                                <h3>Noticias Relacionadas</h3>
-                                {loadingRelated && <p>Cargando...</p>}
-                                {error && <p className="error">{errorRelated}</p>}
-                                {!loadingRelated && !errorRelated && (
-                                    <div className="related-news-list">
-                                        {relatedArticles.map((related) => (
-                                            // DESPUÉS (Recomendado)
-                                            <Link
-                                                to={`/articulos/${related.article_code}/${related.article_slug}`}
-                                                className="related-news-item"
-                                                key={related.article_code}
-                                                state={{
-                                                    article: {
-                                                        ...related,
-                                                        article_published_at: related.date,
-                                                    },
-                                                }}
-                                            >
-                                                <img src={related.image} alt={related.title} />
-                                                <div className="related-news-info">
-                                                    <h4>{related.title}</h4>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            {sidebar}
+                    <aside className="article-sidebar">
+                        <div className="widget related-news">
+                            <h3>Noticias Relacionadas</h3>
+                            {loadingRelated && <p>Cargando...</p>}
+                            {error && <p className="error">{errorRelated}</p>}
+                            {!loadingRelated && !errorRelated && (
+                                <div className="related-news-list">
+                                    {relatedArticles.map((related) => (
+                                        // DESPUÉS (Recomendado)
+                                        <Link
+                                            to={`/articulos/${related.article_code}/${related.article_slug}`}
+                                            className="related-news-item"
+                                            key={related.article_code}
+                                            state={{
+                                                article: {
+                                                    ...related,
+                                                    article_published_at: related.date,
+                                                },
+                                            }}
+                                        >
+                                            <img src={related.image} alt={related.title} />
+                                            <div className="related-news-info">
+                                                <h4>{related.title}</h4>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        {sidebar}
 
-                            {/*
+                        {/*
                         <div className="widget trending-now">
                             <h3>Trending Ahora</h3>
                             <div className="trending-list">
@@ -375,34 +374,33 @@ const ArticlePage = () => {
                             </div>
                         </div>
                         */}
-                        </aside>
-                    </div>
+                    </aside>
+                </div>
 
-                    <section className="more-to-read">
-                        <h2>Más para leer</h2>
-                        {loadingRelated && <p>Cargando...</p>}
-                        {errorRelated && <p className="error">{errorRelated}</p>}
-                        {!loadingRelated && !errorRelated && (
-                            <div className="more-articles">
-                                {relatedArticles.slice(0, 3).map((ma) => (
-                                    <Link
-                                        to={`/articulos/${ma.article_code}/${ma.article_slug}`}
-                                        className="more-article-card"
-                                        key={ma.article_code}
-                                    >
-                                        <img src={ma.image} alt={ma.title} />
-                                        <div className="more-article-content">
-                                            <span className="more-article-category">{ma.category}</span>
-                                            <h3>{ma.title}</h3>
-                                            <p>{ma.excerpt}</p>
-                                            <span className="more-article-link">Leer más</span>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </section>
-                </div >
+                <section className="more-to-read">
+                    <h2>Más para leer</h2>
+                    {loadingRelated && <p>Cargando...</p>}
+                    {errorRelated && <p className="error">{errorRelated}</p>}
+                    {!loadingRelated && !errorRelated && (
+                        <div className="more-articles">
+                            {relatedArticles.slice(0, 3).map((ma) => (
+                                <Link
+                                    to={`/articulos/${ma.article_code}/${ma.article_slug}`}
+                                    className="more-article-card"
+                                    key={ma.article_code}
+                                >
+                                    <img src={ma.image} alt={ma.title} />
+                                    <div className="more-article-content">
+                                        <span className="more-article-category">{ma.category}</span>
+                                        <h3>{ma.title}</h3>
+                                        <p>{ma.excerpt}</p>
+                                        <span className="more-article-link">Leer más</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </section>
                 {showInsertAdModal && (
                     <div className="modal-backdrop" onClick={() => setShowInsertAdModal(false)}>
                         <div className="modal-content" onClick={e => e.stopPropagation()}>
