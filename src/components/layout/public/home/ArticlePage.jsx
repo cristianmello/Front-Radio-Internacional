@@ -270,6 +270,14 @@ const ArticlePage = () => {
                                     <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
                                 </div>
                             )}
+                            <div class="social-share-sticky">
+                                <a href="https://www.facebook.com/people/Ivan-Mourelle-II/pfbid035pdoERG4oXaNH4hUQzqnFMg9QYPMcxgz53BKrQDrgP3gBkqVxFu4ipSHCH2t54d2l" target="_blank" rel="noopener noreferrer" class="share-btn facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>                                {/* <button class="share-btn twitter"><i class="fab fa-twitter"></i></button>
+                                <button class="share-btn whatsapp"><i class="fab fa-whatsapp"></i></button>
+                                <button class="share-btn telegram"><i class="fab fa-telegram-plane"></i></button>
+                                <button class="share-btn email"><i class="fas fa-envelope"></i></button>*/}
+                            </div>
 
                             {/* --- 6. CUERPO DEL ARTÍCULO EDITABLE --- */}
                             <div className="article-body">
