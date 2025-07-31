@@ -2082,6 +2082,12 @@ input[type="range"]::-moz-range-thumb {
     gap: 10px;
 }
 
+.social-share-sticky.stuck-at-bottom {
+    position: absolute;
+    top: auto;
+    bottom: 20px;
+}
+
 .share-btn {
     width: 40px;
     height: 40px;
