@@ -56,6 +56,35 @@ const ArticlePage = () => {
         }
     }, [article]);
 
+    useEffect(() => {
+        const handleScroll = () => {
+            const articleEl = articleContentRef.current;
+            const socialEl = socialShareRef.current;
+
+            if (!articleEl || !socialEl) return;
+
+            const articleRect = articleEl.getBoundingClientRect();
+
+            // Calculamos el punto donde el botón debe detenerse.
+            // Por ejemplo, 100px (el 'top' del sticky) + 40px (altura del botón) = 140px.
+            const stopPoint = 140;
+
+            // Si la parte de abajo del artículo está por encima de nuestro punto de parada...
+            if (articleRect.bottom <= stopPoint) {
+                // El botón se "pega" al final.
+                socialEl.classList.add('stuck-at-bottom');
+            } else {
+                // El botón vuelve a ser 'sticky'.
+                socialEl.classList.remove('stuck-at-bottom');
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        // Limpiamos el evento al desmontar el componente para evitar problemas de memoria.
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     // Verificamos si el usuario actual tiene permisos para editar
 
     const imageUploadHandler = (blobInfo, progress) => new Promise((resolve, reject) => {

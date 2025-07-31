@@ -1955,6 +1955,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .article-content {
+    position: relative;
     background-color: var(--bg-color);
     border-radius: 8px;
     padding: 20px;
