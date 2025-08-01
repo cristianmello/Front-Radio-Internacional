@@ -1,7 +1,7 @@
 // src/components/layout/public/Header.jsx
 import React, { useEffect, useState } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../../hooks/UseAuth";
 import AddCategoryModal from "../modals/AddCategoryModal";
 import DeleteCategoryModal from "../modals/DeleteCategoryModal";
 import { useEditMode } from "../../context/EditModeContext";

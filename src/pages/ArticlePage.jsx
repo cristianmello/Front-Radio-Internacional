@@ -5,7 +5,7 @@ import { es } from 'date-fns/locale';
 import usePublicArticle from '../hooks/usePublicArticle';
 import useArticleActions from '../hooks/useArticleActions';
 import useRelatedArticles from '../hooks/useRelatedArticles';
-import useAuth from '../hooks/useAuth';
+import useAuth from '../hooks/UseAuth';
 import { useEditMode } from '../context/EditModeContext';
 import { Editor } from '@tinymce/tinymce-react';
 import Url from '../helpers/Url';

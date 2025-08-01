@@ -1,7 +1,7 @@
 // src/hooks/useCategoryActions.js
 import { useState, useCallback } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './useAuth';
+import useAuth from './UseAuth';
 
 /**
  * Hook que provee funciones para crear y eliminar categorías.

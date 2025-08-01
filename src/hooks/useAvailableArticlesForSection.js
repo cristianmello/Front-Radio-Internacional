@@ -1,7 +1,7 @@
 // src/hooks/useAvailableArticlesForSection.js
 import { useState, useEffect } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './useAuth';
+import useAuth from './UseAuth';
 
 export default function useAvailableArticlesForSection(sectionSlug) {
     const [articles, setArticles] = useState([]);

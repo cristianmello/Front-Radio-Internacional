@@ -1,6 +1,6 @@
 // src/components/layout/private/admin/UserListPage.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import useAuth from '../../hooks/useAuth';
+import useAuth from '../../hooks/UseAuth';
 import Url from '../../helpers/Url';
 import useRoles from '../../hooks/useRoles';
 import UpdateRoleModal from '../../components/modals/UpdateRoleModal';

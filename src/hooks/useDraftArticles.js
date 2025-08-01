@@ -1,7 +1,7 @@
 // src/hooks/useDraftArticles.js
 import { useState, useEffect } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './useAuth';
+import useAuth from './UseAuth';
 
 export default function useDraftArticles() {
     const [articles, setArticles] = useState([]);

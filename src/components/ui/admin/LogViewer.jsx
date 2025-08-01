@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import useAuth from '../../../hooks/useAuth';
+import useAuth from '../../../hooks/UseAuth';
 import Url from '../../../helpers/Url';
 
 // Helper para obtener el valor a mostrar, ya sea de un string de ruta o de una función.

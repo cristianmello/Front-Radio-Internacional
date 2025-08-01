@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import useArticleActions from '../../hooks/useArticleActions';
-import useAuth from '../../hooks/useAuth';
+import useAuth from '../../hooks/UseAuth';
 import Url from '../../helpers/Url';
 
 export default function ArticleEditor({ article, refresh }) {

@@ -5,7 +5,7 @@ import Header from './Header';
 import Footer from './Footer';
 import AuthModal from '../modals/AuthModal';
 import AddSectionModal from '../modals/AddSectionModal';
-import useAuth from '../../hooks/useAuth';
+import useAuth from '../../hooks/UseAuth';
 import useSections from '../../hooks/useSections'
 import { EditModeContext } from '../../context/EditModeContext';
 import GlobalAudioPlayer from '../ui/GlobalAudioPlayer';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useAuth from '../hooks/useAuth';
+import useAuth from '../hooks/UseAuth';
 import useUser from '../hooks/useUser';
 import { Link } from 'react-router-dom';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';

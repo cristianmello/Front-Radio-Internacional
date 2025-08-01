@@ -1,6 +1,6 @@
 // src/hooks/useDraftAudios.js
 import { useState, useEffect, useCallback } from 'react'; // 1. Importamos useCallback
-import useAuth from './useAuth';
+import useAuth from './UseAuth';
 import Url from '../helpers/Url';
 
 /**
@@ -58,53 +58,3 @@ export default function useDraftAudios({ page = 1, limit = 6 } = {}) {
     // 4. Retornamos el estado y la función para refrescar.
     return { audios, loading, error, refresh: fetchDrafts };
 }
-/*// src/hooks/useDraftAudios.js
-import { useState, useEffect } from 'react';
-import useAuth from './UseAuth';
-import Url from '../helpers/Url';
-
-
-export default function useDraftAudios({ page = 1, limit = 6 } = {}) {
-    const [audios, setAudios] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    const { authFetch } = useAuth();
-
-    useEffect(() => {
-        let isMounted = true;
-        setLoading(true);
-        setError(null);
-
-        const fetchDrafts = async () => {
-            try {
-                const res = await authFetch(
-                    `${Url.url}/api/audios/drafts?page=${page}&limit=${limit}`,
-                    {
-                        headers: { 'Accept': 'application/json' }
-                    }
-                );
-
-                if (!res.ok) {
-                    // lee JSON de error si lo hay
-                    const errJson = await res.json().catch(() => ({}));
-                    throw new Error(errJson.message || res.statusText);
-                }
-
-                const json = await res.json();
-                const items = json.items || [];
-                if (isMounted) setAudios(items);
-            } catch (err) {
-                if (isMounted) setError(err.message);
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-
-        fetchDrafts();
-        return () => { isMounted = false; };
-    }, [page, limit, authFetch]);
-
-    return { audios, loading, error };
-}
-*/

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import useAdvertisements from '../../hooks/useAdvertisements';
-import useAuth from '../../hooks/useAuth';
+import useAuth from '../../hooks/UseAuth';
 import Url from '../../helpers/Url';
 import { useNotification } from '../../context/NotificationContext';
 
