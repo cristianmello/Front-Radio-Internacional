@@ -16,7 +16,7 @@ import DeleteAdvertisementModal from "../modals/DeleteAdvertisementModal";
 import SelectAdvertisementToEditModal from "../modals/SelectAdvertisementToEditModal";
 import EditAdvertisementModal from "../modals/EditAdvertisementModal";
 import EditContentArticleModal from "../modals/EditContentArticleModal";
-import logoRealidadNacional from '../../../assets/img/logo-realidad-nacional.png';
+import logoRealidadNacional from '../../assets/img/logo-realidad-nacional.png';
 import useCategoryActions from "../../hooks/useCategoryActions";
 
 const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, onCategoriesUpdate }) => {
