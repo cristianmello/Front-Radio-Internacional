@@ -1,7 +1,7 @@
 // src/hooks/useUser.js
 import { useState, useCallback, useEffect } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './UseAuth';
+import useAuth from './useAuth';
 
 export default function useUser() {
     const [profile, setProfile] = useState(null);

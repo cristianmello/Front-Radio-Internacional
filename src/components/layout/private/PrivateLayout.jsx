@@ -4,7 +4,7 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import Header from '../public/Header';
 import Footer from '../public/Footer';
-import useAuth from '../../../hooks/UseAuth';
+import useAuth from '../../../hooks/useAuth';
 
 const PrivateLayout = () => {
   // 1. Obtenemos también los 'roles' del usuario

@@ -1,7 +1,7 @@
 // src/hooks/useSectionActions.js
 import { useState, useEffect, useCallback } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './UseAuth';
+import useAuth from './useAuth';
 
 export function useSectionActions(slug, initialItems, onDeleted) {
     const [items, setItems] = useState(initialItems || []); 

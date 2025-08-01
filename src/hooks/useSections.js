@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './UseAuth';
+import useAuth from './useAuth';
 
 export default function useSections() {
     const [sections, setSections] = useState([]);

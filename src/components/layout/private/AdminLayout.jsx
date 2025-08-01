@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Navigate, Link } from 'react-router-dom';
-import useAuth from '../../../hooks/UseAuth';
+import useAuth from '../../../hooks/useAuth';
 
 const AdminLayout = () => {
     const { auth, roles, loading } = useAuth();

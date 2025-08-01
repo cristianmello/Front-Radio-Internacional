@@ -4,21 +4,21 @@ import { AudioPlayerProvider } from '../context/AudioPlayerContext';
 import { NotificationProvider } from '../context/NotificationContext';
 import ScrollToTop from '../helpers/ScrollToTop';
 // Layouts
-import PublicLayout from '../components/layout/public/PublicLayout'
+import PublicLayout from '../components/layout/PublicLayout'
 import AdminLayout from '../components/layout/private/AdminLayout'
 
 // Páginas públicas
-import HomePage from '../components/layout/public/home/index'
-import ArticlePage from '../components/layout/public/home/ArticlePage'
-import ProfilePage from '../components/layout/public/home/ProfilePage';
-import VerifyEmailPage from '../components/layout/public/home/VerifyEmailPage';
-import ResetPasswordPage from '../components/layout/public/home/ResetPasswordPage';
-import Contact from '../components/layout/ContactPage';
-import About from '../components/layout/AboutPage';
-import PrivacyPolicyPage from '../components/layout/PrivacyPolicyPage';
+import HomePage from '../pages/HomePage'
+import ArticlePage from '../pages/ArticlePage'
+import ProfilePage from '../pages/ProfilePage';
+import VerifyEmailPage from '../pages/VerifyEmailPage';
+import ResetPasswordPage from '../pages/ResetPasswordPage';
+import Contact from '../pages/ContactPage';
+import About from '../pages/AboutPage';
+import PrivacyPolicyPage from '../pages/PrivacyPolicyPage';
 
-import UserListPage from '../components/layout/private/admin/UserListPage';
-import LogsPage from '../components/layout/private/admin/LogsPage';
+import UserListPage from '../pages/admin/UserListPage';
+import LogsPage from '../pages/admin/LogsPage';
 
 
 // Artículos (privados)
@@ -60,12 +60,6 @@ export const Routing = () => (
                             <Route path="reset-password" element={<ResetPasswordPage />} />
                             <Route path="about" element={<About />} />
                             <Route path="contact" element={<Contact />} />
-                            {/*<Route path="login" element={<LoginRegister />} />*/}
-                            {/* <Route path="reset-password" element={<ResetPassword />} />*/}
-                            {/*<Route path="verificar-email" element={<VerifyEmail />} />*/}
-                            {/*<Route path="articulo/:id" element={<ArticleDetail />} />*/}
-                            {/*<Route path="categorias" element={<CategoryListPublic />} />*/}
-                            {/*<Route path="*" element={<NotFound />} />*/}
                         </Route>
 
                         {/* Administración */}
@@ -76,21 +70,8 @@ export const Routing = () => (
                             <Route path="*" element={<NotFound />} />
                         </Route>
 
-                        {/* Usuario autenticado 
-                <Route path="/usuario" element={<PrivateLayout />}>
-                    {/*<Route index element={<Profile />} />*/}
-                        {/*<Route path="perfil" element={<Profile />} />*/}
-                        {/*<Route path="actualizar-perfil" element={<UpdateProfile />} />*/}
-                        {/*<Route path="cambiar-password" element={<ChangePassword />} />*/}
-                        {/*<Route path="actualizar-imagen-perfil" element={<UpdateImage />} />*/}
-                        {/*<Route path="cerrar-sesion" element={<Logout />} />
-                    <Route path="*" element={<NotFound />} />
 
-                </Route>
-                
-
-
-                {/* Categorías privadas
+                        {/* Categorías privadas
                 <Route path="/categorias-privado" element={<PrivateLayout />}>
                     {/*<Route index element={<CategoryList />} />*/}
                         {/*<Route path="crear" element={<CreateCategory />} />*/}

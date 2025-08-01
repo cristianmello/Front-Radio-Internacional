@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './UseAuth';
+import useAuth from './useAuth';
 
 /**
  * Hook para obtener una lista de anuncios con filtros, paginación y ordenamiento.

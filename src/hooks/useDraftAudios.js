@@ -1,6 +1,6 @@
 // src/hooks/useDraftAudios.js
 import { useState, useEffect, useCallback } from 'react'; // 1. Importamos useCallback
-import useAuth from './UseAuth';
+import useAuth from './useAuth';
 import Url from '../helpers/Url';
 
 /**

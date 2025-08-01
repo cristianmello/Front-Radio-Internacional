@@ -1,7 +1,7 @@
 // src/hooks/useArticleActions.js
 import { useState, useCallback } from "react";
 import Url from "../helpers/Url";
-import useAuth from "./UseAuth";
+import useAuth from "./useAuth";
 
 // Este hook solo proporciona funciones que necesitan autenticación.
 export default function useArticleActions() {
