@@ -8,7 +8,6 @@ import { useEditMode } from "../../context/EditModeContext";
 import CreateArticleModal from "../modals/CreateArticleModal";
 import CreateAudioModal from "../modals/CreateAudioModal";
 import useArticleActions from "../../hooks/useArticleActions";
-import useAudio from "../../hooks/useAudio";
 import DeleteDraftModal from "../modals/DeleteArticleModal";
 import useAdvertisement from "../../hooks/useAdvertisement";
 import CreateAdvertisementModal from "../modals/CreateAdvertisementModal";
@@ -18,6 +17,7 @@ import EditAdvertisementModal from "../modals/EditAdvertisementModal";
 import EditContentArticleModal from "../modals/EditContentArticleModal";
 import logoRealidadNacional from '../../assets/img/logo-realidad-nacional.png';
 import useCategoryActions from "../../hooks/useCategoryActions";
+import useAudio from "../../hooks/UseAudio";
 
 const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, onCategoriesUpdate }) => {
   const { auth, logout, roles } = useAuth();

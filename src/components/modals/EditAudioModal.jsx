@@ -1,7 +1,7 @@
 // src/components/layout/public/home/EditAudioModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import useAudio from "../../hooks/useAudio";
+import useAudio from "../../hooks/UseAudio";
 import { useNotification } from "../../context/NotificationContext";
 
 export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSuccess, categories = [] }) {

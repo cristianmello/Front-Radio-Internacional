@@ -17,7 +17,7 @@ import EditArticleModal from '../modals/EditArticleModal';
 
 // Hooks para la lógica de edición
 import useAdvertisement from '../../hooks/useAdvertisement';
-import useAudio from '../../hooks/useAudio';
+import useAudio from '../../hooks/UseAudio';
 import useArticleActions from '../../hooks/useArticleActions';
 
 
