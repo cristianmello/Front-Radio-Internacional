@@ -2358,6 +2358,7 @@ input[type="range"]::-moz-range-thumb {
     width: 32px;
     height: 32px;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 .comment-form textarea {
@@ -2409,6 +2410,7 @@ input[type="range"]::-moz-range-thumb {
     height: 40px;
     border-radius: 50%;
     display: block;
+    object-fit: cover;
 }
 
 .comment-avatar a {
@@ -3043,8 +3045,8 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .user-greeting-avatar {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--border-color);
@@ -3067,9 +3069,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .auth-btn:hover {
-    /*background-color: var(--secondary-color);*/
     transform: translateY(-2px);
-    /*box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);*/
 }
 
 .login-btn {
