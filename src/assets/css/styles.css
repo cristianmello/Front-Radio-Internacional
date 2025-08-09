@@ -6465,6 +6465,20 @@ body.admin-mode .editable-container:hover .delete-item-btn {
         padding-bottom: 10px;
     }
 
+    .comment-actions {
+        flex-wrap: wrap;
+        gap: 4px 12px;
+    }
+
+    .comment-replies {
+        margin-left: 5px;
+        padding-left: 8px;
+    }
+
+    .reply-form {
+        margin-left: 0;
+    }
+
     .sort-tabs {
         flex-wrap: nowrap;
         white-space: nowrap;
