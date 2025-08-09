@@ -2833,34 +2833,6 @@ input[type="range"]::-moz-range-thumb {
     }
 }
 
-.comment-form {
-    margin-bottom: 30px;
-}
-
-.comment-form textarea {
-    width: 100%;
-    height: 100px;
-    padding: 15px;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    resize: vertical;
-}
-
-.comments-list {
-    margin-top: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.comment {
-    display: flex;
-    gap: 15px;
-    align-items: flex-start;
-}
-
-
 .comment-content {
     flex-grow: 1;
 }
