@@ -2863,12 +2863,6 @@ input[type="range"]::-moz-range-thumb {
     flex-grow: 1;
 }
 
-.comment-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-}
-
 .comment-author {
     font-weight: 500;
 }
