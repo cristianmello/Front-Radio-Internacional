@@ -229,11 +229,11 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
               <>
                 <Link to="/perfil" className="user-greeting">
                   <img
-                    src={auth.user_image || '/default-avatar.png'}
+                    src={auth?.user_image || '/default-avatar.png'}
                     alt="Tu avatar"
                     className="user-greeting-avatar"
                   />
-                  <span>Hola, {auth.user_name}</span>
+                  <span>Hola, {auth?.user_name}</span>
                 </Link>
                 <button className="auth-btn" onClick={handleLogoutClick}>Cerrar sesión</button>
               </>
@@ -259,8 +259,8 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
                   {auth ? (
                     <Link to="/perfil" onClick={() => setMobileMenuOpen(false)}>
                       <div className="user-info">
-                        <img src={auth.user_image || '/default-avatar.png'} alt="Perfil" className="user-avatar" />
-                        <span className="user-name">{auth.user_name} {auth.user_lastname}</span>
+                        <img src={auth?.user_image || '/default-avatar.png'} alt="Perfil" className="user-avatar" />
+                        <span className="user-name">{auth?.user_name} {auth?.user_lastname}</span>
                       </div>
                     </Link>
                   ) : (

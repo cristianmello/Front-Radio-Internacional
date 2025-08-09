@@ -39,8 +39,7 @@ export default function CommentsSection({ articleId, onOpenAuth }) {
             </div>
 
             {auth ? (
-                // 2. Obtenemos el avatar de auth.profile para más seguridad
-                <CommentForm userAvatar={auth.profile?.user_image} onSubmit={(content) => postComment(content, null)} />
+                <CommentForm userAvatar={auth?.user_image} onSubmit={(content) => postComment(content, null)} />
             ) : (
                 <p className="login-prompt">
                     Debes <button className="link-button" onClick={onOpenAuth}>iniciar sesión</button> o
