@@ -13,6 +13,7 @@ import RenderArticleContent from '../components/ui/RenderArticleContent';
 import useAdvertisements from '../hooks/useAdvertisements';
 import { useNotification } from '../context/NotificationContext';
 import { SidebarContext } from '../context/SidebarContext';
+import CommentsSection from '../components/ui/comments/CommentsSection';
 
 const iconMap = {
     success: 'fas fa-check-circle',
@@ -21,7 +22,6 @@ const iconMap = {
 };
 
 const ArticlePage = () => {
-
     const sidebar = useContext(SidebarContext);
     const { code, slug } = useParams();
     const location = useLocation();
@@ -327,7 +327,7 @@ const ArticlePage = () => {
                                 </div>
                             )}
                         </div>
-
+                        <CommentsSection articleId={code} onOpenAuth={onOpenAuth} />
                     </article>
 
                     <aside className="article-sidebar">

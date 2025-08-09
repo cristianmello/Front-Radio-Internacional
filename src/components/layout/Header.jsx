@@ -227,7 +227,14 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
               <button className="auth-btn login-btn" onClick={onOpenAuth}>INGRESAR</button>
             ) : (
               <>
-                <button className="auth-btn" onClick={() => navigate('/perfil')}>Perfil</button>
+                <Link to="/perfil" className="user-greeting">
+                  <img
+                    src={auth.profile?.user_image || '/default-avatar.png'}
+                    alt="Tu avatar"
+                    className="user-greeting-avatar"
+                  />
+                  <span>Hola, {auth.user_name}</span>
+                </Link>
                 <button className="auth-btn" onClick={handleLogoutClick}>Cerrar sesión</button>
               </>
             )}
@@ -239,20 +246,32 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
         </div>
       </div>
 
-      <nav className="main-nav">
-        <div className="container">
+      <nav className={`main-nav ${mobileMenuOpen ? "show-menu" : ""}`} onClick={toggleMobileMenu}>
+        <div className="container" onClick={e => e.stopPropagation()}>
           {categoriesLoading ? (
             <p>Cargando categorías…</p>
           ) : categoriesError ? (
             <p className="error">Error: {categoriesError}</p>
           ) : (
             <>
-              <ul className={`nav-list ${mobileMenuOpen ? "show" : ""}`}>
+              <ul className="nav-list">
+                <li className="mobile-menu-header">
+                  {auth ? (
+                    <Link to="/perfil" onClick={() => setMobileMenuOpen(false)}>
+                      <div className="user-info">
+                        <img src={auth.profile?.user_image || '/default-avatar.png'} alt="Perfil" className="user-avatar" />
+                        <span className="user-name">{auth.user_name} {auth.user_lastname}</span>
+                      </div>
+                    </Link>
+                  ) : (
+                    <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                      <img src={logoRealidadNacional} alt="Realidad Nacional" className="menu-logo" />
+                    </Link>
+                  )}
+                </li>
                 {categories.map(cat => {
-                  // AQUÍ ESTÁ LA LÓGICA
                   // Si el slug de la categoría es 'inicio', la ruta es '/', si no, es '/categoria/...'
                   const linkPath = cat.category_slug === 'inicio' ? '/' : `/categoria/${cat.category_slug}`;
-
                   // Esta otra lógica es para marcar el link como "activo" correctamente
                   const isActive = location.pathname === linkPath;
 
@@ -263,7 +282,7 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
                       className={isActive ? "active" : ""}
                     >
                       <NavLink
-                        to={linkPath} // Usamos la ruta correcta
+                        to={linkPath}
                         onClick={e => handleCategoryClick(e, {
                           slug: cat.category_slug,
                           path: linkPath
@@ -276,8 +295,10 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
                   );
                 })}
 
+                <li className="nav-separator"></li>
+
                 {mobileMenuOpen && mobileAuthItems.map(item => (
-                  <li key={item.slug} className="mobile-auth-item">
+                  <li key={item.slug} className="mobile-auth-item mobile-only-item">
                     {item.path ? (
                       <NavLink
                         to={item.path}

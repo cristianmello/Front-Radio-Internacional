@@ -11,6 +11,7 @@ import { EditModeContext } from '../../context/EditModeContext';
 import GlobalAudioPlayer from '../ui/GlobalAudioPlayer';
 import { SidebarContext } from '../../context/SidebarContext';
 import NewsSidebar from '../ui/NewsSidebar';
+import ProfileSidebar from '../ui/ProfileSidebar';
 
 export default function PublicLayout() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -140,7 +141,7 @@ export default function PublicLayout() {
                 </main>
 
                 <Footer categories={categories} loading={loading} error={error} />
-
+                <ProfileSidebar />
                 <GlobalAudioPlayer />
 
                 {/* Botón Modo Editor */}

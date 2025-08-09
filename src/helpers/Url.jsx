@@ -1,5 +1,6 @@
+// src/helpers/Url.js
 const Url = {
-  url: import.meta.env.VITE_API_URL
+  url: "http://192.168.1.10:3000"
 };
 
 export default Url;
