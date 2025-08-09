@@ -2405,13 +2405,14 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .comment-avatar img {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
+    display: block;
 }
 
 .comment-avatar a {
-    display: inline-block;
+    display: block;
     border-radius: 50%;
     transition: box-shadow 0.2s ease;
 }
@@ -2590,6 +2591,10 @@ input[type="range"]::-moz-range-thumb {
     align-items: center;
     gap: 8px;
     margin-bottom: 4px;
+}
+
+.comment-avatar {
+    flex-shrink: 0;
 }
 
 .comment-author {
@@ -2817,8 +2822,8 @@ input[type="range"]::-moz-range-thumb {
     }
 
     .comment-avatar img {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
     }
 
     .comment-replies {
