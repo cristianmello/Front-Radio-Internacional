@@ -2294,7 +2294,6 @@ input[type="range"]::-moz-range-thumb {
     font-weight: 500;
     border-bottom: 3px solid transparent;
     margin-bottom: -1px;
-    /* Para que el borde se solape con el borde general */
 }
 
 .sort-tabs li.active {
@@ -6500,6 +6499,21 @@ body.admin-mode .editable-container:hover .delete-item-btn {
         width: 60px;
         height: 60px;
         font-size: 1.5rem;
+    }
+
+    .comments-toolbar {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .sort-tabs {
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+
+    .sort-tabs li {
+        padding: 8px 12px;
+        font-size: 13px;
     }
 }
 
