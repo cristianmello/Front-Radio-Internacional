@@ -91,11 +91,11 @@ export default function Footer({ categories = [], loading, error }) {
                 {/*<li><Link to="/cookies">Política de cookies</Link></li>*/}
               </ul>
             </div>
-            
+
             <div className="footer-social">
               <h3>Síguenos</h3>
               <div className="social-icons">
-                <a href="https://www.facebook.com/radionternacionalamyfm/" target="_blank" rel="noreferrer">
+                <a href="https://www.facebook.com/people/Ivan-Mourelle-II/pfbid035pdoERG4oXaNH4hUQzqnFMg9QYPMcxgz53BKrQDrgP3gBkqVxFu4ipSHCH2t54d2l" target="_blank" rel="noreferrer">
                   <i className="fab fa-facebook-f"></i>
                 </a>
                 {/* <a href="https://twitter.com" target="_blank" rel="noreferrer">
