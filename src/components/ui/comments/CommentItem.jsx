@@ -78,7 +78,7 @@ export default function CommentItem({ comment, onPostReply, onDelete, onUpdate, 
                         <div className="comment-text">
                             {isEditing ? (
                                 <CommentForm
-                                    userAvatar={auth.profile?.user_image}
+                                    userAvatar={auth.user_image}
                                     initialText={comment.comment_content}
                                     onSubmit={handleUpdate}
                                     buttonLabel="Guardar"
@@ -137,7 +137,7 @@ export default function CommentItem({ comment, onPostReply, onDelete, onUpdate, 
                 {isReplying && (
                     <div className="reply-form">
                         <CommentForm
-                            userAvatar={auth.profile?.user_image}
+                            userAvatar={auth.user_image}
                             onSubmit={(replyContent) => { onPostReply(replyContent, comment.comment_id); setIsReplying(false); }}
                             buttonLabel="Publicar Respuesta"
                             placeholder="Escribe tu respuesta..."

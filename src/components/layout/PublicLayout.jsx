@@ -135,7 +135,8 @@ export default function PublicLayout() {
                             categories,
                             loading: loading,
                             error: error,
-                            refresh: refreshSections
+                            refresh: refreshSections,
+                            onOpenAuth: () => setIsAuthOpen(true)
                         }} />
                     </div>
                 </main>

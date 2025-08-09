@@ -24,6 +24,7 @@ const iconMap = {
 const ArticlePage = () => {
     const sidebar = useContext(SidebarContext);
     const { code, slug } = useParams();
+    const { onOpenAuth } = useOutletContext();
     const location = useLocation();
     const initialData = location.state?.article;
     const { showNotification } = useNotification();
