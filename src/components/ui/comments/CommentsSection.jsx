@@ -63,10 +63,11 @@ export default function CommentsSection({ articleId, onOpenAuth }) {
                         Más antiguos
                     </li>
                 </ul>
-                <div className="toolbar-actions">
+                {/*}  <div className="toolbar-actions">
                     <span>Compartir</span>
                     <i className="fas fa-cog"></i>
                 </div>
+                */}
             </div>
 
             <CommentsList
