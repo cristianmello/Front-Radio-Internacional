@@ -2859,35 +2859,6 @@ input[type="range"]::-moz-range-thumb {
     }
 }
 
-.comment-content {
-    flex-grow: 1;
-}
-
-.comment-author {
-    font-weight: 500;
-}
-
-.comment-text {
-    margin-bottom: 10px;
-}
-
-.comment-actions {
-    display: flex;
-    gap: 15px;
-}
-
-.comment-actions button {
-    background: none;
-    color: var(--text-lighter);
-    padding: 0;
-    font-size: 0.85rem;
-    transition: var(--transition);
-}
-
-.comment-actions button:hover {
-    color: var(--primary-color);
-}
-
 .article-sidebar {
     display: flex;
     flex-direction: column;
