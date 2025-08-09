@@ -1127,6 +1127,15 @@ footer {
     z-index: 1050;
 }
 
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
 .modal-content h3 {
     margin-top: 0;
     margin-bottom: 20px;
@@ -2453,13 +2462,30 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .profile-sidebar-content .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
     background: none;
     border: none;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-light);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.profile-sidebar-content .close-btn:hover {
+    background-color: var(--bg-light);
+    color: var(--text-color);
+}
+
+.sidebar-close-header {
+    text-align: right;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-profile-header {
@@ -2845,11 +2871,6 @@ input[type="range"]::-moz-range-thumb {
 
 .comment-author {
     font-weight: 500;
-}
-
-.comment-date {
-    font-size: 0.85rem;
-    color: var(--text-lighter);
 }
 
 .comment-text {
@@ -5724,10 +5745,6 @@ body.admin-mode .story-content h4.editable {
 
     .article-content {
         padding: 15px;
-    }
-
-    .article-comments .comment {
-        flex-direction: column;
     }
 
     .comment-avatar {

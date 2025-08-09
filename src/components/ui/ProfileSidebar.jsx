@@ -48,8 +48,18 @@ export default function ProfileSidebar() {
         <>
             <div className={`profile-sidebar-overlay ${!targetUserId ? 'hidden' : ''}`} onClick={handleClose}></div>
             <div className={`profile-sidebar-content ${!targetUserId ? 'hidden' : ''}`}>
-                <button className="close-btn" onClick={handleClose}>&times;</button>
+                <div className="sidebar-close-header">
+                    <button className="close-btn" onClick={handleClose}>
+                        <i className="fas fa-times"></i> Cerrar
+                    </button>
+                </div>
+
                 {loading && <p>Cargando perfil...</p>}
+                {profileData && (
+                    <>
+                        {/* El resto de tu sidebar no cambia */}
+                    </>
+                )}                {loading && <p>Cargando perfil...</p>}
                 {profileData && (
                     <>
                         <div className="sidebar-profile-header">
