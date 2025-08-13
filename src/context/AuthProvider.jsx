@@ -5,6 +5,12 @@ import Url from '../helpers/Url';
 
 const AuthContext = createContext();
 
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
     const [auth, setAuth] = useState(null);
@@ -35,10 +41,13 @@ export const AuthProvider = ({ children }) => {
     const authFetch = useCallback(async (input, init = {}) => {
         const token = getToken();
 
+        const csrfToken = getCookie('XSRF-TOKEN');
+
         // Construimos los headers base:
         const headers = {
             ...(init.headers || {}),
-            ...(token && { Authorization: `Bearer ${token}` })
+            ...(token && { Authorization: `Bearer ${token}` }),
+            ...(csrfToken && { 'csrf-token': csrfToken })
         };
 
         // Si el body NO es FormData, lo tratamos como JSON:
