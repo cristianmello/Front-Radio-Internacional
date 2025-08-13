@@ -39,10 +39,13 @@ export const AuthProvider = ({ children }) => {
     const getToken = () => localStorage.getItem('token');
 
     const authFetch = useCallback(async (input, init = {}) => {
-        const token = getToken();
+        console.log("--- [CSRF Frontend Debug] ---");
+        console.log("Todas las cookies:", document.cookie);
 
         const csrfToken = getCookie('XSRF-TOKEN');
+        console.log("Token CSRF extraído de la cookie:", csrfToken);
 
+        const token = getToken();
         // Construimos los headers base:
         const headers = {
             ...(init.headers || {}),
@@ -50,6 +53,8 @@ export const AuthProvider = ({ children }) => {
             ...(csrfToken && { 'csrf-token': csrfToken })
         };
 
+        console.log("Cabeceras que se enviarán:", headers); // SENSOR 4: ¿Se está añadiendo la cabecera a la petición?
+        console.log("---------------------------------");
         // Si el body NO es FormData, lo tratamos como JSON:
         if (!(init.body instanceof FormData)) {
             headers['Content-Type'] = 'application/json';
