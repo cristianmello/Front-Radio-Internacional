@@ -130,9 +130,11 @@ export const AuthProvider = ({ children }) => {
 
     const login = async ({ user_mail, user_password }) => {
         try {
-            const res = await fetch(`${Url.url}/api/users/login`, {
+            const res = await authFetch(`${Url.url}/api/users/login`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 credentials: 'include',
                 body: JSON.stringify({ user_mail, user_password }),
             });
@@ -161,7 +163,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await fetch(`${Url.url}/api/users/logout`, {
+            await authFetch(`${Url.url}/api/users/logout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -186,7 +188,7 @@ export const AuthProvider = ({ children }) => {
         user_password
     }) => {
         try {
-            const res = await fetch(`${Url.url}/api/users/register`, {
+            const res = await authFetch(`${Url.url}/api/users/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -214,7 +216,7 @@ export const AuthProvider = ({ children }) => {
 
     const recoverPassword = async ({ user_mail }) => {
         try {
-            const res = await fetch(`${Url.url}/api/users/forgot-password`, {
+            const res = await authFetch(`${Url.url}/api/users/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_mail }),
@@ -232,7 +234,7 @@ export const AuthProvider = ({ children }) => {
 
     const resendVerificationEmail = async ({ user_mail }) => {
         try {
-            const res = await fetch(`${Url.url}/api/users/send-verification-email`, {
+            const res = await authFetch(`${Url.url}/api/users/send-verification-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_mail }),
