@@ -88,7 +88,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
     const handleRemoveItem = async (itemCode) => {
         const result = await removeItem(itemCode);
         if (result.success) {
-            showNotification('Elemento quitado del widget.', 'success');
+            showNotification('Elemento quitado del sidebar, recargue la página', 'success');
         } else {
             showNotification(result.message || 'Error al quitar el elemento.', 'error');
         }

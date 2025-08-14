@@ -102,7 +102,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
     const handleRemoveItem = async (itemCode) => {
         const result = await removeItem(itemCode);
         if (result.success) {
-            showNotification('Elemento quitado de la sección.', 'success');
+            showNotification('Elemento quitado de la sección, recargue la página.', 'success');
         } else {
             showNotification(result.message || 'Error al quitar el elemento.', 'error');
         }
