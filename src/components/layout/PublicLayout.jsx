@@ -92,16 +92,17 @@ export default function PublicLayout() {
 
     // CREAR NUEVA SECCIÓN
     const handleCreateSection = async (payload) => {
-        // 1. Llama a la función del hook y guarda el resultado
         const result = await createSection(payload);
 
-        // 2. Si tiene éxito, el layout se encarga de cerrar el modal
         if (result.success) {
-            setShowSectionModal(false);
+            setShowSectionModal(false); // Cierra el modal si tiene éxito
+            showNotification('Sección creada con éxito.', 'success');
+        } else {
+            // El modal de 'AddSectionModal' debería encargarse de mostrar el error específico,
+            // pero podemos mostrar uno genérico aquí si falla por otra razón.
+            showNotification(result.message || 'Error al crear la sección.', 'error');
         }
-
-        // 3. Retorna siempre el resultado para que el modal lo reciba
-        return result;
+        return result; // Devolvemos el resultado para que el modal lo use
     };
 
     return (

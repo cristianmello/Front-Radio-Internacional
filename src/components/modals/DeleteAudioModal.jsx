@@ -40,7 +40,6 @@ function useDraftAudios() {
     return { audios, loading, error, refresh: fetchDrafts };
 }
 
-
 export default function DeleteAudioModal({ onCancel }) {
     // Usamos el hook para obtener y refrescar la lista de borradores
     const { audios, loading, error, refresh } = useDraftAudios();

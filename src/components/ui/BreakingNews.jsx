@@ -48,7 +48,7 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
     };
 
     if (!data.length && !canEdit) return null;
-    
+
     const featuredArticleData = data[0];
     const topStoriesData = data.slice(1);
     const noTitle = !sectionTitle;
@@ -69,7 +69,7 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
             <div className="breaking-news-content">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={data.map(item => item.article_code)} strategy={verticalListSortingStrategy}>
-                        
+
                         {/* El artículo principal se renderiza envuelto para ser arrastrable */}
                         {featuredArticleData && (
                             <SortableItemWrapper item={featuredArticleData}>
@@ -88,7 +88,7 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
                                             <img src={item.image || "/placeholder.jpg"} alt={item.title} loading="lazy" />
                                         </div>
                                         <div className="story-content">
-                                            <span className="category">{item.category}</span>
+                                            <span className="category">{item.category_name}</span>
                                             <h4>{item.title}</h4>
                                             <p className="excerpt">{item.excerpt}</p>
                                             <Link to={`/articulos/${item.article_code}/${item.slug}`} className="read-more">Leer más</Link>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSectionActions } from '../../hooks/useSectionActions';
 import { SectionEditContext } from '../../context/SectionEditContext';
+import { useNotification } from '../../context/NotificationContext';
 
 // Importa todos los posibles componentes visuales y modales del sidebar
 import AudioNewsWidget from './AudioNewsWidget';
@@ -52,6 +53,7 @@ const editModalMap = {
 */
 const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories }) => {
     const items = section.items || [];
+    const { showNotification } = useNotification();
 
     // LÍNEA CORRECTA
     const { addItem, removeItem, deleteSection } = useSectionActions(section.section_slug, section.items, onSectionDeleted);
@@ -72,7 +74,35 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
 
     if (!Component) return null;
 
-    // --- FUNCIÓN onEdit INTELIGENTE Y ESTANDARIZADA ---
+    const handleAddItem = async (code) => {
+        const result = await addItem(code);
+        if (result.success) {
+            setIsAdding(false);
+            showNotification('Elemento añadido al widget.', 'success');
+        } else {
+            showNotification(result.message || 'Error al añadir el elemento.', 'error');
+        }
+        return result;
+    };
+
+    const handleRemoveItem = async (itemCode) => {
+        const result = await removeItem(itemCode);
+        if (result.success) {
+            showNotification('Elemento quitado del widget.', 'success');
+        } else {
+            showNotification(result.message || 'Error al quitar el elemento.', 'error');
+        }
+    };
+
+    const handleDeleteSection = async () => {
+        const result = await deleteSection();
+        if (result.success) {
+            showNotification('Widget eliminado con éxito.', 'success');
+        } else {
+            showNotification(result.message || 'No se pudo eliminar el widget.', 'error');
+        }
+    };
+
     const handleEdit = (item) => {
         if (item.ad_id) {
             setEditingAd(item); // Guardamos el objeto completo del anuncio
@@ -87,9 +117,9 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
     const contextValue = {
         canEdit: canEditGlobal,
         onAddItem: canEditGlobal && AddModal ? () => setIsAdding(true) : null,
-        onRemove: canEditGlobal ? removeItem : null,
+        onRemove: canEditGlobal ? handleRemoveItem : null,
         onEdit: canEditGlobal ? handleEdit : null, // Pasamos la nueva función de manejo
-        onDeleteSection: canEditGlobal && !section.is_protected ? deleteSection : null,
+        onDeleteSection: canEditGlobal && !section.is_protected ? handleDeleteSection : null,
     };
 
     return (
@@ -97,13 +127,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
             {isAdding && AddModal && (
                 <AddModal
                     section={section}
-                    onSelect={async (code) => {
-                        const result = await addItem(code);
-                        if (result.success) {
-                            onSectionDeleted();
-                        }
-                        return result;
-                    }}
+                    onSelect={handleAddItem} 
                     onCancel={() => setIsAdding(false)}
                 />
             )}

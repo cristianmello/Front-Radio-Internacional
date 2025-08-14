@@ -81,7 +81,7 @@ const FeaturedArticle = ({ data = [] }) => {
                 <span
                     className="category"
                     data-editable-id={`cat-${article_code}`}>
-                    {slug}
+                    {category_name}
                 </span>
                 <h3 data-editable-id={`title-${article_code}`}>
                     {title}

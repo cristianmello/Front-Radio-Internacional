@@ -18,6 +18,7 @@ import AddAdvertisementModal from "../modals/AddAdvertisementModal"
 import EditAdvertisementModal from "../modals/EditAdvertisementModal";
 
 // Context y Hooks
+import { useNotification } from "../../context/NotificationContext";
 import { SectionEditContext } from "../../context/SectionEditContext";
 import { useEditMode } from "../../context/EditModeContext";
 import { useSectionActions } from "../../hooks/useSectionActions";
@@ -45,6 +46,7 @@ const componentMap = {
 export default function SectionWrapper({ section, onSectionDeleted, categoryFilter, categories }) {
     const editMode = useEditMode();
     const { auth, roles } = useAuth();
+    const { showNotification } = useNotification();
 
     const canEdit =
         auth?.user_code &&
@@ -65,31 +67,44 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
     const adHook = useAdvertisement(editingAdvertisement?.ad_id);
 
     const handleSelectAdvertisement = async (code) => {
-        try {
-            const result = await addItem(code);
-            if (!result.success) {
-                return { success: false, message: result.message };
-            }
+        const result = await addItem(code);
+        if (result.success) {
             setAdding(false);
-            return { success: true };
-        } catch (err) {
-            console.error("Error al añadir publicidad:", err);
-            return { success: false, message: err.message || "Error inesperado." };
+            showNotification('Publicidad añadida a la sección.', 'success');
+        } else {
+            showNotification(result.message || "Error al añadir publicidad.", 'error');
         }
+        return result;
     };
 
     const handleSelectContent = async (code) => {
         const result = await addItem(code);
         if (result.success) {
             setAdding(false);
+            showNotification('Contenido añadido a la sección.', 'success');
+        } else {
+            // Con el 'else', esta notificación solo se muestra si falla
+            showNotification(result.message || "Error al añadir contenido.", 'error');
         }
         return result;
     };
 
     const handleDeleteSection = async () => {
         const result = await deleteSection();
-        if (!result.success) {
-            alert(result.message || "No se pudo eliminar la sección.");
+        if (result.success) {
+            showNotification('Sección eliminada con éxito.', 'success');
+        } else {
+            // Con el 'else' y sin el alert(), ahora es consistente
+            showNotification(result.message || "No se pudo eliminar la sección.", 'error');
+        }
+    };
+
+    const handleRemoveItem = async (itemCode) => {
+        const result = await removeItem(itemCode);
+        if (result.success) {
+            showNotification('Elemento quitado de la sección.', 'success');
+        } else {
+            showNotification(result.message || 'Error al quitar el elemento.', 'error');
         }
     };
 
@@ -113,7 +128,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
     const editContextValue = {
         canEdit,
         onAddItem: canEdit ? () => setAdding(true) : null,
-        onRemove: canEdit ? removeItem : null,
+        onRemove: canEdit ? handleRemoveItem : null,
         onEdit: canEdit ? (item) => {
             if (item.ad_id) {
                 setEditingAdvertisement(item);
