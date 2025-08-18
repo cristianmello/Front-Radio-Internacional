@@ -106,8 +106,6 @@ export function useSectionActions(slug, initialItems, onDeleted) {
                 throw new Error(errBody.message || 'Error al eliminar la sección');
             }
 
-            console.log(`%c[useSectionActions] Borrado en API exitoso para: ${slug}. ¿Voy a llamar a onDeleted?`, 'color: purple; font-weight: bold;', typeof onDeleted === 'function');
-
             if (onDeleted) onDeleted(slug);
             return { success: true };
         } catch (err) {

@@ -15,7 +15,7 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * Componente envoltorio que hace que cada ítem del mosaico sea arrastrable.
  */
-const SortableMosaicItem = ({ item, children }) => {
+const SortableMosaicItem = ({ item, children, className }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.article_code });
     const { canEdit } = useSectionEdit();
 
@@ -28,7 +28,7 @@ const SortableMosaicItem = ({ item, children }) => {
     const dndListeners = canEdit ? listeners : {};
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...dndListeners}>
+        <div ref={setNodeRef} style={style} className={className} {...attributes} {...dndListeners}>
             {children}
         </div>
     );
@@ -199,15 +199,16 @@ const MosaicNews = ({
                         <SortableContext items={data.map(item => item.article_code)} strategy={rectSortingStrategy}>
                             <div className="mosaic-container">
                                 {data.map((item, idx) => {
-                                    const { article_code, article_slug, title, excerpt, image, category, url } = item;
+                                    const { article_code, article_slug, title, excerpt, image, category_name, url } = item;
                                     const modifiers = [];
                                     if (idx === 0) modifiers.push("large");
                                     if (idx === 3) modifiers.push("vertical");
 
+                                    const itemClasses = ["mosaic-item", ...modifiers, !canEdit ? 'clickable' : ''].join(" ");
+
                                     return (
-                                        <SortableMosaicItem key={article_code} item={item}>
+                                        <SortableMosaicItem key={article_code} item={item} className={itemClasses}>
                                             <div
-                                                className={["mosaic-item", ...modifiers, !canEdit ? 'clickable' : ''].join(" ")}
                                                 key={article_code}
                                                 onClick={() => handleItemClick(item)}
                                             >
@@ -224,14 +225,14 @@ const MosaicNews = ({
                                                     />
                                                     <img
                                                         src={image || "/placeholder.jpg"}
-                                                        alt={category}
+                                                        alt={category_name}
                                                         loading="lazy" // Lazy load
                                                         className="news-card-image"
                                                     />
                                                 </picture>
 
                                                 <div className="mosaic-content">
-                                                    <span className="category">{category}</span>
+                                                    <span className="category">{category_name}</span>
                                                     {idx === 0 ? <h3>{title}</h3> : <h4>{title}</h4>}
                                                     {excerpt && <p className="excerpt">{excerpt}</p>}
 
