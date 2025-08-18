@@ -2,7 +2,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSectionEdit } from "../../context/SectionEditContext";
-
+import { isColorDark } from "../../helpers/colorUtils";
+import useAuth from "../../hooks/UseAuth";
+import Url from "../../helpers/Url";
 
 // Imports de DND-Kit
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -32,16 +34,24 @@ const SortableMosaicItem = ({ item, children }) => {
     );
 };
 
+const titleColor = isColorDark(bgColor) ? '#FFFFFF' : '#000000';
 
 const MosaicNews = ({
+    sectionId,
+    sectionSlug,
     sectionTitle = "Panorama Noticioso",
+    initialBgColor = "#f8f9fa",
     data = [],
 }) => {
     const { canEdit, onAddItem, onRemove, onDeleteSection, onEdit, setItems, reorderItems } = useSectionEdit();
 
     const navigate = useNavigate()
     const noTitle = !sectionTitle;
+    const { authFetch } = useAuth();
 
+    const isInitialMount = useRef(true);
+
+    useEffect(() => { setBgColor(initialBgColor); }, [initialBgColor]);
     // Configuración de los sensores de DND-Kit
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -62,21 +72,6 @@ const MosaicNews = ({
         }
     };
 
-    const handleCardClick = (item) => {
-        if (canEdit) return;
-
-        navigate(`/articulos/${item.article_code}/${item.slug}`, {
-            state: {
-                article: {
-                    ...item,
-                    article_published_at: item.date,
-                },
-            },
-        });
-    };
-
-    // Paleta de tonos oscuros tipo “#0F1A24”
-    // Paleta sobre la base de “#131d26” con variaciones oscuras, claras y opacas:
     const colorOptions = [
         { name: "Blanco (fondo body)", hex: "#f8f9fa" },// color blanco original
 
@@ -95,7 +90,7 @@ const MosaicNews = ({
 
 
     // Estado para el color de fondo full-bleed
-    const [bgColor, setBgColor] = useState(colorOptions[0].hex);
+    const [bgColor, setBgColor] = useState(initialBgColor);
 
     const handleItemClick = (item) => {
         if (canEdit) return;
@@ -110,11 +105,54 @@ const MosaicNews = ({
         });
     };
 
+
+    const titleColor = isColorDark(bgColor) ? '#FFFFFF' : '#000000';
+
+    // añade arriba: import Url from "../../helpers/Url";
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        if (!canEdit || !sectionSlug) return;
+
+        const controller = new AbortController();
+        let cancelled = false;
+
+        const saveColor = async () => {
+            try {
+                const url = `${Url.url}/api/sections/${sectionSlug}`; // <-- URL correcta con slug
+                const res = await authFetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ background_color: bgColor }),
+                    signal: controller.signal
+                });
+
+                if (!res.ok) {
+                    const text = await res.text().catch(() => null);
+                    console.error('[MosaicNews] Error guardando color:', res.status, text);
+                } else {
+                    console.log('Color guardado:', bgColor);
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') console.error('[MosaicNews] Excepción guardando color:', err);
+            }
+        };
+
+        const timer = setTimeout(saveColor, 800);
+
+        return () => {
+            clearTimeout(timer);
+            cancelled = true;
+            controller.abort();
+        };
+    }, [bgColor, sectionSlug, canEdit, authFetch]);
+
+
     return (
-        <div
-            className="mosaic-news-bleed"
-            style={{ backgroundColor: bgColor }}
-        >
+        <div className="mosaic-news-bleed" style={{ backgroundColor: bgColor }}>
+
             {/* Selector de color en modo edición */}
             {canEdit && (
                 <div className="color-picker">
@@ -135,22 +173,29 @@ const MosaicNews = ({
             )}
 
             <section className="mosaic-news">
-                <div className={`section-header${noTitle ? " no-title" : ""}`}>
-                    {sectionTitle && <h2>{sectionTitle}</h2>}
-                    <div className="section-actions">
-                        {canEdit && typeof onDeleteSection === "function" && (
-                            <button
-                                className="delete-section-btn"
-                                title="Eliminar sección"
-                                onClick={onDeleteSection}
-                            >
-                                <i className="fas fa-trash"></i>
-                            </button>
-                        )}
-                        {canEdit && typeof onAddItem === "function" && (
-                            <button onClick={onAddItem}>+ Añadir Noticia</button>
-                        )}
-                    </div>
+                <div className={`premium-section-header${noTitle ? " no-title" : ""}`}>
+                    {sectionTitle && (
+                        <>
+                            <h2 style={{ color: titleColor }}>{sectionTitle}</h2>
+                            {/* <p className="subtitle">Contenido Exclusivo para Suscriptores</p> */}
+                        </>
+                    )}
+                </div>
+
+                {/* Los botones de acción ahora pueden ir fuera del título para un diseño más limpio */}
+                <div className="section-actions" style={{ textAlign: 'right', marginBottom: '20px' }}>
+                    {canEdit && typeof onDeleteSection === "function" && (
+                        <button
+                            className="delete-section-btn"
+                            title="Eliminar sección"
+                            onClick={onDeleteSection}
+                        >
+                            <i className="fas fa-trash"></i>
+                        </button>
+                    )}
+                    {canEdit && typeof onAddItem === "function" && (
+                        <button onClick={onAddItem}>+ Añadir Noticia</button>
+                    )}
                 </div>
 
                 {data.length > 0 ? (

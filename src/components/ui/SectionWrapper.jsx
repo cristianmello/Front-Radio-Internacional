@@ -111,7 +111,6 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
     const Component = componentMap[section.section_type];
     if (!Component) return null;
 
-    // <-- 3. LÓGICA MEJORADA PARA EL MODAL DE "AÑADIR"
     let ModalComponent;
     const adTypes = ['ad-large', 'ad-small', 'ad-banner', 'ad-skyscraper', 'ad-biglarge', 'ad-verticalsm'];
 
@@ -162,6 +161,9 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
                 data={items}
                 categoryFilter={categoryFilter}
                 categories={categories}
+                sectionId={section.section_code}
+                initialBgColor={section.background_color}
+                sectionSlug={section.section_slug}
             />
 
             {/* Modal para editar Artículos */}
