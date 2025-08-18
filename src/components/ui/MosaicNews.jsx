@@ -1,5 +1,5 @@
 // src/components/layout/public/home/MosaicNews.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSectionEdit } from "../../context/SectionEditContext";
 import { isColorDark } from "../../helpers/colorUtils";
@@ -46,9 +46,8 @@ const MosaicNews = ({
     const navigate = useNavigate()
     const noTitle = !sectionTitle;
     const { authFetch } = useAuth();
-
-    const isInitialMount = useRef(true);
     const [bgColor, setBgColor] = useState(initialBgColor);
+    const isInitialMount = useRef(true);
 
     useEffect(() => { setBgColor(initialBgColor); }, [initialBgColor]);
     // Configuración de los sensores de DND-Kit
@@ -86,6 +85,7 @@ const MosaicNews = ({
         { name: "Niebla marina", hex: "#1B2832" }, // más suave y opaco
         { name: "Océano sombrío", hex: "#0E1A24" }, // mezcla de todos
     ];
+
 
 
     const handleItemClick = (item) => {
