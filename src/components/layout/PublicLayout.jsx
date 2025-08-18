@@ -12,6 +12,7 @@ import GlobalAudioPlayer from '../ui/GlobalAudioPlayer';
 import { SidebarContext } from '../../context/SidebarContext';
 import NewsSidebar from '../ui/NewsSidebar';
 import ProfileSidebar from '../ui/ProfileSidebar';
+import { useNotification } from '../../context/NotificationContext';
 
 export default function PublicLayout() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -19,7 +20,7 @@ export default function PublicLayout() {
     const { sections, categories, loading, error, refresh: refreshSections, createSection } = useSections();
     const [showSectionModal, setShowSectionModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
-
+    const { showNotification } = useNotification();
     const { auth, roles, login, register, recoverPassword, resendVerificationEmail } = useAuth();
     const location = useLocation();
 

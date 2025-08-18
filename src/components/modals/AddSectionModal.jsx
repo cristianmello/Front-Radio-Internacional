@@ -1,6 +1,7 @@
 // src/components/layout/public/home/AddSectionModal.jsx
 import React, { useState } from "react";
 import { useNotification } from '../../context/NotificationContext';
+
 const SECTION_TYPES = [
     { value: "breaking", label: "Últimas Noticias" },
     { value: "trending", label: "Tendencias" },
