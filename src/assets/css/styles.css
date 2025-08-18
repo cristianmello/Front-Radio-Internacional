@@ -1975,7 +1975,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .mosaic-news {
-    max-width: 1360px;
+    max-width: 1200px;
     margin: 0 auto;
     margin-bottom: 40px;
 }
@@ -2022,7 +2022,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Estilos de selector */
 .color-picker {
-    max-width: 1360px;
+    max-width: 1200px;
     margin: 0 auto 16px;
     text-align: right;
 }
