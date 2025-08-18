@@ -1970,7 +1970,7 @@ input[type="range"]::-moz-range-thumb {
     position: relative;
     left: 50%;
     margin-left: -50vw;
-    padding-top: 65px;
+    padding-top: 25px;
     padding-bottom: 65px;
 }
 
@@ -1986,6 +1986,12 @@ input[type="range"]::-moz-range-thumb {
     padding-bottom: 20px;*/
     position: relative;
     width: 100%;
+}
+
+.premium-section-header.no-title {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .premium-section-header::after {
