@@ -1988,12 +1988,6 @@ input[type="range"]::-moz-range-thumb {
     width: 100%;
 }
 
-.premium-section-header.no-title {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
 .premium-section-header::after {
     content: '';
     position: absolute;

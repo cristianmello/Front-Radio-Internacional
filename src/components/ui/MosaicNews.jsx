@@ -169,14 +169,14 @@ const MosaicNews = ({
             )}
 
             <section className="mosaic-news">
-                <div className={`premium-section-header${noTitle ? " no-title" : ""}`}>
-                    {sectionTitle && (
-                        <>
+                {
+                    !noTitle && (
+                        <div className="premium-section-header">
                             <h2 style={{ color: titleColor }}>{sectionTitle}</h2>
                             {/* <p className="subtitle">Contenido Exclusivo para Suscriptores</p> */}
-                        </>
-                    )}
-                </div>
+                        </div>
+                    )
+                }
 
                 {/* Los botones de acción ahora pueden ir fuera del título para un diseño más limpio */}
                 <div className="section-actions" style={{ textAlign: 'right', marginBottom: '20px' }}>
