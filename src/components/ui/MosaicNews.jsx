@@ -34,8 +34,6 @@ const SortableMosaicItem = ({ item, children }) => {
     );
 };
 
-const titleColor = isColorDark(bgColor) ? '#FFFFFF' : '#000000';
-
 const MosaicNews = ({
     sectionId,
     sectionSlug,
@@ -50,6 +48,7 @@ const MosaicNews = ({
     const { authFetch } = useAuth();
 
     const isInitialMount = useRef(true);
+    const [bgColor, setBgColor] = useState(initialBgColor);
 
     useEffect(() => { setBgColor(initialBgColor); }, [initialBgColor]);
     // Configuración de los sensores de DND-Kit
@@ -88,9 +87,6 @@ const MosaicNews = ({
         { name: "Océano sombrío", hex: "#0E1A24" }, // mezcla de todos
     ];
 
-
-    // Estado para el color de fondo full-bleed
-    const [bgColor, setBgColor] = useState(initialBgColor);
 
     const handleItemClick = (item) => {
         if (canEdit) return;
