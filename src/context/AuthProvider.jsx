@@ -31,11 +31,36 @@ export const AuthProvider = ({ children }) => {
         isRefreshing = true;
         refreshPromise = (async () => {
             try {
+                // Intentamos leer el token CSRF que el servidor pone en cookie
+                let csrfToken = getCookie('XSRF-TOKEN');
+
+                // Si por alguna razón no existe (problema de dominio/path), hacemos
+                // un GET sencillo para que el middleware de tu servidor cree la cookie CSRF.
+                if (!csrfToken) {
+                    try {
+                        await fetch(`${Url.url}/api/pages/home`, { method: 'GET', credentials: 'include' });
+                        csrfToken = getCookie('XSRF-TOKEN');
+                    } catch (err) {
+                        // no fatal: intentamos seguir de todas formas
+                        console.warn('No se pudo forzar GET para obtener XSRF-TOKEN:', err);
+                    }
+                }
+
+                const headers = {};
+                if (csrfToken) headers['csrf-token'] = csrfToken;
+
                 const res = await fetch(`${Url.url}/api/users/refresh-token`, {
                     method: 'POST',
                     credentials: 'include',
+                    headers
                 });
-                if (!res.ok) throw new Error('Refresh failed');
+
+                if (!res.ok) {
+                    // Opcional: loguear body para debugging en dev
+                    let text;
+                    try { text = await res.text(); } catch (_) { text = 'no body'; }
+                    throw new Error(`Refresh failed: ${res.status} ${text}`);
+                }
 
                 const { token } = await res.json();
                 currentAccessToken = token;
@@ -56,11 +81,11 @@ export const AuthProvider = ({ children }) => {
     }, [setAuth, setRoles, setAvatarUrl]);
 
     const authFetch = useCallback(async (input, init = {}) => {
-        const csrfToken = getCookie('XSRF-TOKEN');
         const doFetch = async (accessToken) => {
+            const csrfToken = getCookie('XSRF-TOKEN'); // <- moved here
             const finalHeaders = {
                 ...(init.headers || {}),
-                'csrf-token': csrfToken,
+                ...(csrfToken && { 'csrf-token': csrfToken }),
                 ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
             };
             if (init.body instanceof FormData) {
@@ -157,15 +182,21 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
+            const csrfToken = getCookie('XSRF-TOKEN');
             await fetch(`${Url.url}/api/users/logout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(csrfToken && { 'csrf-token': csrfToken }),
                     Authorization: `Bearer ${currentAccessToken}`,
                 },
                 credentials: 'include',
             });
-        } catch { }
+        } catch (e) {
+            console.warn('Logout request failed (client will still clear local state):', e);
+        }
+
+        // Siempre limpiamos cliente aunque el fetch falle
         currentAccessToken = null;
         setAuth(null);
         setRoles([]);
