@@ -129,6 +129,11 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         setFormError('');
 
         const initial = initialDataRef.current;
+        if (!initial) {
+            setFormError('Datos del anuncio no están listos. Por favor, espera y reintenta.');
+            setIsSubmitting(false);
+            return;
+        }
         const formatChanged = adFormat !== initial.ad_format;
         const newImageUploaded = adImageFile instanceof File;
 
