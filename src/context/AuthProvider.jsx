@@ -171,9 +171,25 @@ export const AuthProvider = ({ children }) => {
                 throw error;
             }
             currentAccessToken = body.token;
-            await authenticateUser();
+
+            const profileRes = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
+
+            if (!profileRes.ok) {
+                currentAccessToken = null;
+                setAuth(null);
+                throw new Error('El inicio de sesión fue exitoso, pero no se pudo obtener el perfil.');
+            }
+            const { data: user } = await profileRes.json();
+
+            setAuth(user);
+            setProfile(user);
+            setRoles(user.role ? [user.role.role_name] : []);
+            if (user.avatar) setAvatarUrl(user.avatar);
+
+            // 4. Navega a la página de inicio
             navigate('/');
             return { success: true };
+            
         } catch (err) {
             return {
                 success: false,
