@@ -162,7 +162,6 @@ export const AuthProvider = ({ children }) => {
             const body = await res.json();
 
             if (!res.ok) {
-                // Creamos un error con el mensaje y le adjuntamos el código
                 const error = new Error(body.message || 'Error desconocido');
                 error.code = body.code;
                 throw error;
