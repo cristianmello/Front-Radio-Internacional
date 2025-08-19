@@ -33,17 +33,14 @@ export const AuthProvider = ({ children }) => {
             try {
                 // Intentamos leer el token CSRF que el servidor pone en cookie
                 let csrfToken = getCookie('XSRF-TOKEN');
-                console.log('🛡️ A. Token CSRF encontrado en la cookie:', csrfToken);
 
                 // Si por alguna razón no existe (problema de dominio/path), hacemos
                 // un GET sencillo para que el middleware de tu servidor cree la cookie CSRF.
                 if (!csrfToken) {
                     try {
-                        console.log('... No se encontró token CSRF, forzando petición GET para obtener uno...');
 
                         await fetch(`${Url.url}/api/pages/home`, { method: 'GET', credentials: 'include' });
                         csrfToken = getCookie('XSRF-TOKEN');
-                        console.log('🛡️ A2. Token CSRF obtenido después del GET:', csrfToken);
 
                     } catch (err) {
                         // no fatal: intentamos seguir de todas formas
@@ -53,14 +50,12 @@ export const AuthProvider = ({ children }) => {
 
                 const headers = {};
                 if (csrfToken) headers['csrf-token'] = csrfToken;
-                console.log('📡 B. Realizando fetch a /refresh-token con cabecera csrf-token:', headers['csrf-token']);
 
                 const res = await fetch(`${Url.url}/api/users/refresh-token`, {
                     method: 'POST',
                     credentials: 'include',
                     headers
                 });
-                console.log('📨 C. Respuesta del servidor para /refresh-token:', res.ok ? `OK ✔️ (${res.status})` : `Falló ❌ (${res.status})`);
 
                 if (!res.ok) {
                     // Opcional: loguear body para debugging en dev
@@ -73,9 +68,6 @@ export const AuthProvider = ({ children }) => {
                 currentAccessToken = token;
                 return token;
             } catch (err) {
-                console.error('💥 D. ERROR CATASTRÓFICO en refreshAuth:', err);
-
-                console.error('Refresh token failed:', err);
                 currentAccessToken = null;
                 setAuth(null);
                 setRoles([]);
@@ -122,7 +114,6 @@ export const AuthProvider = ({ children }) => {
 
     const authenticateUser = useCallback(async () => {
         // Ya no necesitamos los logs, pero mantenemos el de inicio si quieres
-        console.log('🕵️‍♂️ 1. Iniciando authenticateUser...');
         setLoading(true);
 
         // Si YA tenemos un token en memoria (ej. después del login), no necesitamos renovar.
@@ -136,23 +127,18 @@ export const AuthProvider = ({ children }) => {
         // El navegador enviará la cookie httpOnly si existe. Si no, la petición fallará
         // de forma segura y el usuario simplemente no estará logueado.
         try {
-            console.log('📞 Intentando renovar el token...');
             const newToken = await refreshAuth(); // refreshAuth ya está bien diseñado
 
             if (newToken) {
-                console.log('👤 Token renovado. Buscando perfil de usuario...');
                 const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
 
                 if (res.ok) {
                     const { data: user } = await res.json();
-                    console.log('✅ ¡ÉXITO! Sesión restaurada para el usuario:', user);
                     setAuth(user);
                     setProfile(user);
                     setRoles(user.role ? [user.role.role_name] : []);
                     if (user.avatar) setAvatarUrl(user.avatar);
                 } else {
-                    // Si el refresh funcionó pero el perfil falló, limpiamos.
-                    console.error('❌ FRACASO. La petición de perfil falló. Limpiando sesión.');
                     setAuth(null);
                 }
             }
@@ -161,7 +147,6 @@ export const AuthProvider = ({ children }) => {
 
         } catch (error) {
             // En caso de un error inesperado, nos aseguramos de que no haya sesión.
-            console.error('Error inesperado durante la autenticación:', error);
             setAuth(null);
         } finally {
             setLoading(false);
