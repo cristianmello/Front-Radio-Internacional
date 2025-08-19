@@ -192,7 +192,7 @@ export const AuthProvider = ({ children }) => {
                 credentials: 'include',
             });
         } catch (e) {
-            console.warn('Logout request failed (client will still clear local state):', e);
+            console.warn('Logout request failed (client will still clear local state)::', e);
         }
 
         // Siempre limpiamos cliente aunque el fetch falle
