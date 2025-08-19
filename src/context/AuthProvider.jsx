@@ -25,36 +25,44 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const refreshAuth = useCallback(async () => {
-        try {
-            const res = await fetch(`${Url.url}/api/users/refresh-token`, {
-                method: 'POST',
-                credentials: 'include',
-            });
-            if (!res.ok) throw new Error('Refresh failed');
-
-            const { token } = await res.json();
-            currentAccessToken = token;
-            return token;
-        } catch (err) {
-            console.error('Refresh token failed:', err);
-            currentAccessToken = null;
-            setAuth(null);
-            setRoles([]);
-            setAvatarUrl('');
-            return null;
+        if (isRefreshing) {
+            return refreshPromise;
         }
-    }, []);
+        isRefreshing = true;
+        refreshPromise = (async () => {
+            try {
+                const res = await fetch(`${Url.url}/api/users/refresh-token`, {
+                    method: 'POST',
+                    credentials: 'include',
+                });
+                if (!res.ok) throw new Error('Refresh failed');
+
+                const { token } = await res.json();
+                currentAccessToken = token;
+                return token;
+            } catch (err) {
+                console.error('Refresh token failed:', err);
+                currentAccessToken = null;
+                setAuth(null);
+                setRoles([]);
+                setAvatarUrl('');
+                return null;
+            } finally {
+                isRefreshing = false;
+                refreshPromise = null;
+            }
+        })();
+        return refreshPromise;
+    }, [setAuth, setRoles, setAvatarUrl]);
 
     const authFetch = useCallback(async (input, init = {}) => {
         const csrfToken = getCookie('XSRF-TOKEN');
-
         const doFetch = async (accessToken) => {
             const finalHeaders = {
                 ...(init.headers || {}),
                 'csrf-token': csrfToken,
                 ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
             };
-            // Eliminar Content-Type si hay FormData para evitar errores
             if (init.body instanceof FormData) {
                 delete finalHeaders['Content-Type'];
             }
@@ -65,60 +73,56 @@ export const AuthProvider = ({ children }) => {
             });
         };
 
-        // Primera petición
         let res = await doFetch(currentAccessToken);
 
-        // Si la petición falla por token expirado y el token no es null
         if (res.status === 401 && currentAccessToken) {
-
-            if (!isRefreshing) {
-                isRefreshing = true;
-                refreshPromise = refreshAuth();
-            }
-
-            try {
-                const newToken = await refreshPromise;
-                if (newToken) {
-                    // Reintenta la petición original con el nuevo token
-                    res = await doFetch(newToken);
-                } else {
-                    // Si el refresh falla, devuelve un 401 para redirigir al login
-                    return new Response(JSON.stringify({ message: 'Session expired. Please log in again.' }), { status: 401 });
-                }
-            } finally {
-                // Reinicia el semáforo al terminar el proceso de refresh
-                isRefreshing = false;
-                refreshPromise = null;
+            const newToken = await refreshAuth();
+            if (newToken) {
+                res = await doFetch(newToken);
+            } else {
+                return new Response(JSON.stringify({ message: 'Session expired. Please log in again.' }), { status: 401 });
             }
         }
-
         return res;
     }, [refreshAuth]);
 
     // authenticateUser usa authFetch (y borra la lógica de fetchProfile duplicada)
     const authenticateUser = useCallback(async () => {
         setLoading(true);
-        // La lógica de refresh inicial ahora se maneja dentro de authFetch
-        const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
+        const hasRefreshCookie = document.cookie.split(';').some(c => c.trim().startsWith('refreshToken='));
 
-        if (!res.ok) {
-            // Si authFetch no pudo autenticar, limpia la sesión
+        if (!currentAccessToken && hasRefreshCookie) {
+            const newToken = await refreshAuth();
+            if (!newToken) {
+                setLoading(false);
+                return;
+            }
+        }
+
+        if (currentAccessToken) {
+            const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
+            if (!res.ok) {
+                setAuth(null);
+                setRoles([]);
+                setAvatarUrl('');
+            } else {
+                const { data: user } = await res.json();
+                setAuth(user);
+                setProfile(user);
+                setRoles(user.role ? [user.role.role_name] : []);
+                if (user.avatar) setAvatarUrl(user.avatar);
+            }
+        } else {
             setAuth(null);
             setRoles([]);
             setAvatarUrl('');
-        } else {
-            const { data: user } = await res.json();
-            setAuth(user);
-            setProfile(user);
-            setRoles(user.role ? [user.role.role_name] : []);
-            if (user.avatar) setAvatarUrl(user.avatar);
         }
         setLoading(false);
-    }, [authFetch]);
+    }, [authFetch, refreshAuth]);
 
     const login = async ({ user_mail, user_password }) => {
         try {
-            const res = await authFetch(`${Url.url}/api/users/login`, {
+            const res = await fetch(`${Url.url}/api/users/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,7 +178,7 @@ export const AuthProvider = ({ children }) => {
         user_password
     }) => {
         try {
-            const res = await authFetch(`${Url.url}/api/users/register`, {
+            const res = await fetch(`${Url.url}/api/users/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -202,7 +206,7 @@ export const AuthProvider = ({ children }) => {
 
     const recoverPassword = async ({ user_mail }) => {
         try {
-            const res = await authFetch(`${Url.url}/api/users/forgot-password`, {
+            const res = await fetch(`${Url.url}/api/users/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_mail }),
@@ -220,7 +224,7 @@ export const AuthProvider = ({ children }) => {
 
     const resendVerificationEmail = async ({ user_mail }) => {
         try {
-            const res = await authFetch(`${Url.url}/api/users/send-verification-email`, {
+            const res = await fetch(`${Url.url}/api/users/send-verification-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_mail }),
