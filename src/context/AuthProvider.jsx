@@ -251,7 +251,6 @@ export const AuthProvider = ({ children }) => {
             register,
             recoverPassword,
             resendVerificationEmail,
-            getToken,
             authFetch
         }}>
             {children}
