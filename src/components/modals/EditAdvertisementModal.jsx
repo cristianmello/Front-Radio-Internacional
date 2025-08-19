@@ -70,11 +70,26 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         }
     }, [initialAdData]);
 
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setFormError('');
+        setIsSubmitting(true);
+        try {
+            const compressed = await compressImage(file);
+            setAdImage(compressed);
+        } catch {
+            setFormError('Error al procesar la imagen, se usará la original.');
+            setAdImage(file);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError('');
 
-        // --- LÓGICA SIMPLIFICADA Y ROBUSTA ---
 
         setIsSubmitting(true);
         const formData = new FormData();
