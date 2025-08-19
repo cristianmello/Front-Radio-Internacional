@@ -8,6 +8,7 @@ import { useNotification } from '../../context/NotificationContext.jsx';
 export default function EditAdvertisementModal({ advertisement: adToEdit, onSave, onCancel, onUpdateSuccess }) {
     const { showNotification } = useNotification();
     const modalContentRef = useRef(null);
+    const previewUrlRef = useRef(null);
 
     const { advertisement: initialAdData, loading, error } = useAdvertisement(adToEdit.ad_id);
 
@@ -18,7 +19,8 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
     const [adName, setAdName] = useState('');
     const [adType, setAdType] = useState('image');
     const [adFormat, setAdFormat] = useState('');
-    const [adImage, setAdImage] = useState(null); // Puede ser la URL existente (string) o un nuevo archivo (File).
+    const [adImageFile, setAdImageFile] = useState(null);
+    const [adImagePreview, setAdImagePreview] = useState(null); // URL para <img>
     const [adTargetUrl, setAdTargetUrl] = useState('');
     const [adScriptContent, setAdScriptContent] = useState('');
     const [adStartDate, setAdStartDate] = useState('');
@@ -44,7 +46,8 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
             setAdName(initialAdData.ad_name || '');
             setAdType(initialAdData.ad_type || 'image');
             setAdFormat(initialAdData.ad_format || 'mrec');
-            setAdImage(initialAdData.ad_image_url); // Al inicio, es la URL de la imagen que ya existe.
+            setAdImageFile(null);
+            setAdImagePreview(initialAdData.ad_image_url || null);
             setAdTargetUrl(initialAdData.ad_target_url || '');
             setAdScriptContent(initialAdData.ad_script_content || '');
             setIsAdActive(initialAdData.ad_is_active || false);
@@ -71,58 +74,126 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
     }, [initialAdData]);
 
     const handleImageChange = async (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files?.[0];
         if (!file) return;
+
         setFormError('');
         setIsSubmitting(true);
+
+        // revocar preview previo
+        if (previewUrlRef.current) {
+            URL.revokeObjectURL(previewUrlRef.current);
+            previewUrlRef.current = null;
+        }
+
         try {
             const compressed = await compressImage(file);
-            setAdImage(compressed);
-        } catch {
+
+            // Normalizar a File (compressImage puede devolver File, Blob o dataURL)
+            let fileToUse;
+            if (compressed instanceof File) {
+                fileToUse = compressed;
+            } else if (compressed instanceof Blob) {
+                const name = file.name || `ad-${adFormat || 'format'}-${Date.now()}.webp`;
+                fileToUse = new File([compressed], name, { type: compressed.type || 'image/webp' });
+            } else if (typeof compressed === 'string' && compressed.startsWith('data:')) {
+                const res = await fetch(compressed);
+                const blob = await res.blob();
+                const name = file.name || `ad-${adFormat || 'format'}-${Date.now()}.webp`;
+                fileToUse = new File([blob], name, { type: blob.type || 'image/webp' });
+            } else {
+                fileToUse = file; // fallback
+            }
+
+            setAdImageFile(fileToUse);
+            const url = URL.createObjectURL(fileToUse);
+            previewUrlRef.current = url;
+            setAdImagePreview(url);
+        } catch (err) {
+            console.error('[ImageCompress]', err);
             setFormError('Error al procesar la imagen, se usará la original.');
-            setAdImage(file);
+            // fallback: usar el archivo original
+            setAdImageFile(file);
+            const url = URL.createObjectURL(file);
+            previewUrlRef.current = url;
+            setAdImagePreview(url);
         } finally {
             setIsSubmitting(false);
         }
     };
 
+
+    // 4. Lógica de guardado "inteligente": solo envía los campos modificados.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError('');
 
+        const initial = initialDataRef.current;
+        const formatChanged = adFormat !== initial.ad_format;
+        const newImageUploaded = adImageFile instanceof File;
+
+        if (formatChanged && !newImageUploaded) {
+            setFormError("Has cambiado el formato. Por favor, sube la imagen de nuevo para que se ajuste al nuevo tamaño.");
+            return;
+        }
 
         setIsSubmitting(true);
         const formData = new FormData();
 
-        // 1. Añade TODOS los campos de texto y de estado al FormData.
-        //    Esto asegura que el backend siempre reciba un payload completo y válido.
-        formData.append('ad_name', adName);
-        formData.append('ad_type', adType);
-        formData.append('ad_is_active', String(isAdActive));
+        // Comparamos cada campo con su valor original y lo añadimos si cambió
+        if (adName !== initial.ad_name) formData.append('ad_name', adName);
+        if (adType !== initial.ad_type) formData.append('ad_type', adType);
+        if (isAdActive !== initial.ad_is_active) formData.append('ad_is_active', String(isAdActive));
 
         if (adType === 'image') {
-            formData.append('ad_format', adFormat);
-            formData.append('ad_target_url', adTargetUrl);
-            // 2. Si el usuario subió un archivo nuevo (un objeto 'File'), lo añadimos.
-            //    Si no, no se añade nada y el backend sabrá que no debe cambiar la imagen.
-            if (adImage instanceof File) {
-                formData.append('ad_image_file', adImage);
+            if (adFormat !== initial.ad_format) formData.append('ad_format', adFormat);
+            if (adTargetUrl !== initial.ad_target_url) formData.append('ad_target_url', adTargetUrl);
+
+            // Añadimos el archivo si hay uno nuevo (adImageFile) -- NO usar instanceof File aquí como única comprobación
+            if (adImageFile) {
+                formData.append('ad_image_file', adImageFile, adImageFile.name || `ad-${adFormat || 'format'}-${Date.now()}.webp`);
             }
         }
 
         if (adType === 'script') {
-            formData.append('ad_script_content', adScriptContent);
+            if (adScriptContent !== initial.ad_script_content) formData.append('ad_script_content', adScriptContent);
         }
 
-        // 3. Manejo de fechas simplificado. Convierte las fechas a UTC o envía un string vacío.
-        const toUTCString = (localDateString) => localDateString ? new Date(localDateString).toISOString() : '';
-        formData.append('ad_start_date', toUTCString(adStartDate));
-        formData.append('ad_end_date', toUTCString(adEndDate));
+        // Función helper para convertir la fecha local del input a un string ISO UTC
+        const toUTCString = (localDateString) => {
+            if (!localDateString) return null; // Si no hay fecha, devuelve null
+            return new Date(localDateString).toISOString();
+        };
 
-        // 4. Llamamos a la función onSave con el FormData completo.
+        // Comparamos la fecha de inicio
+        if (adStartDate !== (initial.ad_start_date || '').slice(0, 16)) {
+            // Si hay un valor, lo convertimos a UTC antes de añadirlo
+            if (adStartDate) {
+                formData.append('ad_start_date', toUTCString(adStartDate));
+            } else {
+                formData.append('ad_start_date', '');
+            }
+        }
+
+        // Comparamos la fecha de fin
+        if (adEndDate !== (initial.ad_end_date || '').slice(0, 16)) {
+            if (adEndDate) {
+                formData.append('ad_end_date', toUTCString(adEndDate));
+            } else {
+                formData.append('ad_end_date', '');
+            }
+        }
+
+
+        // Si no se modificó ningún campo, cerramos el modal sin llamar a la API.
+        if ([...formData.entries()].length === 0) {
+            showNotification("No se detectaron cambios.", "info");
+            onCancel();
+            return;
+        }
+
         const result = await onSave(formData);
 
-        // 5. Manejamos el resultado como antes.
         if (result?.success) {
             showNotification('Anuncio actualizado con éxito.', 'success');
             if (onUpdateSuccess) onUpdateSuccess();
@@ -130,13 +201,24 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         } else {
             const errorMessage = result?.message || "Ocurrió un error inesperado.";
             setFormError(errorMessage);
+
         }
 
         setIsSubmitting(false);
     };
 
+    useEffect(() => {
+        return () => {
+            if (previewUrlRef.current) {
+                URL.revokeObjectURL(previewUrlRef.current);
+                previewUrlRef.current = null;
+            }
+        };
+    }, []);
+
     if (loading) return <div className="modal-edit active"><div className="modal-edit-content">Cargando datos del anuncio...</div></div>;
     if (error) return <div className="modal-edit active"><div className="modal-edit-content"><p className="form-error">{error}</p></div></div>;
+
 
     // 5. El JSX del formulario, ahora completo y condicional.
     return (
@@ -175,9 +257,9 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
                                 <input type="file" name="ad_image_file" accept="image/*" onChange={handleImageChange} disabled={isSubmitting} />
                                 <small>Sube una nueva imagen solo para reemplazar la actual.</small>
                             </div>
-                            {adImage && (
+                            {adImagePreview && (
                                 <div className="image-preview">
-                                    <img src={adImage instanceof File ? URL.createObjectURL(adImage) : adImage} alt="Vista previa" />
+                                    <img src={adImagePreview} alt="Vista previa" />
                                 </div>
                             )}
                             <div className="edit-field">
@@ -235,7 +317,9 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
 }
 
 EditAdvertisementModal.propTypes = {
-    advertisement: PropTypes.shape({ id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired }).isRequired,
+    advertisement: PropTypes.shape({
+        ad_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
+    }).isRequired,
     onSave: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
     onUpdateSuccess: PropTypes.func,
