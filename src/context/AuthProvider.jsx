@@ -120,56 +120,52 @@ export const AuthProvider = ({ children }) => {
         return res;
     }, [refreshAuth]);
 
-    // authenticateUser usa authFetch (y borra la lógica de fetchProfile duplicada)
     const authenticateUser = useCallback(async () => {
-        console.log('🕵️‍♂️ 1. Iniciando authenticateUser al cargar la página...');
+        // Ya no necesitamos los logs, pero mantenemos el de inicio si quieres
+        console.log('🕵️‍♂️ 1. Iniciando authenticateUser...');
         setLoading(true);
-        const hasRefreshCookie = document.cookie.split(';').some(c => c.trim().startsWith('refreshToken='));
-        console.log('🔑 2. ¿Existe la cookie refreshToken?', hasRefreshCookie);
 
-        // 1. Si no hay token en memoria, pero sí en la cookie, forzamos un refresh.
-        if (!currentAccessToken && hasRefreshCookie) {
-            console.log('📞 3. Intentando renovar el token llamando a refreshAuth...');
-
-            const newToken = await refreshAuth();
-            console.log('✨ 4. Resultado de refreshAuth. Nuevo token:', newToken ? 'RECIBIDO ✔️' : 'FALLÓ ❌');
-
-            if (!newToken) {
-                // Si la renovación falla, cerramos la sesión y salimos.
-                setLoading(false);
-                return;
-            }
-        }
-
-        // 2. Si hay un token (ya sea el original o el recién renovado), intentamos obtener el perfil.
+        // Si YA tenemos un token en memoria (ej. después del login), no necesitamos renovar.
         if (currentAccessToken) {
-            console.log('👤 5. Token de acceso disponible. Buscando perfil de usuario...');
-
-            const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
-            console.log('📄 6. Respuesta del perfil:', res.ok ? 'OK ✔️' : `Falló (${res.status}) ❌`);
-
-            if (!res.ok) {
-                console.error('❌ 7b. FRACASO. La petición de perfil falló. Limpiando sesión.');
-                setAuth(null);
-                setRoles([]);
-                setAvatarUrl('');
-            } else {
-                const { data: user } = await res.json();
-                console.log('✅ 7a. ¡ÉXITO! Sesión restaurada para el usuario:', user);
-                setAuth(user);
-                setProfile(user);
-                setRoles(user.role ? [user.role.role_name] : []);
-                if (user.avatar) setAvatarUrl(user.avatar);
-            }
-        } else {
-            console.error('❌ 7c. FRACASO. Hay cookie pero no se pudo obtener un token de acceso. Limpiando sesión.');
-
-            // 3. Si no hay ningún token, la sesión simplemente no se establece.
-            setAuth(null);
-            setRoles([]);
-            setAvatarUrl('');
+            setLoading(false);
+            return;
         }
-        setLoading(false);
+
+        // --- LÓGICA CORREGIDA ---
+        // Si NO hay token en memoria, SIEMPRE intentamos renovarlo.
+        // El navegador enviará la cookie httpOnly si existe. Si no, la petición fallará
+        // de forma segura y el usuario simplemente no estará logueado.
+        try {
+            console.log('📞 Intentando renovar el token...');
+            const newToken = await refreshAuth(); // refreshAuth ya está bien diseñado
+
+            if (newToken) {
+                console.log('👤 Token renovado. Buscando perfil de usuario...');
+                const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
+
+                if (res.ok) {
+                    const { data: user } = await res.json();
+                    console.log('✅ ¡ÉXITO! Sesión restaurada para el usuario:', user);
+                    setAuth(user);
+                    setProfile(user);
+                    setRoles(user.role ? [user.role.role_name] : []);
+                    if (user.avatar) setAvatarUrl(user.avatar);
+                } else {
+                    // Si el refresh funcionó pero el perfil falló, limpiamos.
+                    console.error('❌ FRACASO. La petición de perfil falló. Limpiando sesión.');
+                    setAuth(null);
+                }
+            }
+            // Si newToken es null, refreshAuth ya limpió el estado y mostró un error,
+            // así que no necesitamos hacer nada más aquí.
+
+        } catch (error) {
+            // En caso de un error inesperado, nos aseguramos de que no haya sesión.
+            console.error('Error inesperado durante la autenticación:', error);
+            setAuth(null);
+        } finally {
+            setLoading(false);
+        }
     }, [authFetch, refreshAuth]);
 
     const login = async ({ user_mail, user_password }) => {
