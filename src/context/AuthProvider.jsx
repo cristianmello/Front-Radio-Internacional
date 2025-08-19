@@ -33,13 +33,18 @@ export const AuthProvider = ({ children }) => {
             try {
                 // Intentamos leer el token CSRF que el servidor pone en cookie
                 let csrfToken = getCookie('XSRF-TOKEN');
+                console.log('🛡️ A. Token CSRF encontrado en la cookie:', csrfToken);
 
                 // Si por alguna razón no existe (problema de dominio/path), hacemos
                 // un GET sencillo para que el middleware de tu servidor cree la cookie CSRF.
                 if (!csrfToken) {
                     try {
+                        console.log('... No se encontró token CSRF, forzando petición GET para obtener uno...');
+
                         await fetch(`${Url.url}/api/pages/home`, { method: 'GET', credentials: 'include' });
                         csrfToken = getCookie('XSRF-TOKEN');
+                        console.log('🛡️ A2. Token CSRF obtenido después del GET:', csrfToken);
+
                     } catch (err) {
                         // no fatal: intentamos seguir de todas formas
                         console.warn('No se pudo forzar GET para obtener XSRF-TOKEN:', err);
@@ -48,12 +53,14 @@ export const AuthProvider = ({ children }) => {
 
                 const headers = {};
                 if (csrfToken) headers['csrf-token'] = csrfToken;
+                console.log('📡 B. Realizando fetch a /refresh-token con cabecera csrf-token:', headers['csrf-token']);
 
                 const res = await fetch(`${Url.url}/api/users/refresh-token`, {
                     method: 'POST',
                     credentials: 'include',
                     headers
                 });
+                console.log('📨 C. Respuesta del servidor para /refresh-token:', res.ok ? `OK ✔️ (${res.status})` : `Falló ❌ (${res.status})`);
 
                 if (!res.ok) {
                     // Opcional: loguear body para debugging en dev
@@ -66,6 +73,8 @@ export const AuthProvider = ({ children }) => {
                 currentAccessToken = token;
                 return token;
             } catch (err) {
+                console.error('💥 D. ERROR CATASTRÓFICO en refreshAuth:', err);
+
                 console.error('Refresh token failed:', err);
                 currentAccessToken = null;
                 setAuth(null);
@@ -113,12 +122,18 @@ export const AuthProvider = ({ children }) => {
 
     // authenticateUser usa authFetch (y borra la lógica de fetchProfile duplicada)
     const authenticateUser = useCallback(async () => {
+        console.log('🕵️‍♂️ 1. Iniciando authenticateUser al cargar la página...');
         setLoading(true);
         const hasRefreshCookie = document.cookie.split(';').some(c => c.trim().startsWith('refreshToken='));
+        console.log('🔑 2. ¿Existe la cookie refreshToken?', hasRefreshCookie);
 
         // 1. Si no hay token en memoria, pero sí en la cookie, forzamos un refresh.
         if (!currentAccessToken && hasRefreshCookie) {
+            console.log('📞 3. Intentando renovar el token llamando a refreshAuth...');
+
             const newToken = await refreshAuth();
+            console.log('✨ 4. Resultado de refreshAuth. Nuevo token:', newToken ? 'RECIBIDO ✔️' : 'FALLÓ ❌');
+
             if (!newToken) {
                 // Si la renovación falla, cerramos la sesión y salimos.
                 setLoading(false);
@@ -128,19 +143,27 @@ export const AuthProvider = ({ children }) => {
 
         // 2. Si hay un token (ya sea el original o el recién renovado), intentamos obtener el perfil.
         if (currentAccessToken) {
+            console.log('👤 5. Token de acceso disponible. Buscando perfil de usuario...');
+
             const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
+            console.log('📄 6. Respuesta del perfil:', res.ok ? 'OK ✔️' : `Falló (${res.status}) ❌`);
+
             if (!res.ok) {
+                console.error('❌ 7b. FRACASO. La petición de perfil falló. Limpiando sesión.');
                 setAuth(null);
                 setRoles([]);
                 setAvatarUrl('');
             } else {
                 const { data: user } = await res.json();
+                console.log('✅ 7a. ¡ÉXITO! Sesión restaurada para el usuario:', user);
                 setAuth(user);
                 setProfile(user);
                 setRoles(user.role ? [user.role.role_name] : []);
                 if (user.avatar) setAvatarUrl(user.avatar);
             }
         } else {
+            console.error('❌ 7c. FRACASO. Hay cookie pero no se pudo obtener un token de acceso. Limpiando sesión.');
+
             // 3. Si no hay ningún token, la sesión simplemente no se establece.
             setAuth(null);
             setRoles([]);
