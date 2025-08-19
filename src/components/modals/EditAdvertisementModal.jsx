@@ -70,90 +70,44 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         }
     }, [initialAdData]);
 
-    const handleImageChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setFormError('');
-        setIsSubmitting(true);
-        try {
-            const compressed = await compressImage(file);
-            setAdImage(compressed);
-        } catch {
-            setFormError('Error al procesar la imagen, se usará la original.');
-            setAdImage(file);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    // 4. Lógica de guardado "inteligente": solo envía los campos modificados.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError('');
 
-        const initial = initialDataRef.current;
-        const formatChanged = adFormat !== initial.ad_format;
-        const newImageUploaded = adImage instanceof File;
-
-        if (formatChanged && !newImageUploaded) {
-            setFormError("Has cambiado el formato. Por favor, sube la imagen de nuevo para que se ajuste al nuevo tamaño.");
-            return;
-        }
+        // --- LÓGICA SIMPLIFICADA Y ROBUSTA ---
 
         setIsSubmitting(true);
         const formData = new FormData();
 
-        // Comparamos cada campo con su valor original y lo añadimos si cambió
-        if (adName !== initial.ad_name) formData.append('ad_name', adName);
-        if (adType !== initial.ad_type) formData.append('ad_type', adType);
-        if (isAdActive !== initial.ad_is_active) formData.append('ad_is_active', String(isAdActive));
+        // 1. Añade TODOS los campos de texto y de estado al FormData.
+        //    Esto asegura que el backend siempre reciba un payload completo y válido.
+        formData.append('ad_name', adName);
+        formData.append('ad_type', adType);
+        formData.append('ad_is_active', String(isAdActive));
 
         if (adType === 'image') {
-            if (adFormat !== initial.ad_format) formData.append('ad_format', adFormat);
-            if (adTargetUrl !== initial.ad_target_url) formData.append('ad_target_url', adTargetUrl);
-            if (adImage instanceof File) formData.append('ad_image_file', adImage);
+            formData.append('ad_format', adFormat);
+            formData.append('ad_target_url', adTargetUrl);
+            // 2. Si el usuario subió un archivo nuevo (un objeto 'File'), lo añadimos.
+            //    Si no, no se añade nada y el backend sabrá que no debe cambiar la imagen.
+            if (adImage instanceof File) {
+                formData.append('ad_image_file', adImage);
+            }
         }
 
         if (adType === 'script') {
-            if (adScriptContent !== initial.ad_script_content) formData.append('ad_script_content', adScriptContent);
+            formData.append('ad_script_content', adScriptContent);
         }
 
-        // Función helper para convertir la fecha local del input a un string ISO UTC
-        const toUTCString = (localDateString) => {
-            if (!localDateString) return null; // Si no hay fecha, devuelve null
-            return new Date(localDateString).toISOString();
-        };
+        // 3. Manejo de fechas simplificado. Convierte las fechas a UTC o envía un string vacío.
+        const toUTCString = (localDateString) => localDateString ? new Date(localDateString).toISOString() : '';
+        formData.append('ad_start_date', toUTCString(adStartDate));
+        formData.append('ad_end_date', toUTCString(adEndDate));
 
-        // Comparamos la fecha de inicio
-        if (adStartDate !== (initial.ad_start_date || '').slice(0, 16)) {
-            // Si hay un valor, lo convertimos a UTC antes de añadirlo
-            if (adStartDate) {
-                formData.append('ad_start_date', toUTCString(adStartDate));
-            } else {
-                formData.append('ad_start_date', '');
-            }
-        }
-
-        // Comparamos la fecha de fin
-        if (adEndDate !== (initial.ad_end_date || '').slice(0, 16)) {
-            if (adEndDate) {
-                formData.append('ad_end_date', toUTCString(adEndDate));
-            } else {
-                formData.append('ad_end_date', '');
-            }
-        }
-
-
-        // Si no se modificó ningún campo, cerramos el modal sin llamar a la API.
-        if ([...formData.entries()].length === 0) {
-            showNotification("No se detectaron cambios.", "info");
-            onCancel();
-            return;
-        }
-
-        setIsSubmitting(true);
+        // 4. Llamamos a la función onSave con el FormData completo.
         const result = await onSave(formData);
 
+        // 5. Manejamos el resultado como antes.
         if (result?.success) {
             showNotification('Anuncio actualizado con éxito.', 'success');
             if (onUpdateSuccess) onUpdateSuccess();
@@ -161,9 +115,8 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         } else {
             const errorMessage = result?.message || "Ocurrió un error inesperado.";
             setFormError(errorMessage);
-        
         }
-        
+
         setIsSubmitting(false);
     };
 
