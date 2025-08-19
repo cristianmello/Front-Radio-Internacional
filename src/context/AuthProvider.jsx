@@ -91,14 +91,17 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         const hasRefreshCookie = document.cookie.split(';').some(c => c.trim().startsWith('refreshToken='));
 
+        // 1. Si no hay token en memoria, pero sí en la cookie, forzamos un refresh.
         if (!currentAccessToken && hasRefreshCookie) {
             const newToken = await refreshAuth();
             if (!newToken) {
+                // Si la renovación falla, cerramos la sesión y salimos.
                 setLoading(false);
                 return;
             }
         }
 
+        // 2. Si hay un token (ya sea el original o el recién renovado), intentamos obtener el perfil.
         if (currentAccessToken) {
             const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
             if (!res.ok) {
@@ -113,6 +116,7 @@ export const AuthProvider = ({ children }) => {
                 if (user.avatar) setAvatarUrl(user.avatar);
             }
         } else {
+            // 3. Si no hay ningún token, la sesión simplemente no se establece.
             setAuth(null);
             setRoles([]);
             setAvatarUrl('');
