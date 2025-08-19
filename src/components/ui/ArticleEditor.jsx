@@ -3,6 +3,7 @@ import { Editor } from '@tinymce/tinymce-react';
 import useArticleActions from '../../hooks/useArticleActions';
 import useAuth from '../../hooks/UseAuth';
 import Url from '../../helpers/Url';
+import DOMPurify from 'dompurify';
 
 export default function ArticleEditor({ article, refresh }) {
     // Hooks que SÍ necesitan autenticación. Como este componente solo se renderiza
@@ -29,15 +30,15 @@ export default function ArticleEditor({ article, refresh }) {
             method: 'POST',
             body: formData
         })
-        .then(res => {
-            if (!res.ok) return res.json().then(err => Promise.reject(err));
-            return res.json();
-        })
-        .then(json => {
-            if (!json || !json.location) return Promise.reject("Respuesta de subida inválida");
-            resolve(json.location);
-        })
-        .catch(err => reject("Fallo en la subida: " + (err.message || "Error desconocido")));
+            .then(res => {
+                if (!res.ok) return res.json().then(err => Promise.reject(err));
+                return res.json();
+            })
+            .then(json => {
+                if (!json || !json.location) return Promise.reject("Respuesta de subida inválida");
+                resolve(json.location);
+            })
+            .catch(err => reject("Fallo en la subida: " + (err.message || "Error desconocido")));
     });
 
     const handleSaveContent = async () => {
@@ -62,6 +63,8 @@ export default function ArticleEditor({ article, refresh }) {
         setEditableContent(article.article_content);
         setIsEditingContent(false);
     };
+
+    const sanitizedContent = article ? DOMPurify.sanitize(article.article_content) : '';
 
     return (
         <>
@@ -103,7 +106,7 @@ export default function ArticleEditor({ article, refresh }) {
                         }}
                     />
                 ) : (
-                    <div dangerouslySetInnerHTML={{ __html: article.article_content }} />
+                    <div dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
                 )}
             </div>
         </>

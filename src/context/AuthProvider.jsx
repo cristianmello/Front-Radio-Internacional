@@ -5,6 +5,11 @@ import Url from '../helpers/Url';
 
 const AuthContext = createContext();
 
+// Variables globales para manejar el semáforo de refresh token
+let isRefreshing = false;
+let refreshPromise = null;
+let currentAccessToken = null;
+
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -28,53 +33,62 @@ export const AuthProvider = ({ children }) => {
             if (!res.ok) throw new Error('Refresh failed');
 
             const { token } = await res.json();
-            localStorage.setItem('token', token);
-
+            currentAccessToken = token;
             return token;
         } catch (err) {
+            console.error('Refresh token failed:', err);
+            currentAccessToken = null;
+            setAuth(null);
+            setRoles([]);
+            setAvatarUrl('');
             return null;
         }
     }, []);
 
-    const getToken = () => localStorage.getItem('token');
-
     const authFetch = useCallback(async (input, init = {}) => {
-
         const csrfToken = getCookie('XSRF-TOKEN');
 
-        const token = getToken();
-        // Construimos los headers base:
-        const headers = {
-            ...(init.headers || {}),
-            ...(token && { Authorization: `Bearer ${token}` }),
-            ...(csrfToken && { 'csrf-token': csrfToken })
-        };
-
-        // Si el body NO es FormData, lo tratamos como JSON:
-        if (!(init.body instanceof FormData)) {
-            headers['Content-Type'] = 'application/json';
-        }
-
-        // Función interna para hacer la petición real
-        const doFetch = async (bearerToken) => {
+        const doFetch = async (accessToken) => {
+            const finalHeaders = {
+                ...(init.headers || {}),
+                'csrf-token': csrfToken,
+                ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+            };
+            // Eliminar Content-Type si hay FormData para evitar errores
+            if (init.body instanceof FormData) {
+                delete finalHeaders['Content-Type'];
+            }
             return fetch(input, {
                 ...init,
-                headers,
-                credentials: 'include'
+                headers: finalHeaders,
+                credentials: 'include',
             });
         };
 
         // Primera petición
-        let res = await doFetch(token);
+        let res = await doFetch(currentAccessToken);
 
-        // Si recibimos 401 y había token, intentamos refresh
-        if (res.status === 401 && token) {
-            const newToken = await refreshAuth();
-            if (newToken) {
-                // renovamos Authorization
-                headers.Authorization = `Bearer ${newToken}`;
-                // reintentamos
-                res = await doFetch(newToken);
+        // Si la petición falla por token expirado y el token no es null
+        if (res.status === 401 && currentAccessToken) {
+
+            if (!isRefreshing) {
+                isRefreshing = true;
+                refreshPromise = refreshAuth();
+            }
+
+            try {
+                const newToken = await refreshPromise;
+                if (newToken) {
+                    // Reintenta la petición original con el nuevo token
+                    res = await doFetch(newToken);
+                } else {
+                    // Si el refresh falla, devuelve un 401 para redirigir al login
+                    return new Response(JSON.stringify({ message: 'Session expired. Please log in again.' }), { status: 401 });
+                }
+            } finally {
+                // Reinicia el semáforo al terminar el proceso de refresh
+                isRefreshing = false;
+                refreshPromise = null;
             }
         }
 
@@ -84,44 +98,23 @@ export const AuthProvider = ({ children }) => {
     // authenticateUser usa authFetch (y borra la lógica de fetchProfile duplicada)
     const authenticateUser = useCallback(async () => {
         setLoading(true);
-
-        let token = getToken();
-
-        const hasRefreshCookie = document.cookie
-            .split(';')
-            .some(c => c.trim().startsWith('refreshToken='));
-
-        // Sólo intento refresh si NO tengo access token y SÍ hay cookie de refresh
-        if (!token && hasRefreshCookie) {
-            token = await refreshAuth();
-        }
-
-        if (!token) {
-            // aquí caes tras logout o tras fallo de refresh
-            localStorage.removeItem('token');
-            setAuth(null);
-            setRoles([]);
-            setAvatarUrl('');
-            setLoading(false);
-            return;
-        }
-
+        // La lógica de refresh inicial ahora se maneja dentro de authFetch
         const res = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
+
         if (!res.ok) {
-            localStorage.removeItem('token');
+            // Si authFetch no pudo autenticar, limpia la sesión
             setAuth(null);
             setRoles([]);
             setAvatarUrl('');
-            setLoading(false);
-            return;
+        } else {
+            const { data: user } = await res.json();
+            setAuth(user);
+            setProfile(user);
+            setRoles(user.role ? [user.role.role_name] : []);
+            if (user.avatar) setAvatarUrl(user.avatar);
         }
-        const { data: user } = await res.json();
-        setAuth(user);
-        setProfile(user);
-        setRoles(user.role ? [user.role.role_name] : []);
-        if (user.avatar) setAvatarUrl(user.avatar);
         setLoading(false);
-    }, [authFetch, refreshAuth]);
+    }, [authFetch]);
 
     const login = async ({ user_mail, user_password }) => {
         try {
@@ -141,9 +134,7 @@ export const AuthProvider = ({ children }) => {
                 error.code = body.code;
                 throw error;
             }
-
-            const { token } = body;
-            localStorage.setItem('token', token);
+            currentAccessToken = body.token;
             await authenticateUser();
             navigate('/');
             return { success: true };
@@ -158,16 +149,16 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await authFetch(`${Url.url}/api/users/logout`, {
+            await fetch(`${Url.url}/api/users/logout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    Authorization: `Bearer ${currentAccessToken}`,
                 },
                 credentials: 'include',
             });
         } catch { }
-        localStorage.removeItem('token');
+        currentAccessToken = null;
         setAuth(null);
         setRoles([]);
         setAvatarUrl('');

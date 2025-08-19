@@ -63,6 +63,7 @@ const AuthModal = ({ isOpen, onClose, onLogin, onRegister, onRecover, error }) =
 
   if (!isOpen) return null;
 
+  // src/components/layout/public/AuthModal.jsx
   const handleResendEmail = async () => {
     const email = loginEmailInputRef.current?.value;
     if (!email) {
@@ -73,17 +74,16 @@ const AuthModal = ({ isOpen, onClose, onLogin, onRegister, onRecover, error }) =
     setIsSubmitting(true);
     setFormError('');
     try {
-      const res = await fetch(`${Url.url}/api/users/send-verification-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_mail: email }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.message);
+      // Usamos la prop onResendVerification, que viene del hook,
+      // para que la lógica de la petición esté centralizada.
+      const result = await onResendVerification({ user_mail: email });
 
-      setShowResendLink(false); // Oculta el botón después del éxito
-      // Muestra un mensaje de éxito usando el mismo estado de error
-      setFormError("¡Correo de verificación reenviado! Revisa tu bandeja de entrada.");
+      if (result && !result.success) {
+        setFormError(result.message);
+      } else {
+        setShowResendLink(false);
+        setFormError("¡Correo de verificación reenviado! Revisa tu bandeja de entrada.");
+      }
     } catch (err) {
       setFormError(err.message || "No se pudo reenviar el correo.");
     } finally {
