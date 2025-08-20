@@ -2,6 +2,22 @@ import { useState, useEffect, useCallback } from 'react';
 import useAuth from './UseAuth';
 import Url from '../helpers/Url';
 
+// arriba, dentro de useComments (o justo después de imports)
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return undefined;
+}
+
+function jsonHeaders() {
+    const csrfToken = getCookie('XSRF-TOKEN');
+    return {
+        'Content-Type': 'application/json',
+        ...(csrfToken && { 'csrf-token': csrfToken })
+    };
+}
+
 export default function useComments(articleId, sortBy = 'best') {
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -34,12 +50,12 @@ export default function useComments(articleId, sortBy = 'best') {
         try {
             const res = await authFetch(`${Url.url}/api/articles/${articleId}/comments`, {
                 method: 'POST',
+                headers: jsonHeaders(),
                 body: JSON.stringify({ content, parentId }),
             });
             const json = await res.json();
             if (!res.ok) throw new Error(json.message || 'Error al publicar.');
 
-            // --- ACTUALIZACIÓN LOCAL ---
             const newComment = json.data.comment;
             setComments(currentComments => {
                 if (parentId) {
@@ -68,8 +84,8 @@ export default function useComments(articleId, sortBy = 'best') {
 
     const deleteComment = async (commentId) => {
         try {
-            await authFetch(`${Url.url}/api/comments/${commentId}`, { method: 'DELETE' });
-            // --- ACTUALIZACIÓN LOCAL ---
+            const headers = jsonHeaders();
+            await authFetch(`${Url.url}/api/comments/${commentId}`, { method: 'DELETE', headers });
             setComments(currentComments => {
                 const removeRecursively = (commentsList) => {
                     return commentsList
@@ -89,18 +105,18 @@ export default function useComments(articleId, sortBy = 'best') {
         }
     };
 
-
     const updateComment = async (commentId, content) => {
         try {
             const res = await authFetch(`${Url.url}/api/comments/${commentId}`, {
                 method: 'PUT',
+                headers: jsonHeaders(),
                 body: JSON.stringify({ content }),
             });
+
             const json = await res.json();
             if (!res.ok) throw new Error(json.message || 'Error al actualizar.');
-
-            // --- ACTUALIZACIÓN LOCAL ---
             const updatedComment = json.data.comment;
+
             setComments(currentComments => {
                 const updateRecursively = (commentsList) => {
                     return commentsList.map(c => {
@@ -125,6 +141,7 @@ export default function useComments(articleId, sortBy = 'best') {
         try {
             const res = await authFetch(`${Url.url}/api/comments/${commentId}/vote`, {
                 method: 'POST',
+                headers: jsonHeaders(),
                 body: JSON.stringify({ direction }),
             });
             const json = await res.json();
