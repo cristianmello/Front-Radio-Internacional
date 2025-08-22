@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import Url from '../helpers/Url';
-import useAuth from './UseAuth';
 
 /**
  * Hook para obtener una lista de anuncios con filtros, paginación y ordenamiento.
@@ -11,12 +10,11 @@ export default function useAdvertisements(options = {}) {
     const [pagination, setPagination] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { authFetch } = useAuth();
 
     const fetchAdvertisements = useCallback(async () => {
         setLoading(true);
         setError(null);
-        
+
         try {
             // Construye la cadena de consulta a partir de las opciones
             const queryParams = new URLSearchParams();
@@ -27,11 +25,11 @@ export default function useAdvertisements(options = {}) {
             });
             const queryString = queryParams.toString();
 
-            const res = await authFetch(`${Url.url}/api/advertisements?${queryString}`);
+            const res = await fetch(`${Url.url}/api/advertisements?${queryString}`);
             const body = await res.json();
 
             if (!res.ok) throw new Error(body.message || 'Error al cargar los anuncios');
-            
+
             setAdvertisements(body.advertisements || []);
             setPagination(body.pagination || null);
 
@@ -42,7 +40,7 @@ export default function useAdvertisements(options = {}) {
         } finally {
             setLoading(false);
         }
-    }, [authFetch, JSON.stringify(options)]); // Dependencia clave para que se recargue si las opciones cambian
+    }, [JSON.stringify(options)]);
 
     useEffect(() => {
         fetchAdvertisements();
@@ -53,6 +51,6 @@ export default function useAdvertisements(options = {}) {
         pagination,
         loading,
         error,
-        refresh: fetchAdvertisements, // Exportamos una función para refrescar manualmente
+        refresh: fetchAdvertisements,
     };
 }

@@ -275,7 +275,7 @@ const ArticlePage = () => {
                                 <img src={displayedArticle.article_image_url} alt={displayedArticle.article_title} />
                             </div>
                         )}
-                        <div class="social-share-sticky">
+                        <div className="social-share-sticky">
                             <button className="share-btn facebook" onClick={handleFacebookClick}>
                                 <i className="fab fa-facebook-f"></i>
                             </button>
