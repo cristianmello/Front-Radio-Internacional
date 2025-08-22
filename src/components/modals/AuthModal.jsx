@@ -9,7 +9,7 @@ const TABS = [
 ];
 
 
-const AuthModal = ({ isOpen, onClose, onLogin, onRegister, onRecover, error }) => {
+const AuthModal = ({ isOpen, onClose, onLogin, onRegister, onRecover, error, onResendVerification }) => {
   const [activeTab, setActiveTab] = useState("login-form");
   const [formError, setFormError] = useState("");
   const modalBackgroundRef = useRef(null);
@@ -65,6 +65,11 @@ const AuthModal = ({ isOpen, onClose, onLogin, onRegister, onRecover, error }) =
 
   // src/components/layout/public/AuthModal.jsx
   const handleResendEmail = async () => {
+    if (typeof onResendVerification !== 'function') {
+      setFormError('Función de reenvío no disponible. Intenta más tarde.');
+      return;
+    }
+
     const email = loginEmailInputRef.current?.value;
     if (!email) {
       setFormError("Por favor, ingresa tu correo para reenviar la verificación.");
