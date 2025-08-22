@@ -1,6 +1,6 @@
-# Radio Internacional - Front-end
+# Realidad Internacional - Front-end
 
-Este es el front-end de la aplicación web de Radio Internacional, desarrollado con **React** y **Vite**. Esta aplicación consume los datos de una API propia para mostrar noticias, y permitir la administración del contenido.
+Este es el front-end de la aplicación web de Realidad Nacional, desarrollado con **React** y **Vite**. Esta aplicación consume los datos de una API propia para mostrar noticias, y permitir la administración del contenido.
 
 ## ✨ Características
 

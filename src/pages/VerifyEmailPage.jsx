@@ -54,7 +54,7 @@ const VerifyEmailPage = () => {
                         </div>
                         <h1>¡Email Verificado!</h1>
                         <p>{message}</p>
-                        <p>Ahora puedes disfrutar de todas las funciones de Radio Internacional.</p>
+                        <p>Ahora puedes disfrutar de todas las funciones de Realidad Nacional.</p>
                         <div className="buttons">
                             <Link to="/" className="primary-btn">Ir a la página principal</Link>
                         </div>
