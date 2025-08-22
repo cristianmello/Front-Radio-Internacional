@@ -212,7 +212,13 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
       <div className="header-top">
         <div className="container">
           <div className="logo">
-            <Link to="/">
+            <Link
+              to="/"
+              onClick={(e) => {
+                e.preventDefault();
+                handleCategoryClick(e, { slug: 'inicio', path: '/' });
+              }}
+            >
               <img
                 src={logoRealidadNacional}
                 alt="Realidad Nacional"
