@@ -14,7 +14,6 @@ import useAdvertisements from '../hooks/useAdvertisements';
 import { useNotification } from '../context/NotificationContext';
 import { SidebarContext } from '../context/SidebarContext';
 import CommentsSection from '../components/ui/comments/CommentsSection';
-import DOMPurify from 'dompurify';
 
 const iconMap = {
     success: 'fas fa-check-circle',
@@ -149,7 +148,6 @@ const ArticlePage = () => {
 
     const displayedArticle = article || initialData;
 
-    const sanitizedContent = displayedArticle ? DOMPurify.sanitize(displayedArticle.article_content) : null;
 
     if (loading && !displayedArticle) {
         return (
@@ -327,7 +325,7 @@ const ArticlePage = () => {
                                 />
                             ) : (
                                 <div className="rendered-content">
-                                    <RenderArticleContent htmlContent={sanitizedContent} />
+                                    <RenderArticleContent htmlContent={displayedArticle.article_content} />
                                 </div>
                             )}
                         </div>
