@@ -301,7 +301,7 @@ const ArticlePage = () => {
                                             'forecolor backcolor | bullist numlist outdent indent blockquote | ' +
                                             'alignleft aligncenter alignright alignjustify | ' +
                                             'link image media insertAdButton| table | removeformat | fullscreen preview | help',
-
+                                        object_resizing: true,
                                         quickbars_selection_toolbar: 'bold italic | quicklink blockquote',
                                         quickbars_insert_toolbar: 'quickimage quicktable',
                                         image_uploadtab: true,
@@ -311,8 +311,17 @@ const ArticlePage = () => {
 
                                         extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
                                         media_live_embeds: true,
-                                        content_style: `body {font-family:Helvetica,Arial,sans-serif; font-size:16px }iframe {width: 100% !important;max-width: 100%;height: auto !important;aspect-ratio: 16 / 9;border: none;}`,
-                                        setup: (editor) => {
+                                        content_style: `
+                                         body { font-family:Helvetica,Arial,sans-serif; font-size:16px }
+                                         /* Para imágenes y videos */
+                                         img, iframe {
+                                         max-width: 100%; /* Usa max-width en lugar de width !important */
+                                         height: auto;    /* Permite que la altura se ajuste automáticamente */}
+                                         /* Mantenemos la proporción para iframes por defecto */iframe {
+                                         aspect-ratio: 16 / 9;
+                                         border: none;
+                                         }`
+                                        , setup: (editor) => {
                                             editor.ui.registry.addButton('insertAdButton', {
                                                 text: 'Publicidad',
                                                 icon: 'bullhorn',
