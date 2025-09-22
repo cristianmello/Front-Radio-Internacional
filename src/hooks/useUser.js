@@ -9,7 +9,7 @@ export default function useUser() {
     const [error, setError] = useState(null);
 
     // Solo necesitamos 'authFetch' del contexto de autenticación
-    const { authFetch } = useAuth();
+    const { auth, authFetch, loading: authLoading } = useAuth();
 
     const fetchProfile = useCallback(async () => {
         setLoading(true);
@@ -78,8 +78,12 @@ export default function useUser() {
     }, [authFetch]);
 
     useEffect(() => {
-        fetchProfile();
-    }, [fetchProfile]);
+        // Solo intentamos buscar el perfil si la autenticación inicial ya terminó
+        // y si efectivamente tenemos un usuario autenticado.
+        if (!authLoading && auth) {
+            fetchProfile();
+        }
+    }, [auth, authLoading, fetchProfile]);
 
     return {
         profile,

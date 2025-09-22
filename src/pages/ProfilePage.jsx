@@ -28,7 +28,7 @@ const iconMap = {
 function ProfilePage() {
 
 
-    const { auth, authFetch, roles, setAuth, logout } = useAuth();
+    const { auth, authFetch, roles, setAuth, logout, loading: authLoading } = useAuth();
     const { profile, loading: userLoading, error: userError, updateUserProfile, updateUserImage } = useUser();
 
     // 2. Creamos una variable para verificar si es admin o superadmin
@@ -208,13 +208,16 @@ function ProfilePage() {
         }
     };
 
-    // 5. RENDERIZADO CONDICIONAL
-    if (userLoading && !profile) {
+    if (authLoading || userLoading) {
         return <div>Cargando perfil...</div>;
     }
 
+    if (!auth) {
+        return <div>Debes iniciar sesión para ver esta página.</div>;
+    }
+
     if (!profile) {
-        return <div>No se pudo cargar el perfil. Inténtalo de nuevo.</div>;
+        return <div>No se pudo cargar el perfil. Error: {userError || 'Inténtalo de nuevo.'}</div>;
     }
 
     return (
