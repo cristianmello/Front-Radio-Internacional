@@ -23,7 +23,6 @@ const UserListPage = () => {
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    // NUEVO: Estados y lógica para las notificaciones
     const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
     const notificationTimer = useRef(null);
 

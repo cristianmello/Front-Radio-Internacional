@@ -85,6 +85,7 @@ export const AuthProvider = ({ children }) => {
         const doFetch = async (accessToken) => {
             const csrfToken = getCookie('XSRF-TOKEN'); // <- moved here
             const finalHeaders = {
+                ...(typeof init.body === 'string' && { 'Content-Type': 'application/json' }),
                 ...(init.headers || {}),
                 ...(csrfToken && { 'csrf-token': csrfToken }),
                 ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
@@ -189,7 +190,7 @@ export const AuthProvider = ({ children }) => {
             // 4. Navega a la página de inicio
             navigate('/');
             return { success: true };
-            
+
         } catch (err) {
             return {
                 success: false,
