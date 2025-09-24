@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useSectionActions } from '../../hooks/useSectionActions';
 import { SectionEditContext } from '../../context/SectionEditContext';
@@ -51,7 +51,7 @@ const editModalMap = {
     'ad-verticalsm': EditAdvertisementModal,
 };
 */
-const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories }) => {
+const SidebarWidget = React.memo(({ section, onSectionDeleted, canEditGlobal, categories }) => {
     const items = section.items || [];
     const { showNotification } = useNotification();
 
@@ -69,12 +69,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
     const adHook = useAdvertisement();
     const audioHook = useAudio();
 
-    const Component = componentMap[section.section_type];
-    const AddModal = addModalMap[section.section_type];
-
-    if (!Component) return null;
-
-    const handleAddItem = async (code) => {
+    const handleAddItem = useCallback(async (code) => {
         const result = await addItem(code);
         if (result.success) {
             setIsAdding(false);
@@ -83,27 +78,27 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
             showNotification(result.message || 'Error al añadir el elemento.', 'error');
         }
         return result;
-    };
+    }, [addItem, showNotification]);
 
-    const handleRemoveItem = async (itemCode) => {
+    const handleRemoveItem = useCallback(async (itemCode) => {
         const result = await removeItem(itemCode);
         if (result.success) {
             showNotification('Elemento quitado del sidebar, recargue la página', 'success');
         } else {
             showNotification(result.message || 'Error al quitar el elemento.', 'error');
         }
-    };
+    }, [removeItem, showNotification]);
 
-    const handleDeleteSection = async () => {
+    const handleDeleteSection = useCallback(async () => {
         const result = await deleteSection();
         if (result.success) {
             showNotification('Widget eliminado con éxito.', 'success');
         } else {
             showNotification(result.message || 'No se pudo eliminar el widget.', 'error');
         }
-    };
+    }, [deleteSection, showNotification]);
 
-    const handleEdit = (item) => {
+    const handleEdit = useCallback((item) => {
         if (item.ad_id) {
             setEditingAd(item); // Guardamos el objeto completo del anuncio
         } else if (item.audio_code) {
@@ -112,33 +107,61 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
             // Para artículos, creamos el objeto estandarizado que EditArticleModal espera
             setEditingArticle({ id: item.article_code, slug: item.slug });
         }
-    };
+    }, []);
 
-    const contextValue = {
+    const handleSaveArticle = useCallback((formData) => {
+        if (editingArticle) {
+            editArticle(editingArticle.id, formData);
+        }
+    }, [editingArticle, editArticle]);
+
+    const handleCancelEditArticle = useCallback(() => setEditingArticle(null), []);
+
+    const handleSaveAd = useCallback((formData) => {
+        if (editingAd) {
+            adHook.editAdvertisement(editingAd.ad_id, formData);
+        }
+    }, [editingAd, adHook]);
+
+    const handleCancelEditAd = useCallback(() => setEditingAd(null), []);
+
+    const handleSaveAudio = useCallback((formData) => {
+        if (editingAudio) {
+            audioHook.editAudio(editingAudio.audio_code, formData);
+        }
+    }, [editingAudio, audioHook]);
+
+    const handleCancelEditAudio = useCallback(() => setEditingAudio(null), []);
+
+    const contextValue = useMemo(() => ({
         canEdit: canEditGlobal,
         onAddItem: canEditGlobal && AddModal ? () => setIsAdding(true) : null,
         onRemove: canEditGlobal ? handleRemoveItem : null,
         onEdit: canEditGlobal ? handleEdit : null, // Pasamos la nueva función de manejo
         onDeleteSection: canEditGlobal && !section.is_protected ? handleDeleteSection : null,
-    };
+    }), [canEditGlobal, AddModal, handleRemoveItem, handleEdit, handleDeleteSection, section.is_protected]);
+
+    const Component = componentMap[section.section_type];
+    const AddModal = addModalMap[section.section_type];
+
+    if (!Component) return null;
 
     return (
         <SectionEditContext.Provider value={contextValue}>
             {isAdding && AddModal && (
                 <AddModal
                     section={section}
-                    onSelect={handleAddItem} 
+                    onSelect={handleAddItem}
                     onCancel={() => setIsAdding(false)}
                 />
             )}
 
-            {/* --- RENDERIZADO DE MODALES DE EDICIÓN SEPARADO Y CORRECTO --- */}
 
             {editingArticle && (
                 <EditArticleModal
                     article={editingArticle}
-                    onSave={(formData) => editArticle(editingArticle.id, formData)}
-                    onCancel={() => setEditingArticle(null)}
+                    onSave={handleSaveArticle}
+                    onCancel={handleCancelEditArticle}
                     onUpdateSuccess={onSectionDeleted}
                     categories={categories}
                 />
@@ -147,8 +170,8 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
             {editingAd && (
                 <EditAdvertisementModal
                     advertisement={editingAd}
-                    onSave={(formData) => adHook.editAdvertisement(editingAd.ad_id, formData)}
-                    onCancel={() => setEditingAd(null)}
+                    onSave={handleSaveAd}
+                    onCancel={handleCancelEditAd}
                     onUpdateSuccess={onSectionDeleted}
                 />
             )}
@@ -157,8 +180,8 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
                 <EditAudioModal
                     // Pasamos el ID del audio. Asumimos que el modal lo usa para fetchear datos.
                     audioId={editingAudio.audio_code}
-                    onSave={(formData) => audioHook.editAudio(editingAudio.audio_code, formData)}
-                    onCancel={() => setEditingAudio(null)}
+                    onSave={handleSaveAudio}
+                    onCancel={handleCancelEditAudio}
                     onUpdateSuccess={onSectionDeleted}
                     categories={categories}
                 />
@@ -173,7 +196,7 @@ const SidebarWidget = ({ section, onSectionDeleted, canEditGlobal, categories })
             />
         </SectionEditContext.Provider>
     );
-};
+});
 
 
 SidebarWidget.propTypes = {

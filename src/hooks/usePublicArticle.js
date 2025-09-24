@@ -1,6 +1,19 @@
 // src/hooks/usePublicArticle.js
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Url from "../helpers/Url";
+
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        // Cada vez que se llama, cancela el temporizador anterior
+        clearTimeout(timeoutId);
+        // Y crea uno nuevo
+        timeoutId = setTimeout(() => {
+            // Cuando el tiempo pasa, ejecuta la función original
+            func.apply(this, args);
+        }, delay);
+    };
+}
 
 // Este hook solo obtiene datos, no necesita 'useAuth'.
 export default function usePublicArticle(id, slug) {
@@ -37,6 +50,11 @@ export default function usePublicArticle(id, slug) {
         fetchArticle();
     }, [fetchArticle]);
 
+    const debouncedRefresh = useMemo(
+        () => debounce(fetchArticle, 500), // 500ms de espera
+        [fetchArticle]
+    );
+
     // Retorna solo los datos del artículo y una función para refrescar
-    return { article, loading, error, refresh: fetchArticle };
+    return { article, loading, error, refresh: debouncedRefresh };
 }

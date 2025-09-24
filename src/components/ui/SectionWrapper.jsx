@@ -1,5 +1,5 @@
 // src/components/layout/public/home/SectionWrapper.jsx
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 
 // Componentes y Modales
 import BreakingNews from "./BreakingNews";
@@ -43,6 +43,8 @@ const componentMap = {
     'ad-verticalsm': AdBanner,
 };
 
+const adTypes = ['ad-large', 'ad-small', 'ad-banner', 'ad-skyscraper', 'ad-biglarge', 'ad-verticalsm'];
+
 export default function SectionWrapper({ section, onSectionDeleted, categoryFilter, categories }) {
     const editMode = useEditMode();
     const { auth, roles } = useAuth();
@@ -66,7 +68,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
     const { editArticle } = useArticleActions();
     const adHook = useAdvertisement(editingAdvertisement?.ad_id);
 
-    const handleSelectAdvertisement = async (code) => {
+    const handleSelectAdvertisement = useCallback(async (code) => {
         const result = await addItem(code);
         if (result.success) {
             setAdding(false);
@@ -75,9 +77,9 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
             showNotification(result.message || "Error al añadir publicidad.", 'error');
         }
         return result;
-    };
+    }, [addItem, showNotification]);
 
-    const handleSelectContent = async (code) => {
+    const handleSelectContent = useCallback(async (code) => {
         const result = await addItem(code);
         if (result.success) {
             setAdding(false);
@@ -87,9 +89,9 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
             showNotification(result.message || "Error al añadir contenido.", 'error');
         }
         return result;
-    };
+    }, [addItem, showNotification]);
 
-    const handleDeleteSection = async () => {
+    const handleDeleteSection = useCallback(async () => {
         const result = await deleteSection();
         if (result.success) {
             showNotification('Sección eliminada con éxito.', 'success');
@@ -97,22 +99,21 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
             // Con el 'else' y sin el alert(), ahora es consistente
             showNotification(result.message || "No se pudo eliminar la sección.", 'error');
         }
-    };
+    }, [deleteSection, showNotification]);
 
-    const handleRemoveItem = async (itemCode) => {
+    const handleRemoveItem = useCallback(async (itemCode) => {
         const result = await removeItem(itemCode);
         if (result.success) {
             showNotification('Elemento quitado de la sección, recargue la página.', 'success');
         } else {
             showNotification(result.message || 'Error al quitar el elemento.', 'error');
         }
-    };
+    }, [removeItem, showNotification]);
 
     const Component = componentMap[section.section_type];
     if (!Component) return null;
 
     let ModalComponent;
-    const adTypes = ['ad-large', 'ad-small', 'ad-banner', 'ad-skyscraper', 'ad-biglarge', 'ad-verticalsm'];
 
     if (adTypes.includes(section.section_type)) {
         ModalComponent = AddAdvertisementModal;
@@ -124,7 +125,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
 
     //const canDeleteSection = canEdit && !section.is_protected;
 
-    const editContextValue = {
+    const editContextValue = useMemo(() => ({
         canEdit,
         onAddItem: canEdit ? () => setAdding(true) : null,
         onRemove: canEdit ? handleRemoveItem : null,
@@ -139,7 +140,7 @@ export default function SectionWrapper({ section, onSectionDeleted, categoryFilt
         onDeleteSection: canEdit && !section.is_protected ? handleDeleteSection : null,
         setItems: canEdit ? setItems : null,
         reorderItems: canEdit ? reorderItems : null
-    };
+    }), [canEdit, section.is_protected, handleRemoveItem, handleDeleteSection, setItems, reorderItems]);
 
     const onSelectHandler = adTypes.includes(section.section_type)
         ? handleSelectAdvertisement

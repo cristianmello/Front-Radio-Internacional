@@ -1,11 +1,11 @@
 // src/components/layout/public/home/FeaturedArticle.jsx
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useSectionEdit } from "../../context/SectionEditContext";
 
-const FeaturedArticle = ({ data = [] }) => {
+const FeaturedArticle = React.memo(({ data = [] }) => {
     const { canEdit, onRemove, onEdit } = useSectionEdit();
 
     const navigate = useNavigate();
@@ -24,58 +24,52 @@ const FeaturedArticle = ({ data = [] }) => {
         is_premium,
     } = data;
 
+    // Formatear fecha (p.ej. "13 de junio, 2025")
+    const formattedDate = useMemo(() =>
+        date ? format(new Date(date), "d 'de' MMMM, yyyy", { locale: es }) : "",
+        [date]
+    );
+
+    const srcSetWebp = useMemo(() =>
+        `${image}?width=600&height=400&fit=contain 600w, ${image}?width=1200&height=800&fit=contain 1200w`,
+        [image]
+    );
+
+    const srcSetJpeg = useMemo(() =>
+        `${image}?width=600&height=400&fit=contain 600w, ${image}?width=1200&height=800&fit=contain 1200w`,
+        [image]
+    );
+
+    const handleArticleClick = useCallback(() => {
+        if (canEdit) return;
+        navigate(`/articulos/${article_code}/${slug}`, {
+            state: { article: { ...data, article_published_at: date } },
+        });
+    }, [canEdit, navigate, article_code, slug, data, date]);
+
+    const handleEdit = useCallback((e) => {
+        e.stopPropagation();
+        onEdit(data);
+    }, [data, onEdit]);
+
+    const handleRemove = useCallback((e) => {
+        e.stopPropagation();
+        onRemove(article_code);
+    }, [article_code, onRemove]);
     if (!article_code) return null;
 
-    const handleArticleClick = () => {
-        // Si estamos en modo edición, no hacemos nada
-        if (canEdit) return;
-
-        // Navegamos a la página del artículo
-        navigate(`/articulos/${article_code}/${slug}`, {
-            state: {
-                article: {
-                    ...data,
-                    article_published_at: data.date,
-                },
-            },
-        });
-    };
-    // Formatear fecha (p.ej. "13 de junio, 2025")
-    const formattedDate = date
-        ? format(new Date(date), "d 'de' MMMM, yyyy", { locale: es })
-        : "";
-
     return (
-        <div
-            className={`featured-article ${!canEdit ? 'clickable' : ''}`}
-            onClick={handleArticleClick}
-        >
+        <div className={`featured-article ${!canEdit ? 'clickable' : ''}`} onClick={handleArticleClick}>
             <div className="article-image">
                 {is_premium && (
                     <div className="badge premium">Premium</div>
                 )}
                 <div className="badge breaking">ÚLTIMA HORA</div>
                 <picture>
-                    <source
-                        srcSet={`${image}?width=600&height=400&fit=contain 600w, ${image}?width=1200&height=800&fit=contain 1200w, ${image}?width=1800&height=1200&fit=contain 1800w`}
-                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
-                        type="image/webp"
-                    />
-                    <source
-                        srcSet={`${image}?width=600&height=400&fit=contain 600w, ${image}?width=1200&height=800&fit=contain 1200w, ${image}?width=1800&height=1200&fit=contain 1800w`}
-                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
-                        type="image/jpeg"
-                    />
-                    <img
-                        src={image || "/placeholder.jpg"}
-                        alt={title}
-                        data-editable-id={`img-${article_code}`}
-                        loading="lazy" // Lazy load
-                        className="news-card-image"
-                    />
+                    <source srcSet={srcSetWebp} sizes="(max-width: 600px) 600px, 1200px" type="image/webp" />
+                    <source srcSet={srcSetJpeg} sizes="(max-width: 600px) 600px, 1200px" type="image/jpeg" />
+                    <img src={image || "/placeholder.jpg"} alt={title} loading="lazy" className="news-card-image" />
                 </picture>
-
-
             </div>
             <div className="article-content">
                 <span
@@ -119,21 +113,14 @@ const FeaturedArticle = ({ data = [] }) => {
                 {canEdit && (
                     <div className="item-actions">
                         {/* Botón editar artículo */}
-                        <button
-                            className="edit-item-btn"
-                            title="Editar artículo"
-                            onClick={() => onEdit(data)}
-                        >
+                        <button className="edit-item-btn" title="Editar artículo" onClick={handleEdit}>
+
                             <i className="fas fa-pen"></i>
                         </button>
 
                         {/* Botón eliminar artículo */}
                         {onRemove && (
-                            <button
-                                className="delete-item-btn"
-                                title="Eliminar elemento"
-                                onClick={() => onRemove(article_code)}
-                            >
+                            <button className="delete-item-btn" title="Eliminar elemento" onClick={handleRemove}>
                                 <i className="fas fa-trash" />
                             </button>
                         )}
@@ -142,41 +129,5 @@ const FeaturedArticle = ({ data = [] }) => {
             </div>
         </div>
     );
-}
+});
 export default FeaturedArticle;
-
-{/*}
-// Por ahora dejamos URL de imagen estática. Más adelante puedes pasarla por props.
-const FeaturedArticle = () => {
-    return (
-        <div className="featured-article">
-            <div className="article-image">
-                <div className="badge breaking">ÚLTIMA HORA</div>
-                <img
-                    src="https://source.unsplash.com/random/1200x600/?news"
-                    alt="Noticia principal"
-                />
-            </div>
-            <div className="article-content">
-                <span className="category">Política</span>
-                <h3>Histórico acuerdo de paz firmado entre naciones en conflicto</h3>
-                <p className="excerpt">
-                    Tras décadas de tensiones, los líderes mundiales celebran el tratado
-                    que promete estabilidad en la región y nuevas oportunidades de
-                    cooperación internacional.
-                </p>
-                <div className="article-meta">
-                    <span className="author">Por María González</span>
-                    <span className="date">Hace 2 horas</span>
-                    <span className="read-time">5 min lectura</span>
-                </div>
-                <a href="#" className="read-more" data-article-id="1">
-                    Leer más
-                </a>
-            </div>
-        </div>
-    );
-};
-
-*/}
-

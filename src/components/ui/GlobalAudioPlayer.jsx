@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 
 // --- Iconos SVG para los controles ---
@@ -12,8 +12,15 @@ const VolumeIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
 );
 
+const formatTime = (timeInSeconds) => {
+    if (isNaN(timeInSeconds)) return '0:00';
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
 
-const GlobalAudioPlayer = () => {
+
+const GlobalAudioPlayer = React.memo(() => {
     // 1. CONTEXTO Y REFERENCIAS
     const { playingAudio, stopAudio } = useAudioPlayer();
     const audioRef = useRef(null); // Ref para el elemento <audio>
@@ -28,7 +35,7 @@ const GlobalAudioPlayer = () => {
     // Este efecto se activa cuando cambia el audio del contexto global
     useEffect(() => {
         if (playingAudio && audioRef.current) {
-            audioRef.current.src = playingAudio.audio_url; 
+            audioRef.current.src = playingAudio.audio_url;
             audioRef.current.play().catch(error => console.error("Error al reproducir audio:", error));
             setIsPlaying(true);
         } else if (!playingAudio && audioRef.current) {
@@ -38,47 +45,40 @@ const GlobalAudioPlayer = () => {
     }, [playingAudio]);
 
     // 4. MANEJADORES DE EVENTOS DEL AUDIO
-    const onLoadedMetadata = () => {
+    const onLoadedMetadata = useCallback(() => {
         setDuration(audioRef.current.duration);
-    };
+    }, []);
 
-    const onTimeUpdate = () => {
+    const onTimeUpdate = useCallback(() => {
         setCurrentTime(audioRef.current.currentTime);
-    };
+    }, []);
 
-    const onEnded = () => {
-        stopAudio(); // Limpia el audio del contexto
+
+    const onEnded = useCallback(() => {
+        stopAudio();
         setIsPlaying(false);
-    };
+    }, [stopAudio]);
 
     // 5. FUNCIONES DE INTERACCIÓN DEL USUARIO
-    const togglePlayPause = () => {
+    const togglePlayPause = useCallback(() => {
         if (isPlaying) {
             audioRef.current.pause();
         } else {
             audioRef.current.play();
         }
-        setIsPlaying(!isPlaying);
-    };
+        setIsPlaying(prev => !prev);
+    }, [isPlaying]);
 
-    const handleProgressChange = (e) => {
+    const handleProgressChange = useCallback((e) => {
         audioRef.current.currentTime = e.target.value;
         setCurrentTime(e.target.value);
-    };
+    }, []);
 
-    const handleVolumeChange = (e) => {
+    const handleVolumeChange = useCallback((e) => {
         const newVolume = e.target.value;
         audioRef.current.volume = newVolume;
         setVolume(newVolume);
-    };
-
-    // 6. HELPER PARA FORMATEAR TIEMPO
-    const formatTime = (timeInSeconds) => {
-        if (isNaN(timeInSeconds)) return '0:00';
-        const minutes = Math.floor(timeInSeconds / 60);
-        const seconds = Math.floor(timeInSeconds % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
+    }, []);
 
     // Si no hay audio, no renderizar nada
     if (!playingAudio) {
@@ -131,6 +131,6 @@ const GlobalAudioPlayer = () => {
             </div>
         </div>
     );
-};
+});
 
 export default GlobalAudioPlayer;

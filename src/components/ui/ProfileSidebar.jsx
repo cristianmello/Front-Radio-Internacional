@@ -1,5 +1,5 @@
 // src/components/ui/ProfileSidebar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useProfileSidebar } from '../../context/ProfileSidebarContext';
 import useAuth from '../../hooks/UseAuth';
 import Url from '../../helpers/Url';
@@ -7,7 +7,31 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-export default function ProfileSidebar() {
+const RecentCommentItem = React.memo(({ comment, onClose }) => {
+    // Memorizamos el cálculo de la fecha
+    const formattedTime = useMemo(() =>
+        comment.created_at
+            ? formatDistanceToNow(new Date(comment.created_at.replace(' ', 'T')), { locale: es, addSuffix: true })
+            : '',
+        [comment.created_at]
+    );
+
+    return (
+        <li>
+            <p>"{comment.comment_content}"</p>
+            <div className="sidebar-activity-meta">
+                <i className="fas fa-clock"></i>
+                <span>{formattedTime}</span>
+                <span>en</span>
+                <Link to={`/articulos/${comment.article.article_code}/${comment.article.article_slug}`} onClick={onClose}>
+                    {comment.article.article_title}
+                </Link>
+            </div>
+        </li>
+    );
+});
+
+const ProfileSidebar = React.memo(() => {
     const { targetUserId, closeSidebar } = useProfileSidebar();
     const { authFetch } = useAuth();
     const [profileData, setProfileData] = useState(null);
@@ -37,10 +61,10 @@ export default function ProfileSidebar() {
         fetchProfileData();
     }, [targetUserId, authFetch]);
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         setProfileData(null); // Limpia los datos al cerrar
         closeSidebar();
-    };
+    }, [closeSidebar]);
 
     //if (!targetUserId) return null;
 
@@ -78,22 +102,7 @@ export default function ProfileSidebar() {
                             <h4>Actividad Reciente</h4>
                             <ul>
                                 {profileData.recentComments.map(comment => (
-                                    <li key={comment.comment_id}>
-                                        <p>"{comment.comment_content}"</p>
-                                        <div className="sidebar-activity-meta">
-                                            <i className="fas fa-clock"></i>
-                                            <span>
-                                                {comment.created_at
-                                                    ? formatDistanceToNow(new Date(comment.created_at.replace(' ', 'T')), { locale: es, addSuffix: true })
-                                                    : ''
-                                                }
-                                            </span>
-                                            <span>en</span>
-                                            <Link to={`/articulos/${comment.article.article_code}/${comment.article.article_slug}`} onClick={handleClose}>
-                                                {comment.article.article_title}
-                                            </Link>
-                                        </div>
-                                    </li>
+                                    <RecentCommentItem key={comment.comment_id} comment={comment} onClose={handleClose} />
                                 ))}
                             </ul>
                             {profileData.stats.comments > 5 && (
@@ -107,4 +116,6 @@ export default function ProfileSidebar() {
             </div>
         </>
     );
-}
+});
+
+export default ProfileSidebar;

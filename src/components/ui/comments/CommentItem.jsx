@@ -1,5 +1,5 @@
 // src/components/ui/CommentItem.jsx
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import useAuth from '../../../hooks/UseAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -10,11 +10,11 @@ import { useProfileSidebar } from '../../../context/ProfileSidebarContext';
 
 const INITIAL_REPLIES_TO_SHOW = 4;
 
-export default function CommentItem({ comment, onPostReply, onDelete, onUpdate, onVote, onOpenAuth, toggleApproval }) {
+const CommentItem = React.memo(({ comment, onPostReply, onDelete, onUpdate, onVote, onOpenAuth, toggleApproval }) => {
     const { auth } = useAuth();
-    
-    const isAdmin = auth && auth.roles?.some(r => ["editor", "admin", "superadmin"].includes(r));
     const { openSidebar } = useProfileSidebar();
+
+    const isAdmin = auth && auth.roles?.some(r => ["editor", "admin", "superadmin"].includes(r));
 
     const [isReplying, setIsReplying] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -22,39 +22,54 @@ export default function CommentItem({ comment, onPostReply, onDelete, onUpdate, 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [visibleRepliesCount, setVisibleRepliesCount] = useState(INITIAL_REPLIES_TO_SHOW);
 
-    const canModify = auth && (auth.user_code === comment.author?.user_code || auth.roles?.some(r => ["editor", "admin", "superadmin"].includes(r)));
-    const upvotes = comment.votes?.filter(v => v.vote_type === 1).length || 0;
-    const userVote = auth ? comment.votes?.find(v => v.user_id === auth.user_code) : null;
+    const canModify = useMemo(() =>
+        auth && (auth.user_code === comment.author?.user_code || auth.roles?.some(r => ["editor", "admin", "superadmin"].includes(r))),
+        [auth, comment.author] // Depende del usuario y el autor del comentario
+    );
+    const upvotes = useMemo(() =>
+        comment.votes?.filter(v => v.vote_type === 1).length || 0,
+        [comment.votes] // Depende solo de los votos
+    );
+
+    const userVote = useMemo(() =>
+        auth ? comment.votes?.find(v => v.user_id === auth.user_code) : null,
+        [auth, comment.votes] // Depende del usuario y los votos
+    );
+
     const hasUpvoted = userVote?.vote_type === 1;
     const hasDownvoted = userVote?.vote_type === -1;
 
-    const handlePostReply = (replyContent) => {
+    const handlePostReply = useCallback((replyContent) => {
         onPostReply(replyContent, comment.comment_id);
         setIsReplying(false);
-    };
+    }, [onPostReply, comment.comment_id]);
 
-    const handleUpdate = (newContent) => {
+    const handleUpdate = useCallback((newContent) => {
         onUpdate(comment.comment_id, newContent);
         setIsEditing(false);
-    };
+    }, [onUpdate, comment.comment_id]);
 
-    const handleAction = (action) => {
+    const handleAction = useCallback((action) => {
         if (!auth) onOpenAuth();
         else action();
-    };
+    }, [auth, onOpenAuth]);
 
-    const handleDeleteConfirm = () => {
+    const handleDeleteConfirm = useCallback(() => {
         onDelete(comment.comment_id);
         setIsDeleteModalOpen(false); // Cierra el modal
-    };
+    }, [onDelete, comment.comment_id]);
 
     const hasReplies = comment.replies && comment.replies.length > 0;
 
-    const handleShowMoreReplies = () => {
+    const handleShowMoreReplies = useCallback(() => {
         setVisibleRepliesCount(comment.replies.length);
-    };
+    }, [comment.replies]);
 
-    const visibleReplies = hasReplies ? comment.replies.slice(0, visibleRepliesCount) : [];
+    const visibleReplies = useMemo(() =>
+        hasReplies ? comment.replies.slice(0, visibleRepliesCount) : [],
+        [hasReplies, comment.replies, visibleRepliesCount]
+    );
+
     const hasMoreReplies = hasReplies && comment.replies.length > visibleRepliesCount;
 
     return (
@@ -90,7 +105,6 @@ export default function CommentItem({ comment, onPostReply, onDelete, onUpdate, 
                         </div>
 
                         {!isEditing && (
-                            /* --- CAMBIO 3: Estructura de acciones tipo Disqus --- */
                             <div className="comment-actions">
                                 <div className="vote-actions">
                                     <button
@@ -187,4 +201,6 @@ export default function CommentItem({ comment, onPostReply, onDelete, onUpdate, 
             />
         </>
     );
-}
+});
+
+export default CommentItem;

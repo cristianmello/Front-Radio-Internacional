@@ -1,5 +1,5 @@
 // src/context/AuthContext.jsx
-import React, { useState, useEffect, createContext, useCallback } from 'react';
+import React, { useState, useEffect, createContext, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Url from '../helpers/Url';
 
@@ -154,7 +154,7 @@ export const AuthProvider = ({ children }) => {
         }
     }, [authFetch, refreshAuth]);
 
-    const login = async ({ user_mail, user_password }) => {
+    const login = useCallback(async ({ user_mail, user_password }) => {
         try {
             const res = await fetch(`${Url.url}/api/users/login`, {
                 method: 'POST',
@@ -198,9 +198,9 @@ export const AuthProvider = ({ children }) => {
                 code: err.code
             };
         }
-    };
+    }, [authFetch, navigate]);
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         try {
             const csrfToken = getCookie('XSRF-TOKEN');
             await fetch(`${Url.url}/api/users/logout`, {
@@ -222,98 +222,100 @@ export const AuthProvider = ({ children }) => {
         setRoles([]);
         setAvatarUrl('');
         navigate('/');
-    };
+    }, [navigate]);
 
-    const register = async ({
+    const register = useCallback(async ({
         user_name,
-        user_lastname,
-        user_birth,
-        user_phone,
-        user_mail,
-        user_password
+            user_lastname,
+            user_birth,
+            user_phone,
+            user_mail,
+            user_password
     }) => {
-        try {
-            const res = await fetch(`${Url.url}/api/users/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_name,
-                    user_lastname,
-                    user_birth,
-                    user_phone,
-                    user_mail,
-                    user_password
-                }),
-            });
-            const body = await res.json();
+    try {
+        const res = await fetch(`${Url.url}/api/users/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_name,
+                user_lastname,
+                user_birth,
+                user_phone,
+                user_mail,
+                user_password
+            }),
+        });
+        const body = await res.json();
 
-            if (!res.ok) {
-                console.error('Errores de validación en register:', body.errors);
-                throw new Error(body.message);
-            }
-            return { success: true, message: body.message };
-
-        } catch (err) {
-            console.error('Error en register:', err);
-            return { success: false, message: err.message };
+        if (!res.ok) {
+            console.error('Errores de validación en register:', body.errors);
+            throw new Error(body.message);
         }
-    };
+        return { success: true, message: body.message };
 
-    const recoverPassword = async ({ user_mail }) => {
-        try {
-            const res = await fetch(`${Url.url}/api/users/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_mail }),
-            });
-            const body = await res.json();
-            if (!res.ok) {
-                throw new Error(body.message || 'Error al solicitar recuperación');
-            }
-            return { success: true, message: body.message };
-        } catch (err) {
-            console.error('Error en recoverPassword:', err);
-            return { success: false, message: err.message };
+    } catch (err) {
+        console.error('Error en register:', err);
+        return { success: false, message: err.message };
+    }
+}, []);
+
+const recoverPassword = useCallback(async ({ user_mail }) => {
+    try {
+        const res = await fetch(`${Url.url}/api/users/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_mail }),
+        });
+        const body = await res.json();
+        if (!res.ok) {
+            throw new Error(body.message || 'Error al solicitar recuperación');
         }
-    };
+        return { success: true, message: body.message };
+    } catch (err) {
+        console.error('Error en recoverPassword:', err);
+        return { success: false, message: err.message };
+    }
+}, []);
 
-    const resendVerificationEmail = async ({ user_mail }) => {
-        try {
-            const res = await fetch(`${Url.url}/api/users/send-verification-email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_mail }),
-            });
-            const body = await res.json();
-            if (!res.ok) {
-                throw new Error(body.message || 'Error al reenviar el correo.');
-            }
-            return { success: true, message: body.message };
-        } catch (err) {
-            return { success: false, message: err.message };
+const resendVerificationEmail = useCallback(async ({ user_mail }) => {
+    try {
+        const res = await fetch(`${Url.url}/api/users/send-verification-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_mail }),
+        });
+        const body = await res.json();
+        if (!res.ok) {
+            throw new Error(body.message || 'Error al reenviar el correo.');
         }
-    };
+        return { success: true, message: body.message };
+    } catch (err) {
+        return { success: false, message: err.message };
+    }
+}, []);
 
-    useEffect(() => {
-        authenticateUser();
-    }, [authenticateUser]);
+useEffect(() => {
+    authenticateUser();
+}, [authenticateUser]);
 
-    return (
-        <AuthContext.Provider value={{
-            auth,
-            setAuth,
-            roles,
-            loading,
-            profile,
-            login,
-            logout,
-            register,
-            recoverPassword,
-            resendVerificationEmail,
-            authFetch
-        }}>
-            {children}
-        </AuthContext.Provider>
-    );
+const contextValue = useMemo(() => ({
+    auth,
+    setAuth,
+    roles,
+    loading,
+    profile,
+    login,
+    logout,
+    register,
+    recoverPassword,
+    resendVerificationEmail,
+    authFetch
+    }), [auth, roles, loading, profile, login, logout, register, recoverPassword, resendVerificationEmail, authFetch]);
+
+return (
+    <AuthContext.Provider value={contextValue}>
+        {children}
+    </AuthContext.Provider>
+);
 };
 export default AuthContext;

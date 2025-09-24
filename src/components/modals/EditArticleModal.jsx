@@ -1,11 +1,11 @@
 // src/components/layout/public/home/EditArticleModal.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import usePublicArticle from "../../hooks/usePublicArticle.js";
 import { compressImage } from "../../helpers/ImageCompressor.js";
 import { useNotification } from '../../context/NotificationContext.jsx';
 
-export default function EditArticleModal({ article: articleToEdit, onSave, onCancel, onUpdateSuccess, categories = [] }) {
+const EditArticleModal = React.memo(({ article: articleToEdit, onSave, onCancel, onUpdateSuccess, categories = [] }) => {
     const modalContentRef = useRef(null);
     const { showNotification } = useNotification();
 
@@ -49,7 +49,7 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
         }
     }, [article]);
 
-    const handleImageChange = async (e) => {
+    const handleImageChange = useCallback(async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -70,9 +70,9 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
         } finally {
             setIsSubmitting(false); // Desbloquear botones
         }
-    };
+    }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setFormError("");
 
@@ -132,7 +132,7 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
         }
 
         setIsSubmitting(false);
-    };
+    }, [title, categoryId, excerpt, image, onSave, onCancel, onUpdateSuccess]);
 
     const isLoading = loadingArticle;
     const componentError = errorArticle;
@@ -145,7 +145,10 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
         return <div className="modal-edit active"><div className="modal-edit-content">Error: {componentError}</div></div>;
     }
 
-    const filteredCategories = categories.filter(cat => cat.category_slug !== 'inicio');
+    const filteredCategories = useMemo(() =>
+        categories.filter(cat => cat.category_slug !== 'inicio'),
+        [categories]
+    );
 
     return (
         <div className="modal-edit active" id="editArticleModal">
@@ -213,7 +216,7 @@ export default function EditArticleModal({ article: articleToEdit, onSave, onCan
             </div>
         </div>
     );
-}
+});
 
 EditArticleModal.propTypes = {
     article: PropTypes.shape({
@@ -224,3 +227,5 @@ EditArticleModal.propTypes = {
     onCancel: PropTypes.func.isRequired,
     onUpdateSuccess: PropTypes.func,
 };
+
+export default EditArticleModal;

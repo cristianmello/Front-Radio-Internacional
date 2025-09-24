@@ -1,12 +1,12 @@
 // src/router/privateroute.jsx (o donde lo tengas)
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import Header from '../public/Header';
 import Footer from '../public/Footer';
 import useAuth from '../../../hooks/UseAuth';
 
-const PrivateLayout = () => {
+const PrivateLayout = React.memo(() => {
   // 1. Obtenemos también los 'roles' del usuario
   const { auth, roles, loading } = useAuth();
 
@@ -21,7 +21,9 @@ const PrivateLayout = () => {
   }
 
   // 3. AÑADIMOS la lógica de autorización por rol
-  const isAdmin = roles && roles.some(role => ['admin', 'superadmin'].includes(role));
+  const isAdmin = useMemo(() => {
+    return roles && roles.some(role => ['admin', 'superadmin'].includes(role));
+  }, [roles]);
 
   if (!isAdmin) {
     return <Navigate to="/" replace />;
@@ -31,11 +33,11 @@ const PrivateLayout = () => {
     <div className="container">
       <Header />
       <main>
-          <Outlet />
+        <Outlet />
       </main>
       <Footer />
     </div>
   );
-};
+});
 
 export default PrivateLayout;

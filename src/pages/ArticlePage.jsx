@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from 'react';
 import { Link, useParams, useLocation, useOutletContext } from 'react-router-dom';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -57,7 +57,7 @@ const ArticlePage = () => {
 
     // Verificamos si el usuario actual tiene permisos para editar
 
-    const imageUploadHandler = (blobInfo, progress) => new Promise((resolve, reject) => {
+    const imageUploadHandler = useCallback((blobInfo, progress) => new Promise((resolve, reject) => {
         const formData = new FormData();
         formData.append('file', blobInfo.blob(), blobInfo.filename());
 
@@ -85,10 +85,9 @@ const ArticlePage = () => {
             .catch(err => {
                 reject("Fallo en la subida de imagen: " + err.message);
             });
-    });
+    }), [authFetch]);
 
-
-    const handleSaveContent = async () => {
+    const handleSaveContent = useCallback(async () => {
         if (!article) return;
         // Comprobación para no guardar si no hay cambios
         if (editableContent === article.article_content) {
@@ -111,25 +110,25 @@ const ArticlePage = () => {
             showNotification('Error al guardar: ' + result.message, 'error');
         }
         setIsSaving(false);
-    };
+    }, [article, editableContent, editArticle, refresh, showNotification]);
 
-    const handleCancelEdit = () => {
+    const handleCancelEdit = useCallback(() => {
         // Restauramos el contenido original y salimos del modo edición
         setEditableContent(article.article_content);
         setIsEditingContent(false);
-    };
+    }, [article]);
 
     // Después (Correcto y más simple)
-    const handleOpenInsertAdModal = () => {
+    const handleOpenInsertAdModal = useCallback(() => {
         // Simplemente abre el modal. Los anuncios ya están en el estado 'advertisements'.
         if (adsError) {
             showNotification('No se pudieron cargar los anuncios.', 'error');
             return;
         }
         setShowInsertAdModal(true);
-    };
+    }, [adsError, showNotification]);
 
-    const handleInsertAd = (ad) => {
+    const handleInsertAd = useCallback((ad) => {
         if (editorRef.current) {
             // Este es el marcador de posición que se insertará en el editor.
             // Es HTML simple con un data-attribute para identificarlo después.
@@ -144,10 +143,48 @@ const ArticlePage = () => {
             editorRef.current.insertContent(adHtml);
         }
         setShowInsertAdModal(false);
-    };
+    }, []);
+
+    // --- NUEVO: Memorización de la configuración del editor ---
+    const editorConfig = useMemo(() => ({
+        height: 600,
+        menubar: true,
+        plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media quickbars',
+        toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
+            'forecolor backcolor | bullist numlist outdent indent blockquote | ' +
+            'alignleft aligncenter alignright alignjustify | ' +
+            'link image media insertAdButton| table | removeformat | fullscreen preview | help',
+        object_resizing: true,
+        quickbars_selection_toolbar: 'bold italic | quicklink blockquote',
+        quickbars_insert_toolbar: 'quickimage quicktable',
+        image_uploadtab: true,
+        images_upload_handler: imageUploadHandler,
+        file_picker_types: 'image',
+        automatic_uploads: true,
+
+        extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
+        media_live_embeds: true,
+        content_style: `
+body { font-family:Helvetica,Arial,sans-serif; font-size:16px }
+/* Para imágenes y videos */
+img, iframe {
+max-width: 100%; /* Usa max-width en lugar de width !important */
+height: auto;    /* Permite que la altura se ajuste automáticamente */}
+/* Mantenemos la proporción para iframes por defecto */iframe {
+aspect-ratio: 16 / 9;
+border: none;
+}`
+        , setup: (editor) => {
+            editor.ui.registry.addButton('insertAdButton', {
+                text: 'Publicidad',
+                icon: 'bullhorn',
+                tooltip: 'Insertar Publicidad',
+                onAction: handleOpenInsertAdModal,
+            });
+        }
+    }), [imageUploadHandler, handleOpenInsertAdModal]);
 
     const displayedArticle = article || initialData;
-
 
     if (loading && !displayedArticle) {
         return (
@@ -195,9 +232,9 @@ const ArticlePage = () => {
         }]
     };
 
-    const handleFacebookClick = () => {
+    const handleFacebookClick = useCallback(() => {
         window.open('https://www.facebook.com/people/Ivan-Mourelle-II/pfbid035pdoERG4oXaNH4hUQzqnFMg9QYPMcxgz53BKrQDrgP3gBkqVxFu4ipSHCH2t54d2l', '_blank', 'noopener,noreferrer');
-    };
+    }, []);
 
     return (
         <>
@@ -293,43 +330,7 @@ const ArticlePage = () => {
                                     onInit={(evt, editor) => editorRef.current = editor}
                                     value={editableContent}
                                     onEditorChange={(newContent) => setEditableContent(newContent)}
-                                    init={{
-                                        height: 600,
-                                        menubar: true,
-                                        plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media quickbars',
-                                        toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
-                                            'forecolor backcolor | bullist numlist outdent indent blockquote | ' +
-                                            'alignleft aligncenter alignright alignjustify | ' +
-                                            'link image media insertAdButton| table | removeformat | fullscreen preview | help',
-                                        object_resizing: true,
-                                        quickbars_selection_toolbar: 'bold italic | quicklink blockquote',
-                                        quickbars_insert_toolbar: 'quickimage quicktable',
-                                        image_uploadtab: true,
-                                        images_upload_handler: imageUploadHandler,
-                                        file_picker_types: 'image',
-                                        automatic_uploads: true,
-
-                                        extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
-                                        media_live_embeds: true,
-                                        content_style: `
-                                         body { font-family:Helvetica,Arial,sans-serif; font-size:16px }
-                                         /* Para imágenes y videos */
-                                         img, iframe {
-                                         max-width: 100%; /* Usa max-width en lugar de width !important */
-                                         height: auto;    /* Permite que la altura se ajuste automáticamente */}
-                                         /* Mantenemos la proporción para iframes por defecto */iframe {
-                                         aspect-ratio: 16 / 9;
-                                         border: none;
-                                         }`
-                                        , setup: (editor) => {
-                                            editor.ui.registry.addButton('insertAdButton', {
-                                                text: 'Publicidad',
-                                                icon: 'bullhorn',
-                                                tooltip: 'Insertar Publicidad',
-                                                onAction: handleOpenInsertAdModal,
-                                            });
-                                        }
-                                    }}
+                                    init={}
 
                                 />
                             ) : (

@@ -1,11 +1,55 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import PropTypes from 'prop-types';
 import { useSectionEdit } from "../../context/SectionEditContext";
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 
 const ITEMS_PER_PAGE = 6;
 
-const AudioNewsWidget = ({ sectionTitle, data: audios = [] }) => {
+const AudioItem = React.memo(({ audio, isPlaying, onPlay, onStop, onEditItem, onRemoveItem }) => {
+  const { canEdit } = useSectionEdit();
+
+  // Handlers estables para los clicks
+  const handlePlay = useCallback(() => onPlay(audio), [audio, onPlay]);
+  const handleEdit = useCallback(() => onEditItem(audio), [audio, onEditItem]);
+  const handleRemove = useCallback(() => onRemoveItem(audio.audio_code), [audio.audio_code, onRemoveItem]);
+
+  return (
+    <div className={`audio-news-item ${isPlaying ? 'is-playing' : ''}`}>
+      <div className="compact-row">
+        {/* --- LÓGICA CORREGIDA PARA MOSTRAR PLAY/PAUSA --- */}
+        {isPlaying ? (
+          // Si este audio está sonando, muestra el botón de PAUSA
+          <button className="play-btn" title="Pausar" onClick={onStop}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          </button>
+        ) : (
+          // Si no, muestra el botón de PLAY
+          <button className="play-btn" title="Reproducir" onClick={handlePlay}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+        )}
+        <h5 className="audio-title">{audio.title || 'Título no disponible'}</h5>
+      </div>
+
+      {canEdit && (
+        <div className="item-actions">
+          <button className="edit-item-btn" title="Editar nota de audio" onClick={handleEdit}>
+            <i className="fas fa-pen" />
+          </button>
+          <button className="delete-item-btn" title="Quitar nota de audio de la sección" onClick={handleRemove}>
+            <i className="fas fa-trash" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+
+const AudioNewsWidget = React.memo(({ sectionTitle, data: audios = [] }) => {
   const { canEdit, onAddItem, onRemove, onEdit } = useSectionEdit();
   // Usamos el estado y las funciones del contexto global
   const { playingAudio, playAudio, stopAudio } = useAudioPlayer();
@@ -31,18 +75,21 @@ const AudioNewsWidget = ({ sectionTitle, data: audios = [] }) => {
     ) : null;
   }
 
-  const totalPages = Math.ceil(audios.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const pageItems = audios.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const totalPages = useMemo(() => Math.ceil(audios.length / ITEMS_PER_PAGE), [audios]);
 
-  const handlePageChange = (page) => {
+  const pageItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return audios.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [currentPage, audios]);
+
+  const handlePageChange = useCallback((page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
       if (widgetRef.current) {
         widgetRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
-  };
+  }, [totalPages]);
 
   return (
     <div className="widget audio-news" ref={widgetRef}>
@@ -57,52 +104,15 @@ const AudioNewsWidget = ({ sectionTitle, data: audios = [] }) => {
 
       <div className="audio-news-list">
         {pageItems.map((audio) => (
-          <div
+          <AudioItem
             key={audio.audio_code}
-            // Aplicamos una clase si este audio es el que está sonando globalmente
-            className={`audio-news-item ${playingAudio?.audio_code === audio.audio_code ? 'is-playing' : ''}`}
-          >
-            <div className="compact-row">
-              {/* --- LÓGICA CORREGIDA PARA MOSTRAR PLAY/PAUSA --- */}
-              {playingAudio?.audio_code === audio.audio_code ? (
-                // Si este audio está sonando, muestra el botón de PAUSA
-                <button className="play-btn" title="Pausar" onClick={stopAudio}>
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                  </svg>
-                </button>
-              ) : (
-                // Si no, muestra el botón de PLAY
-                <button className="play-btn" title="Reproducir" onClick={() => playAudio(audio)}>
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </button>
-              )}
-              <h5 className="audio-title">{audio.title || 'Título no disponible'}</h5>
-            </div>
-
-            {/* YA NO HAY REPRODUCTOR DE AUDIO AQUÍ */}
-
-            {canEdit && (
-              <div className="item-actions">
-                <button
-                  className="edit-item-btn"
-                  title="Editar nota de audio"
-                  onClick={() => onEdit(audio)}
-                >
-                  <i className="fas fa-pen" />
-                </button>
-                <button
-                  className="delete-item-btn"
-                  title="Quitar nota de audio de la sección"
-                  onClick={() => onRemove(audio.audio_code)}
-                >
-                  <i className="fas fa-trash" />
-                </button>
-              </div>
-            )}
-          </div>
+            audio={audio}
+            isPlaying={playingAudio?.audio_code === audio.audio_code}
+            onPlay={playAudio}
+            onStop={stopAudio}
+            onEditItem={onEdit}
+            onRemoveItem={onRemove}
+          />
         ))}
       </div>
 
@@ -116,7 +126,7 @@ const AudioNewsWidget = ({ sectionTitle, data: audios = [] }) => {
       )}
     </div>
   );
-};
+});
 
 AudioNewsWidget.propTypes = {
   sectionTitle: PropTypes.string,

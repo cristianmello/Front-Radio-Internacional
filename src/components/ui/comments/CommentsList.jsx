@@ -1,7 +1,7 @@
 import React from 'react';
 import CommentItem from './CommentItem';
 
-export default function CommentsList({ comments, onPostReply, onDelete, onUpdate, onVote, onOpenAuth }) {
+const CommentsList = React.memo(({ comments, onPostReply, onDelete, onUpdate, onVote, onOpenAuth }) => {
     return (
         <div className="comments-list">
             {comments.map(comment => (
@@ -17,4 +17,4 @@ export default function CommentsList({ comments, onPostReply, onDelete, onUpdate
             ))}
         </div>
     );
-}
+});

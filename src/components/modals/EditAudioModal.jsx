@@ -1,10 +1,10 @@
 // src/components/layout/public/home/EditAudioModal.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import useAudio from "../../hooks/UseAudio";
 import { useNotification } from "../../context/NotificationContext";
 
-export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSuccess, categories = [] }) {
+const EditAudioModal = React.memo(({ audioId, onSave, onCancel, onUpdateSuccess, categories = [] }) => {
     const modalContentRef = useRef(null);
     const { showNotification } = useNotification();
 
@@ -41,7 +41,7 @@ export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSucc
         }
     }, [audio]);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setFormError("");
 
@@ -86,7 +86,7 @@ export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSucc
         }
 
         setIsSubmitting(false);
-    };
+    }, [title, categoryId, newAudioFile, onSave, onCancel, onUpdateSuccess, showNotification]);
 
     const isLoading = loadingAudio;
     const componentError = errorAudio;
@@ -99,7 +99,10 @@ export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSucc
         return <div className="modal-edit active"><div className="modal-edit-content">Error: {componentError}</div></div>;
     }
 
-    const filteredCategories = categories.filter(cat => cat.category_slug !== 'inicio');
+    const filteredCategories = useMemo(() =>
+        categories.filter(cat => cat.category_slug !== 'inicio'),
+        [categories]
+    );
 
     return (
         <div className="modal-edit active" id="editAudioModal">
@@ -147,7 +150,7 @@ export default function EditAudioModal({ audioId, onSave, onCancel, onUpdateSucc
             </div>
         </div>
     );
-}
+});
 
 EditAudioModal.propTypes = {
     audioId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -156,3 +159,5 @@ EditAudioModal.propTypes = {
     onUpdateSuccess: PropTypes.func,
     categories: PropTypes.array.isRequired,
 };
+
+export default EditAudioModal;

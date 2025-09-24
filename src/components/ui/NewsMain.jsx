@@ -1,5 +1,5 @@
 // src/components/layout/public/home/NewsMain.jsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -11,10 +11,94 @@ import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortab
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const ArticleContent = React.memo(({ item, onItemClick, onEditItem, onRemoveItem }) => {
+    const { canEdit } = useSectionEdit();
+    const { article_code, article_slug, image, category_name, title, excerpt, date } = item;
+
+    // Memorizamos cálculos y handlers
+    const formattedDate = useMemo(() =>
+        date ? format(new Date(date), "d 'de' MMMM, yyyy", { locale: es }) : "Fecha no disponible",
+        [date]
+    );
+
+    const srcSetWebp = useMemo(() => `${image}?width=600&height=400&fit=contain 600w, ${image}?width=1200&height=800&fit=contain 1200w`, [image]);
+    const srcSetJpeg = useMemo(() => `${image}?width=600&height=400&fit=contain 600w, ${image}?width=1200&height=800&fit=contain 1200w`, [image]);
+
+    const handleClick = useCallback(() => onItemClick(item), [item, onItemClick]);
+    const handleEdit = useCallback((e) => { e.stopPropagation(); onEditItem(item); }, [item, onEditItem]);
+    const handleRemove = useCallback((e) => { e.stopPropagation(); onRemoveItem(article_code); }, [article_code, onRemoveItem]);
+
+    return (
+        <article
+            className={`news-item ${!canEdit ? 'clickable' : ''}`}
+            key={item.article_code}
+            onClick={handleClick}                                        >
+            <div className="news-item-image">
+                <picture>
+                    <source
+                        srcSet={srcSetWebp}
+                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
+                        type="image/webp"
+                    />
+                    <source
+                        srcSet={srcSetJpeg}
+                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
+                        type="image/jpeg"
+                    />
+                    <img src={image || "/placeholder.jpg"} alt={title || "Imagen de la noticia"} loading="lazy" />
+
+                </picture>
+            </div>
+            <div className="news-item-content">
+                {item.category_name && <span className="category">{item.category_name}</span>}
+                <h3>
+                    {item.title}
+                </h3>
+                <p className="excerpt">{item.excerpt}</p>
+                <div className="article-meta">
+                    <span className="date">{formattedDate}</span>
+                    <Link
+                        to={`/articulos/${item.article_code}/${item.article_slug}`}
+                        className="read-more"
+                        state={{
+                            article: {
+                                ...item,
+                                article_published_at: item.date,
+                            },
+                        }}
+                    >
+                        Leer más
+                    </Link>
+                </div>
+                {canEdit && (
+                    <div className="item-actions">
+                        <button
+                            className="edit-item-btn"
+                            title="Editar artículo"
+                            onClick={handleEdit}
+                        >
+                            <i className="fas fa-pen"></i>
+                        </button>
+                        {onRemove && (
+                            <button
+                                className="delete-item-btn"
+                                title="Eliminar elemento"
+                                onClick={handleRemove}
+                            >
+                                <i className="fas fa-trash" />
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+        </article>
+    );
+});
+
 /**
  * Componente envoltorio que hace que cada artículo sea arrastrable.
  */
-const SortableArticleItem = ({ item, children }) => {
+const SortableArticleItem = React.memo(({ item, children }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.article_code });
     const { canEdit } = useSectionEdit();
     const style = {
@@ -29,36 +113,25 @@ const SortableArticleItem = ({ item, children }) => {
             {children}
         </div>
     );
-};
+});
 
 const ITEMS_PER_PAGE = 8;
 
 const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
     const { canEdit, onAddItem, onRemove, onEdit, setItems, reorderItems } = useSectionEdit();
     const [currentPage, setCurrentPage] = useState(1);
-
-    const filteredItems = categoryFilter && categoryFilter !== 'inicio'
-        ? data.filter(item => item.category_slug === categoryFilter)
-        : data;
+    const sectionRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         setCurrentPage(1);
     }, [categoryFilter]);
 
 
-    // Creamos una referencia para el contenedor principal de la sección
-    const sectionRef = useRef(null);
-
-    const navigate = useNavigate();
-
     // Configuración de DND-Kit
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: { distance: 8 },
-        })
-    );
+    const sensors = useMemo(() => useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } })), []);
 
-    const handleDragEnd = (event) => {
+    const handleDragEnd = useCallback((event) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
             // Esta lógica funciona sobre el array 'data' completo, no solo la página actual
@@ -71,14 +144,26 @@ const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
             const orderedCodes = newData.map(item => item.article_code);
             reorderItems(orderedCodes);
         }
-    };
+    }, [data, setItems, reorderItems]);
+
+    const filteredItems = useMemo(() =>
+        categoryFilter && categoryFilter !== 'inicio'
+            ? data.filter(item => item.category_slug === categoryFilter)
+            : data,
+        [data, categoryFilter]
+    );
 
     const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    const pageItems = filteredItems.slice(startIndex, endIndex);
 
-    const handlePageChange = (page) => {
+    const pageItems = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return filteredItems.slice(startIndex, endIndex);
+    }, [filteredItems, currentPage]);
+
+    const handlePageChange = useCallback((page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
             // Después de cambiar de página, hacemos scroll suave al inicio de la sección.
@@ -86,9 +171,9 @@ const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
                 sectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
             }
         }
-    };
+    }, [totalPages]);
 
-    const handleItemClick = (item) => {
+    const handleItemClick = useCallback((item) => {
         if (canEdit) return;
 
         navigate(`/articulos/${item.article_code}/${item.slug}`, {
@@ -99,7 +184,7 @@ const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
                 },
             },
         });
-    };
+    }, [canEdit, navigate]);
 
     return (
         // Asignamos la referencia al elemento <section>
@@ -125,73 +210,12 @@ const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
 
                                 return (
                                     <SortableArticleItem key={item.article_code} item={item}>
-                                        <article
-                                            className={`news-item ${!canEdit ? 'clickable' : ''}`}
-                                            key={item.article_code}
-                                            onClick={() => handleItemClick(item)}
-                                        >
-                                            <div className="news-item-image">
-                                                <picture>
-                                                    <source
-                                                        srcSet={`${item.image}?width=600&height=400&fit=contain 600w, ${item.image}?width=1200&height=800&fit=contain 1200w, ${item.image}?width=1800&height=1200&fit=contain 1800w`}
-                                                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
-                                                        type="image/webp"
-                                                    />
-                                                    <source
-                                                        srcSet={`${item.image}?width=600&height=400&fit=contain 600w, ${item.image}?width=1200&height=800&fit=contain 1200w, ${item.image}?width=1800&height=1200&fit=contain 1800w`}
-                                                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
-                                                        type="image/jpeg"
-                                                    />
-                                                    <img
-                                                        src={item.image || "/placeholder.jpg"}
-                                                        alt={item.title || "Imagen de la noticia"}
-                                                        loading="lazy"
-                                                    />
-                                                </picture>
-                                            </div>
-                                            <div className="news-item-content">
-                                                {item.category_name && <span className="category">{item.category_name}</span>}
-                                                <h3>
-                                                    {item.title}
-                                                </h3>
-                                                <p className="excerpt">{item.excerpt}</p>
-                                                <div className="article-meta">
-                                                    <span className="date">{formattedDate}</span>
-                                                    <Link
-                                                        to={`/articulos/${item.article_code}/${item.article_slug}`}
-                                                        className="read-more"
-                                                        state={{
-                                                            article: {
-                                                                ...item,
-                                                                article_published_at: item.date,
-                                                            },
-                                                        }}
-                                                    >
-                                                        Leer más
-                                                    </Link>
-                                                </div>
-                                                {canEdit && (
-                                                    <div className="item-actions">
-                                                        <button
-                                                            className="edit-item-btn"
-                                                            title="Editar artículo"
-                                                            onClick={() => onEdit(item)}
-                                                        >
-                                                            <i className="fas fa-pen"></i>
-                                                        </button>
-                                                        {onRemove && (
-                                                            <button
-                                                                className="delete-item-btn"
-                                                                title="Eliminar elemento"
-                                                                onClick={() => onRemove(item.article_code)}
-                                                            >
-                                                                <i className="fas fa-trash" />
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </article>
+                                        <ArticleContent
+                                            item={item}
+                                            onItemClick={handleItemClick}
+                                            onEditItem={onEdit}
+                                            onRemoveItem={onRemove}
+                                        />
                                     </SortableArticleItem >
 
                                 );
@@ -238,160 +262,3 @@ const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
 };
 
 export default NewsMain;
-/*// src/components/layout/public/home/NewsMain.jsx
-import React, { useState } from "react";
-import { useSectionEdit } from "../../../../context/SectionEditContext";
-
-const ITEMS_PER_PAGE = 6;
-
-const NewsMain = ({ sectionTitle, data = [] }) => {
-    const { canEdit, onAddItem, onRemove, onEdit } = useSectionEdit();
-    const [currentPage, setCurrentPage] = useState(1);
-    const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
-
-    // Calcula índices para slicing
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const pageItems = data.slice(startIndex, endIndex);
-
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-        }
-    };
-
-    return (
-        <section className="main-content">
-            <div className="section-header">
-                <h2>{sectionTitle}</h2>
-                {canEdit && onAddItem && (
-                    <div className="section-actions">
-                        <button onClick={onAddItem}>+ Añadir Noticia</button>
-                    </div>
-                )}
-            </div>
-
-            <div className="news-list">
-                {pageItems.length > 0 ? (
-                    pageItems.map(item => (
-                        <article className="news-item" key={item.article_code}>
-                            <div className="news-item-image">
-                                <picture>
-                                    <source
-                                        srcSet={`${item.image}?width=600&height=400&fit=contain 600w, ${item.image}?width=1200&height=800&fit=contain 1200w, ${item.image}?width=1800&height=1200&fit=contain 1800w`}
-                                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
-                                        type="image/webp"
-                                    />
-                                    <source
-                                        srcSet={`${item.image}?width=600&height=400&fit=contain 600w, ${item.image}?width=1200&height=800&fit=contain 1200w, ${item.image}?width=1800&height=1200&fit=contain 1800w`}
-                                        sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
-                                        type="image/jpeg"
-                                    />
-                                    <img
-                                        src={item.image || "/placeholder.jpg"}
-                                        alt={item.category || item.title}
-                                        loading="lazy" // Lazy load
-                                    />
-                                </picture>
-
-                            </div>
-                            <div className="news-item-content">
-                                <span className="category">{item.category}</span>
-                                <h3>{item.title}</h3>
-                                <p className="excerpt">{item.excerpt}</p>
-                                <div className="article-meta">
-                                    <span className="date">
-                                        {new Date(item.date).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                {canEdit && (
-                                    <div className="item-actions">
-                                        <button
-                                            className="edit-item-btn"
-                                            title="Editar artículo"
-                                            onClick={() => onEdit(item.article_code)}
-                                        >
-                                            <i className="fas fa-pen"></i>
-                                        </button>
-                                        {onRemove && (
-                                            <button
-                                                className="delete-item-btn"
-                                                title="Eliminar elemento"
-                                                onClick={() => onRemove(item.article_code)}
-                                            >
-                                                <i className="fas fa-trash" />
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </article>
-                    ))
-                ) : (
-                    <p className="no-items">No hay artículos en esta sección.</p>
-                )}
-            </div>
-
-            {totalPages > 1 && (
-                <div className="pagination">
-                    <button
-                        className="pagination-btn"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                    >
-                        ←
-                    </button>
-
-                    <button
-                        className={`pagination-btn ${currentPage === 1 ? 'active' : ''}`}
-                        onClick={() => handlePageChange(1)}
-                    >
-                        1
-                    </button>
-
-                    {currentPage > 4 && <span className="pagination-ellipsis">...</span>}
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter(page =>
-                            page !== 1 &&
-                            page !== totalPages &&
-                            page >= currentPage - 2 &&
-                            page <= currentPage + 2
-                        )
-                        .map(page => (
-                            <button
-                                key={page}
-                                className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
-                                onClick={() => handlePageChange(page)}
-                            >
-                                {page}
-                            </button>
-                        ))}
-
-                    {currentPage < totalPages - 3 && <span className="pagination-ellipsis">...</span>}
-
-                    {totalPages > 1 && (
-                        <button
-                            className={`pagination-btn ${currentPage === totalPages ? 'active' : ''}`}
-                            onClick={() => handlePageChange(totalPages)}
-                        >
-                            {totalPages}
-                        </button>
-                    )}
-
-                    <button
-                        className="pagination-btn"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                    >
-                        →
-                    </button>
-                </div>
-            )}
-
-        </section>
-    );
-};
-
-export default NewsMain;
-*/

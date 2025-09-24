@@ -1,11 +1,18 @@
 // src/components/ui/CommentsSection.jsx
 
-import React, { useState } from 'react'; // Importa useState
+import React, { useState, useMemo } from 'react';
 import useComments from '../../../hooks/useComments';
 import useAuth from '../../../hooks/UseAuth';
 import CommentsList from './CommentsList';
 import CommentForm from './CommentForm';
 
+ // 1. Usamos una función recursiva para un conteo más preciso de todos los comentarios y respuestas
+    const countComments = (commentList) => {
+        return commentList.reduce((acc, comment) => {
+            return acc + 1 + (comment.replies ? countComments(comment.replies) : 0);
+        }, 0);
+    };
+    
 export default function CommentsSection({ articleId, onOpenAuth }) {
     const { auth } = useAuth();
     const [sortBy, setSortBy] = useState('most-liked');
@@ -22,13 +29,7 @@ export default function CommentsSection({ articleId, onOpenAuth }) {
     if (loading && comments.length === 0) return <h3>Cargando comentarios...</h3>;
     if (error) return <p style={{ color: 'red' }}>Error al cargar comentarios: {error}</p>;
 
-    // 1. Usamos una función recursiva para un conteo más preciso de todos los comentarios y respuestas
-    const countComments = (commentList) => {
-        return commentList.reduce((acc, comment) => {
-            return acc + 1 + (comment.replies ? countComments(comment.replies) : 0);
-        }, 0);
-    };
-    const totalComments = countComments(comments);
+    const totalComments = useMemo(() => countComments(comments), [comments]);
 
     return (
         <div className={`article-comments ${loading ? 'loading' : ''}`}>

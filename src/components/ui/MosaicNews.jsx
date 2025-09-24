@@ -1,5 +1,5 @@
 // src/components/layout/public/home/MosaicNews.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSectionEdit } from "../../context/SectionEditContext";
 import { isColorDark } from "../../helpers/colorUtils";
@@ -12,10 +12,71 @@ import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortab
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const colorOptions = [
+    { name: "Blanco (fondo body)", hex: "#f8f9fa" },// color blanco original
+
+    { name: "Base oscuro", hex: "#131d26" }, // color original
+    { name: "Nocturno profundo", hex: "#0D161E" }, // ultra oscuro
+    { name: "Azul tormenta", hex: "#0F1E29" }, // contraste frío
+    { name: "Azul medianoche", hex: "#101A22" }, // balance profundo
+    { name: "Brillante oceánico", hex: "#1C2F3B" }, // un punto más vivo
+    { name: "Suave crepúsculo", hex: "#1A2630" }, // matiz grisáceo
+    { name: "Latón opaco", hex: "#1E2B33" }, // tono apagado
+    { name: "Cobalto oscuro", hex: "#16212C" }, // un poco más saturado
+    { name: "Azul ceniza", hex: "#20303B" }, // grisáceo y frío
+    { name: "Niebla marina", hex: "#1B2832" }, // más suave y opaco
+    { name: "Océano sombrío", hex: "#0E1A24" }, // mezcla de todos
+];
+
+const MosaicItemContent = React.memo(({ item, idx, onEdit, onRemove }) => {
+    const { canEdit } = useSectionEdit();
+    const { article_code, article_slug, title, excerpt, image, category_name } = item;
+
+    // La generación de srcSet ahora vive dentro de este componente memorizado.
+    // Solo se ejecutará si este componente específico necesita renderizarse de nuevo.
+    const srcSetWebp = useMemo(() =>
+        `${image}?width=600&height=400&fit=cover 600w, ${image}?width=1200&height=800&fit=cover 1200w, ${image}?width=1800&height=1200&fit=cover 1800w`,
+        [image]
+    );
+    const srcSetJpeg = useMemo(() =>
+        `${image}?width=600&height=400&fit=cover 600w, ${image}?width=1200&height=800&fit=cover 1200w, ${image}?width=1800&height=1200&fit=cover 1800w`,
+        [image]
+    );
+    return (
+        <>
+            <picture>
+                <source srcSet={srcSetWebp} sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px" type="image/webp" />
+                <source srcSet={srcSetJpeg} sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px" type="image/jpeg" />
+                <img src={image || "/placeholder.jpg"} alt={category_name} loading="lazy" className="news-card-image" />
+            </picture>
+            <div className="mosaic-content">
+                <span className="category">{category_name}</span>
+                {idx === 0 ? <h3>{title}</h3> : <h4>{title}</h4>}
+                {excerpt && <p className="excerpt">{excerpt}</p>}
+                <Link to={`/articulos/${article_code}/${article_slug}`} className="read-more" state={{ article: { ...item, article_published_at: item.date } }}>
+                    Leer más
+                </Link>
+                {canEdit && (
+                    <div className="item-actions">
+                        <button className="edit-item-btn" title="Editar artículo" onClick={() => onEdit(item)}>
+                            <i className="fas fa-pen"></i>
+                        </button>
+                        {onRemove && (
+                            <button className="delete-item-btn" title="Eliminar elemento" onClick={() => onRemove(article_code)}>
+                                <i className="fas fa-trash" />
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+        </>
+    );
+});
+
 /**
  * Componente envoltorio que hace que cada ítem del mosaico sea arrastrable.
  */
-const SortableMosaicItem = ({ item, children, className }) => {
+const SortableMosaicItem = React.memo(({ item, children, className, onItemClick }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.article_code });
     const { canEdit } = useSectionEdit();
 
@@ -27,12 +88,18 @@ const SortableMosaicItem = ({ item, children, className }) => {
 
     const dndListeners = canEdit ? listeners : {};
 
+    const handleClick = () => {
+        if (!canEdit && onItemClick) {
+            onItemClick(item);
+        }
+    };
+
     return (
-        <div ref={setNodeRef} style={style} className={className} {...attributes} {...dndListeners}>
+        <div ref={setNodeRef} style={style} className={className} {...attributes} {...dndListeners} onClick={handleClick}>
             {children}
         </div>
     );
-};
+});
 
 const MosaicNews = ({
     sectionId,
@@ -51,14 +118,14 @@ const MosaicNews = ({
 
     useEffect(() => { setBgColor(initialBgColor); }, [initialBgColor]);
     // Configuración de los sensores de DND-Kit
-    const sensors = useSensors(
+    const sensors = useMemo(() => useSensors(
         useSensor(PointerSensor, {
             activationConstraint: { distance: 8 },
         })
-    );
+    ), []);
 
     // Lógica que se ejecuta al terminar de arrastrar
-    const handleDragEnd = (event) => {
+    const handleDragEnd = useCallback((event) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
             const oldIndex = data.findIndex((item) => item.article_code === active.id);
@@ -68,28 +135,10 @@ const MosaicNews = ({
             const orderedCodes = newData.map(item => item.article_code);
             reorderItems(orderedCodes);
         }
-    };
+    }, [data, setItems, reorderItems]);
 
-    const colorOptions = [
-        { name: "Blanco (fondo body)", hex: "#f8f9fa" },// color blanco original
-
-        { name: "Base oscuro", hex: "#131d26" }, // color original
-        { name: "Nocturno profundo", hex: "#0D161E" }, // ultra oscuro
-        { name: "Azul tormenta", hex: "#0F1E29" }, // contraste frío
-        { name: "Azul medianoche", hex: "#101A22" }, // balance profundo
-        { name: "Brillante oceánico", hex: "#1C2F3B" }, // un punto más vivo
-        { name: "Suave crepúsculo", hex: "#1A2630" }, // matiz grisáceo
-        { name: "Latón opaco", hex: "#1E2B33" }, // tono apagado
-        { name: "Cobalto oscuro", hex: "#16212C" }, // un poco más saturado
-        { name: "Azul ceniza", hex: "#20303B" }, // grisáceo y frío
-        { name: "Niebla marina", hex: "#1B2832" }, // más suave y opaco
-        { name: "Océano sombrío", hex: "#0E1A24" }, // mezcla de todos
-    ];
-
-
-
-    const handleItemClick = (item) => {
-        if (canEdit) return;
+    const handleItemClick = useCallback((item) => {
+        //if (canEdit) return;
 
         navigate(`/articulos/${item.article_code}/${item.article_slug}`, {
             state: {
@@ -99,8 +148,7 @@ const MosaicNews = ({
                 },
             },
         });
-    };
-
+    }, [navigate]);
 
     const titleColor = isColorDark(bgColor) ? '#FFFFFF' : '#000000';
 
@@ -113,7 +161,6 @@ const MosaicNews = ({
         if (!canEdit || !sectionSlug) return;
 
         const controller = new AbortController();
-        let cancelled = false;
 
         const saveColor = async () => {
             try {
@@ -207,7 +254,10 @@ const MosaicNews = ({
                                     const itemClasses = ["mosaic-item", ...modifiers, !canEdit ? 'clickable' : ''].join(" ");
 
                                     return (
-                                        <SortableMosaicItem key={article_code} item={item} className={itemClasses}>
+                                        <SortableMosaicItem key={article_code} item={item} className={itemClasses} onItemClick={handleItemClick}>
+                                            <MosaicItemContent item={item} idx={idx} onEdit={onEdit} onRemove={onRemove} />
+
+                                            {/*
                                             <div
                                                 key={article_code}
                                                 onClick={() => handleItemClick(item)}
@@ -271,6 +321,7 @@ const MosaicNews = ({
                                                     )}
                                                 </div>
                                             </div>
+                                            */}
                                         </SortableMosaicItem>
                                     );
                                 })}

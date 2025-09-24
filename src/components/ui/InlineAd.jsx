@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { AD_FORMATS } from '../../helpers/adFormats.js';
 
-const InlineAd = ({ ad }) => {
+const InlineAd = React.memo(({ ad }) => {
     // Obtenemos la información del formato del anuncio.
-    const formatInfo = AD_FORMATS[ad.ad_format] || AD_FORMATS.default;
+    const formatInfo = useMemo(() =>
+        AD_FORMATS[ad.ad_format] || AD_FORMATS.default,
+        [ad.ad_format]
+    );
 
     // Calculamos la relación de aspecto para mantener la forma del anuncio.
     const aspectRatio = formatInfo.width && formatInfo.height
@@ -13,10 +16,16 @@ const InlineAd = ({ ad }) => {
 
     // El estilo en línea ahora solo define variables CSS para que el CSS externo las use.
     // Esto nos da máxima flexibilidad y un diseño responsivo.
-    const style = {
-        '--ad-max-width': formatInfo.width ? `${formatInfo.width}px` : '100%',
-        '--ad-aspect-ratio': aspectRatio,
-    };
+    const style = useMemo(() => {
+        const aspectRatio = formatInfo.width && formatInfo.height
+            ? `${formatInfo.width} / ${formatInfo.height}`
+            : 'auto';
+
+        return {
+            '--ad-max-width': formatInfo.width ? `${formatInfo.width}px` : '100%',
+            '--ad-aspect-ratio': aspectRatio,
+        };
+    }, [formatInfo]);
 
     return (
         <span className="ad-inline-wrapper">
@@ -37,7 +46,7 @@ const InlineAd = ({ ad }) => {
             </a>
         </span>
     );
-};
+});
 
 InlineAd.propTypes = {
     ad: PropTypes.shape({

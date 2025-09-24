@@ -1,5 +1,5 @@
 // src/components/layout/public/Header.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../hooks/UseAuth";
 import AddCategoryModal from "../modals/AddCategoryModal";
@@ -19,7 +19,7 @@ import logoRealidadNacional from '../../assets/img/logo-realidad-nacional.png';
 import useCategoryActions from "../../hooks/useCategoryActions";
 import useAudio from "../../hooks/UseAudio";
 
-const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, onCategoriesUpdate }) => {
+const Header = React.memo(({ onOpenAuth, categories, categoriesLoading, categoriesError, onCategoriesUpdate }) => {
   const { auth, logout, roles } = useAuth();
 
   const editMode = useEditMode();
@@ -53,13 +53,14 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
   const location = useLocation();
 
   // definimos si puede gestionar categorías
-  const canManageCategories =
-    auth?.user_code &&
-    roles.some(r => ["editor", "admin", "superadmin"].includes(r));
+  const canManageCategories = useMemo(() =>
+    auth?.user_code && roles.some(r => ["editor", "admin", "superadmin"].includes(r)),
+    [auth?.user_code, roles]
+  );
 
-  const toggleMobileMenu = () => {
+  const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen(prev => !prev);
-  };
+  }, []);
 
   useEffect(() => {
     const onResize = () => {
@@ -71,7 +72,7 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
     return () => window.removeEventListener('resize', onResize);
   }, [mobileMenuOpen]);
 
-  const handleCategoryClick = (e, { slug, path }) => {
+  const handleCategoryClick = useCallback((e, { slug, path }) => {
     // Esto se mantiene igual
     const event = new CustomEvent("categoryChange", { detail: slug });
     document.dispatchEvent(event);
@@ -89,123 +90,125 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
     }
 
     if (mobileMenuOpen) setMobileMenuOpen(false);
-  };
+  }, [navigate, mobileMenuOpen]);
 
   // Build mobile auth links
 
 
   // Add / Delete category buttons
-  const openAddCategory = () => setShowAddModal(true);
-  const cancelAdd = () => setShowAddModal(false);
+  const openAddCategory = useCallback(() => setShowAddModal(true), []);
+  const cancelAdd = useCallback(() => setShowAddModal(false), []);
 
-  const openRemoveCategory = () => setShowDeleteModal(true);
-  const cancelDelete = () => setShowDeleteModal(false);
+  const openRemoveCategory = useCallback(() => setShowDeleteModal(true), []);
+  const cancelDelete = useCallback(() => setShowDeleteModal(false), []);
 
   //Add /Delete Articlebuttons
-  const openAddArticle = () => setShowAddArticleModal(true)
-  const cancelAddArticle = () => setShowAddArticleModal(false);
+  const openAddArticle = useCallback(() => setShowAddArticleModal(true), []);
+  const cancelAddArticle = useCallback(() => setShowAddArticleModal(false), []);
 
+  const openRemoveArticle = useCallback(() => setShowDeleteArticleModal(true), []);
+  const cancelRemoveArticle = useCallback(() => setShowDeleteArticleModal(false), []);
 
-  const openRemoveArticle = () => setShowDeleteArticleModal(true)
-  const cancelRemoveArticle = () => setShowDeleteArticleModal(false);
+  const openAddAudio = useCallback(() => setShowAddAudioModal(true), []);
+  const cancelAddAudio = useCallback(() => setShowAddAudioModal(false), []);
 
-  const openAddAudio = () => setShowAddAudioModal(true);
-  const cancelAddAudio = () => setShowAddAudioModal(false);
+  const openAddAd = useCallback(() => setShowAddAdModal(true), []);
+  const cancelAddAd = useCallback(() => setShowAddAdModal(false), []);
 
-  const openAddAd = () => setShowAddAdModal(true);
-  const cancelAddAd = () => setShowAddAdModal(false);
+  const openDeleteAd = useCallback(() => setShowDeleteAdModal(true), []);
+  const cancelDeleteAd = useCallback(() => setShowDeleteAdModal(false), []);
 
-  const openDeleteAd = () => setShowDeleteAdModal(true);
-  const cancelDeleteAd = () => setShowDeleteAdModal(false);
+  const openSelectAdToEdit = useCallback(() => setShowSelectAdModal(true), []);
+  const cancelSelectAdToEdit = useCallback(() => setShowSelectAdModal(false), []);
 
-  const openSelectAdToEdit = () => setShowSelectAdModal(true);
-  const cancelSelectAdToEdit = () => setShowSelectAdModal(false);
+  const openSelectDraft = useCallback(() => setShowSelectDraftModal(true), []);
+  const cancelSelectDraft = useCallback(() => setShowSelectDraftModal(false), []);
 
-  const openSelectDraft = () => setShowSelectDraftModal(true);
-  const cancelSelectDraft = () => setShowSelectDraftModal(false);
-
-  const handleConfirmAdd = async data => {
+  const handleConfirmAdd = useCallback(async (data) => {
     const result = await addCategory(data);
     if (result.success) {
       cancelAdd();
     }
     return result;
-  };
+  }, [addCategory, cancelAdd]);
 
-  const handleConfirmDelete = async slug => {
+  const handleConfirmDelete = useCallback(async (slug) => {
     const result = await deleteCategory(slug);
     if (result.success) {
       cancelDelete();
     }
     return result;
-  };
+  }, [deleteCategory, cancelDelete]);
 
-  const handleConfirmAddArticle = async formData => {
+  const handleConfirmAddArticle = useCallback(async (formData) => {
     const result = await addArticle(formData);
     if (result.success) {
       cancelAddArticle();
     }
     return result;
-  };
+  }, [addArticle, cancelAddArticle]);
 
-  const handleConfirmDeleteArticle = async articleCode => {
+  const handleConfirmDeleteArticle = useCallback(async (articleCode) => {
     const result = await deleteArticle(articleCode);
     if (result.success) {
       cancelRemoveArticle();
     }
     return result;
-  };
+  }, [deleteArticle, cancelRemoveArticle]);
 
-  const handleConfirmAddAudio = async formData => {
+  const handleConfirmAddAudio = useCallback(async (formData) => {
     const result = await addAudio(formData);
     if (result.success) {
       cancelAddAudio();
     }
     return result;
-  };
+  }, [addAudio, cancelAddAudio]);
 
-  const handleConfirmAddAd = async formData => {
+  const handleConfirmAddAd = useCallback(async (formData) => {
     const result = await addAdvertisement(formData);
     if (result.success) {
       cancelAddAd();
     }
     return result;
-  };
+  }, [addAdvertisement, cancelAddAd]);
 
-  const handleConfirmDeleteAd = async (adId) => {
+  const handleConfirmDeleteAd = useCallback(async (adId) => {
     const result = await deleteAdvertisement(adId);
     return result;
-  };
+  }, [deleteAdvertisement]);
 
-  const handleAdSelectedForEdit = (ad) => {
+  const handleAdSelectedForEdit = useCallback((ad) => {
     setShowSelectAdModal(false);
     setAdToEdit(ad);
-  };
+  }, []);
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = useCallback(() => {
     // Si el menú móvil está abierto, ciérralo antes de mostrar el modal
     if (mobileMenuOpen) {
       setMobileMenuOpen(false);
     }
     setShowLogoutConfirm(true);
-  };
+  }, [mobileMenuOpen]);
 
-  const confirmLogout = () => {
+  const confirmLogout = useCallback(() => {
     logout();
     setShowLogoutConfirm(false);
-  };
+  }, [logout]);
 
-  const handleSelectDraft = (code, slug) => {
+  const handleSelectDraft = useCallback((code, slug) => {
     setShowSelectDraftModal(false);
     navigate(`/articulos/${code}/${slug}`);
-  };
+  }, [navigate]);
 
-  const mobileAuthItems = !auth?.user_code
-    ? [{ name: 'Ingresar', slug: 'login', action: onOpenAuth }]
-    : [
-      { name: 'Perfil', slug: 'perfil', action: () => navigate('/perfil') },
-      { name: 'Cerrar sesión', slug: 'logout', action: handleLogoutClick }
-    ];
+  const mobileAuthItems = useMemo(() =>
+    !auth?.user_code
+      ? [{ name: 'Ingresar', slug: 'login', action: onOpenAuth }]
+      : [
+        { name: 'Perfil', slug: 'perfil', action: () => navigate('/perfil') },
+        { name: 'Cerrar sesión', slug: 'logout', action: handleLogoutClick }
+      ],
+    [auth?.user_code, onOpenAuth, navigate, handleLogoutClick]
+  );
 
   return (
     <header>
@@ -420,6 +423,6 @@ const Header = ({ onOpenAuth, categories, categoriesLoading, categoriesError, on
 
     </header >
   );
-};
+});
 
 export default Header;

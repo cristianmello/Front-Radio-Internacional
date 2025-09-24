@@ -4,7 +4,7 @@ import Url from '../helpers/Url';
 import useAuth from './UseAuth';
 
 export function useSectionActions(slug, initialItems, onDeleted) {
-    const [items, setItems] = useState(initialItems || []); 
+    const [items, setItems] = useState(initialItems || []);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const { authFetch } = useAuth();
@@ -29,28 +29,6 @@ export function useSectionActions(slug, initialItems, onDeleted) {
             setLoading(false); // <-- Lo desactivamos al terminar
         }
     }, [slug, authFetch]);
-
-    /* EL QUE FUNCIONA CORRECTAMENTE  
-      const addItem = async (code) => {
-            try {
-                const res = await authFetch(`${Url.url}/api/sections/${slug}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code })
-                });
-                if (!res.ok) {
-                    const errBody = await res.json();
-                    throw new Error(errBody.message || 'Error añadiendo ítem');
-                }
-                // 5. Refresca la lista completa para asegurar consistencia
-                await fetchItems();
-                return { success: true };
-            } catch (err) {
-                console.error(`[useSectionActions:${slug}] addItem:`, err);
-                return { success: false, message: err.message };
-            }
-        };
-        */
 
     useEffect(() => {
         setItems(initialItems || []);

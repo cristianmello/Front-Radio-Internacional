@@ -1,9 +1,9 @@
 // src/components/layout/public/home/CreateAudioModal.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import { useNotification } from "../../context/NotificationContext";
 
-export default function CreateAudioModal({ onSave, onCancel, categories = [] }) {
+const CreateAudioModal = React.memo(({ onSave, onCancel, categories = [] }) => {
     const modalContentRef = useRef(null);
 
     const { showNotification } = useNotification();
@@ -36,7 +36,7 @@ export default function CreateAudioModal({ onSave, onCancel, categories = [] }) 
         setSlug(generateSlug(title));
     }, [title]);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setFormError("");
 
@@ -74,10 +74,13 @@ export default function CreateAudioModal({ onSave, onCancel, categories = [] }) 
         }
 
         setIsSubmitting(false);
-    };
+    }, [onSave, onCancel, title, categoryId, audioFile, slug]);
 
     // Filtramos la categoría "Inicio" para que no se pueda seleccionar
-    const filteredCategories = categories.filter(cat => cat.category_slug !== 'inicio');
+    const filteredCategories = useMemo(() =>
+        categories.filter(cat => cat.category_slug !== 'inicio'),
+        [categories]
+    );
 
     return (
         <div className="modal-edit active" id="createAudioModal">
@@ -135,10 +138,12 @@ export default function CreateAudioModal({ onSave, onCancel, categories = [] }) 
             </div>
         </div>
     );
-}
+});
 
 CreateAudioModal.propTypes = {
     onSave: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
     categories: PropTypes.array.isRequired,
 };
+
+export default CreateAudioModal;

@@ -1,5 +1,5 @@
 // src/components/layout/public/home/RenderArticleContent.jsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import parse from 'html-react-parser';
 import DOMPurify from 'dompurify';
 import useAdvertisements from '../../hooks/useAdvertisements';
@@ -46,59 +46,69 @@ const RenderArticleContent = ({ htmlContent }) => {
 
     if (!htmlContent) return null;
 
-    // Mientras cargan anuncios o hay error, render raw (esto ya lo tenías)
-    if (loading || error) {
-        return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
-    }
-
     // SANITIZAR: permitir iframe + atributos necesarios
-    const purifyConfig = {
+    const purifyConfig = useMemo(() => ({
         ADD_TAGS: ['iframe'],
         ADD_ATTR: [
             'allow', 'allowfullscreen', 'frameborder', 'loading', 'referrerpolicy', 'sandbox',
             'src', 'width', 'height', 'title', 'class', 'style', 'data-ad-id'
         ]
-    };
-    const cleanHtml = DOMPurify.sanitize(htmlContent, purifyConfig);
+    }), []);
 
-    const options = {
+    const cleanHtml = useMemo(() => {
+        if (!htmlContent) return '';
+        // Usamos la config memorizada
+        return DOMPurify.sanitize(htmlContent, purifyConfig);
+    }, [htmlContent, purifyConfig]);
+
+    // 4. Memorizar las opciones de parseo y la función 'replace'
+    const options = useMemo(() => ({
         replace: domNode => {
             if (!domNode || !domNode.name) return;
 
-            // anuncios: si la clase contiene advertisement-placeholder
+            // Lógica de Anuncios (depende de 'advertisements')
             if (domNode.attribs && (domNode.attribs.class || '').includes('advertisement-placeholder')) {
                 const adId = parseInt(domNode.attribs['data-ad-id'], 10);
                 const adData = advertisements.find(ad => ad.ad_id === adId);
                 return adData ? <InlineAd ad={adData} /> : <></>;
             }
 
-            // iframes: validación del host y normalización de props
+            // Lógica de Iframes
             if (domNode.name === 'iframe') {
                 const srcRaw = domNode.attribs && domNode.attribs.src;
                 if (!srcRaw) return <></>;
 
-                let url;
                 try {
-                    url = new URL(srcRaw, window.location.href);
+                    const url = new URL(srcRaw, window.location.href);
+                    if (!isTrustedHost(url.hostname)) {
+                        console.warn('Iframe no permitido por hostname:', url.hostname);
+                        return <></>;
+                    }
+                    const normalized = normalizeIframeProps({ ...domNode.attribs, src: url.href });
+                    return <iframe {...normalized} />;
                 } catch (e) {
                     console.warn('URL de iframe inválida, se omitirá:', srcRaw);
                     return <></>;
                 }
-
-                if (!isTrustedHost(url.hostname)) {
-                    console.warn('Iframe no permitido por hostname:', url.hostname);
-                    return <></>;
-                }
-
-                const normalized = normalizeIframeProps({ ...domNode.attribs, src: url.href });
-                return <iframe {...normalized} />;
             }
-
-            return undefined;
         },
-    };
+    }), [advertisements]);
 
-    return <div>{parse(cleanHtml, options)}</div>;
+    // 5. Memorizar el contenido final renderizado
+    const renderedContent = useMemo(() => {
+        if (!cleanHtml) return null;
+
+        // Si los anuncios están cargando o hay un error, no parseamos con las opciones
+        // para evitar que los anuncios no aparezcan. Mostramos el HTML ya sanitizado.
+        if (loading || error) {
+            return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
+        }
+
+        // Si todo está bien, hacemos el parseo completo
+        return parse(cleanHtml, options);
+    }, [cleanHtml, options, loading, error]);
+
+    return <div>{renderedContent}</div>;
 };
 
 export default RenderArticleContent;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSectionEdit } from "../../context/SectionEditContext";
 
@@ -10,7 +10,7 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-const SortableItemWrapper = ({ item, children }) => {
+const SortableItemWrapper = React.memo(({ item, children }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.article_code });
     const { canEdit } = useSectionEdit();
     const style = {
@@ -25,17 +25,50 @@ const SortableItemWrapper = ({ item, children }) => {
             {children}
         </div>
     );
-};
+});
+
+const TopStoryItem = React.memo(({ item, onNavigate, onEditItem, onRemoveItem }) => {
+    const { canEdit } = useSectionEdit();
+
+    // Creamos handlers estables para evitar funciones inline en el JSX
+    const handleNavigate = useCallback(() => onNavigate(item), [item, onNavigate]);
+    const handleEdit = useCallback((e) => { e.stopPropagation(); onEditItem(item); }, [item, onEditItem]);
+    const handleRemove = useCallback((e) => { e.stopPropagation(); onRemoveItem(item.article_code); }, [item.article_code, onRemoveItem]);
+
+    return (
+        <div className={`news-card small-card ${!canEdit ? 'clickable' : ''}`} onClick={handleNavigate}>
+            <div className="story-image">
+                {item.is_premium && <div className="badge premium">Premium</div>}
+                <img src={item.image || "/placeholder.jpg"} alt={item.title} loading="lazy" />
+            </div>
+            <div className="story-content">
+                <span className="category">{item.category_name}</span>
+                <h4>{item.title}</h4>
+                <p className="excerpt">{item.excerpt}</p>
+                <Link to={`/articulos/${item.article_code}/${item.slug}`} className="read-more">Leer más</Link>
+                {canEdit && (
+                    <div className="item-actions">
+                        <button className="edit-item-btn" title="Editar" onClick={handleEdit}><i className="fas fa-pen"></i></button>
+                        <button className="delete-item-btn" title="Quitar" onClick={handleRemove}><i className="fas fa-trash" /></button>
+                    </div>
+                )}
+            </div>
+        </div>
+        
+    );
+});
 
 const BreakingNews = ({ sectionTitle, data = [] }) => {
     const { canEdit, onAddItem, onRemove, onEdit, onDeleteSection, setItems, reorderItems } = useSectionEdit();
     const navigate = useNavigate();
 
-    const sensors = useSensors(
+    // 3. Memorizamos la configuración de los sensores de DND-Kit
+    const sensors = useMemo(() => useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-    );
+    ), []);
 
-    const handleDragEnd = (event) => {
+
+    const handleDragEnd = useCallback((event) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
             const oldIndex = data.findIndex((item) => item.article_code === active.id);
@@ -45,7 +78,13 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
             const orderedCodes = newData.map(item => item.article_code);
             reorderItems(orderedCodes);
         }
-    };
+    }, [data, setItems, reorderItems]);
+
+    const handleNavigateItem = useCallback((item) => {
+        if (!canEdit) {
+            navigate(`/articulos/${item.article_code}/${item.slug}`);
+        }
+    }, [canEdit, navigate]);
 
     if (!data.length && !canEdit) return null;
 
@@ -82,24 +121,12 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
                             {topStoriesData.map(item => (
                                 <SortableItemWrapper key={item.article_code} item={item}>
                                     {/* Aquí recreamos la tarjeta de noticia con todos sus estilos y datos */}
-                                    <div className={`news-card small-card ${!canEdit ? 'clickable' : ''}`} onClick={() => !canEdit && navigate(`/articulos/${item.article_code}/${item.slug}`)}>
-                                        <div className="story-image">
-                                            {item.is_premium && <div className="badge premium">Premium</div>}
-                                            <img src={item.image || "/placeholder.jpg"} alt={item.title} loading="lazy" />
-                                        </div>
-                                        <div className="story-content">
-                                            <span className="category">{item.category_name}</span>
-                                            <h4>{item.title}</h4>
-                                            <p className="excerpt">{item.excerpt}</p>
-                                            <Link to={`/articulos/${item.article_code}/${item.slug}`} className="read-more">Leer más</Link>
-                                            {canEdit && (
-                                                <div className="item-actions">
-                                                    <button className="edit-item-btn" title="Editar" onClick={(e) => { e.stopPropagation(); onEdit(item); }}><i className="fas fa-pen"></i></button>
-                                                    <button className="delete-item-btn" title="Quitar" onClick={(e) => { e.stopPropagation(); onRemove(item.article_code); }}><i className="fas fa-trash" /></button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                    <TopStoryItem 
+                                        item={item}
+                                        onNavigate={handleNavigateItem}
+                                        onEditItem={onEdit}
+                                        onRemoveItem={onRemove}
+                                    />
                                 </SortableItemWrapper>
                             ))}
                         </TopStories>
@@ -112,46 +139,3 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
 };
 
 export default BreakingNews;
-
-/*
-FUNCIONANDO ANTES DE DRAG AND DROP
-// src/components/layout/public/home/BreakingNews.jsx
-import React from "react";
-import FeaturedArticle from "./FeaturedArticle";
-import TopStories from "./TopStories";
-import { useSectionEdit } from "../../../../context/SectionEditContext";
-
-const BreakingNews = ({ sectionTitle, data = [] }) => {
-  const { canEdit, onAddItem, onRemove, onDeleteSection } = useSectionEdit();
-
-  const noTitle = !sectionTitle;
-
-  return (
-    <section className="breaking-news section-appear">
-      <div className={`section-header${noTitle ? " no-title" : ""}`}>
-        {sectionTitle && <h2>{sectionTitle}</h2>}
-
-        {canEdit && (
-
-          <div className="section-actions">
-            {onDeleteSection && (<button onClick={onDeleteSection} className="delete-section-btn" title="Eliminar sección"><i className="fas fa-trash"></i>
-            </button>)}
-
-            {onAddItem && (<button onClick={onAddItem}>+ Añadir Noticia</button>)}
-
-          </div>
-        )}
-
-      </div>
-
-      <FeaturedArticle data={data[0]}
-        onRemove={onRemove ? () => onRemove(data[0]?.article_code) : null}
-      />
-
-      <TopStories data={data.slice(1)} />
-    </section>
-  );
-};
-
-export default BreakingNews;
-*/

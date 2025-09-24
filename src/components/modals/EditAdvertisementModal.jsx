@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import useAdvertisement from '../../hooks/useAdvertisement.js';
 import { AD_FORMATS } from '../../helpers/adFormats.js';
 import { compressImage } from '../../helpers/ImageCompressor.js';
 import { useNotification } from '../../context/NotificationContext.jsx';
 
-export default function EditAdvertisementModal({ advertisement: adToEdit, onSave, onCancel, onUpdateSuccess }) {
+const EditAdvertisementModal = React.memo(({ advertisement: adToEdit, onSave, onCancel, onUpdateSuccess }) => {
     const { showNotification } = useNotification();
     const modalContentRef = useRef(null);
     const previewUrlRef = useRef(null);
@@ -37,6 +37,22 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         }
     }, [formError]);
 
+    const formatDateForInput = useMemo(() => (utcDateString) => {
+        if (!utcDateString) return '';
+
+        // 1. Creamos un objeto Date desde el string UTC.
+        const date = new Date(utcDateString);
+
+        // 2. Obtenemos el offset de la zona horaria en minutos (ej: para UTC-3, devuelve 180).
+        const timezoneOffset = date.getTimezoneOffset();
+
+        // 3. Restamos ese offset a la fecha para "moverla" a la hora local correcta.
+        date.setMinutes(date.getMinutes() - timezoneOffset);
+
+        // 4. Ahora sí, convertimos a ISO y cortamos. El resultado será la hora local correcta.
+        return date.toISOString().slice(0, 16);
+    }, []);
+
     // 3. Efecto para rellenar el formulario cuando los datos del hook llegan.
     useEffect(() => {
         if (initialAdData) {
@@ -52,28 +68,12 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
             setAdScriptContent(initialAdData.ad_script_content || '');
             setIsAdActive(initialAdData.ad_is_active || false);
 
-            const formatDateForInput = (utcDateString) => {
-                if (!utcDateString) return '';
-
-                // 1. Creamos un objeto Date desde el string UTC.
-                const date = new Date(utcDateString);
-
-                // 2. Obtenemos el offset de la zona horaria en minutos (ej: para UTC-3, devuelve 180).
-                const timezoneOffset = date.getTimezoneOffset();
-
-                // 3. Restamos ese offset a la fecha para "moverla" a la hora local correcta.
-                date.setMinutes(date.getMinutes() - timezoneOffset);
-
-                // 4. Ahora sí, convertimos a ISO y cortamos. El resultado será la hora local correcta.
-                return date.toISOString().slice(0, 16);
-            };
-
             setAdStartDate(formatDateForInput(initialAdData.ad_start_date));
             setAdEndDate(formatDateForInput(initialAdData.ad_end_date));
         }
-    }, [initialAdData]);
+    }, [initialAdData, formatDateForInput]);
 
-    const handleImageChange = async (e) => {
+    const handleImageChange = useCallback(async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -120,11 +120,11 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }, [adFormat]);
 
 
     // 4. Lógica de guardado "inteligente": solo envía los campos modificados.
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setFormError('');
 
@@ -210,7 +210,11 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
         }
 
         setIsSubmitting(false);
-    };
+    }, [
+        // Lista completa de dependencias para el submit
+        adName, adType, adFormat, adTargetUrl, adScriptContent, adStartDate, adEndDate,
+        isAdActive, adImageFile, onSave, onCancel, onUpdateSuccess, showNotification
+    ]);
 
     useEffect(() => {
         return () => {
@@ -319,7 +323,7 @@ export default function EditAdvertisementModal({ advertisement: adToEdit, onSave
             </div>
         </div>
     );
-}
+});
 
 EditAdvertisementModal.propTypes = {
     advertisement: PropTypes.shape({
@@ -329,3 +333,5 @@ EditAdvertisementModal.propTypes = {
     onCancel: PropTypes.func.isRequired,
     onUpdateSuccess: PropTypes.func,
 };
+
+export default EditAdvertisementModal;

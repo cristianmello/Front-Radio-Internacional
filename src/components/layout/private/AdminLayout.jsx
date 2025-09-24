@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Outlet, Navigate, Link } from 'react-router-dom';
 import useAuth from '../../../hooks/UseAuth';
 
-const AdminLayout = () => {
+const AdminLayout = React.memo(() => {
     const { auth, roles, loading } = useAuth();
 
     // Mientras se verifica la sesión, mostramos un mensaje de carga.
@@ -16,7 +16,9 @@ const AdminLayout = () => {
     }
 
     // Verificamos si tiene el rol adecuado.
-    const isAdmin = roles && roles.some(role => ['admin', 'superadmin'].includes(role));
+    const isAdmin = useMemo(() => {
+        return roles && roles.some(role => ['admin', 'superadmin'].includes(role));
+    }, [roles]);
 
     // Si no es admin, lo mandamos a la página de inicio.
     if (!isAdmin) {
@@ -44,6 +46,6 @@ const AdminLayout = () => {
             </main>
         </div>
     );
-};
+});
 
 export default AdminLayout;

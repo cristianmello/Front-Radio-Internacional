@@ -1,12 +1,12 @@
 // src/components/layout/public/Footer.jsx
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
-export default function Footer({ categories = [], loading, error }) {
+const Footer = React.memo(({ categories = [], loading, error }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleCategoryClick = (e, slug) => {
+  const handleCategoryClick = useCallback((e, slug) => {
     e.preventDefault();
     // 1. Dispatch same event so main layout responds
     const ev = new CustomEvent("categoryChange", { detail: slug });
@@ -25,7 +25,12 @@ export default function Footer({ categories = [], loading, error }) {
         if (dest) dest.scrollIntoView({ behavior: "smooth" });
       }, 100);
     }
-  };
+  }, [navigate]);
+
+  const filteredCategories = useMemo(() =>
+    categories.filter(cat => cat.category_slug !== "inicio"),
+    [categories]
+  );
 
   return (
     <footer>
@@ -48,9 +53,7 @@ export default function Footer({ categories = [], loading, error }) {
                 <p className="error">{error}</p>
               ) : (
                 <ul>
-                  {categories
-                    .filter(cat => cat.category_slug !== "inicio")
-                    .map(cat => (
+                  {filteredCategories.map(cat => (
                       <li
                         key={cat.category_code}
                         className={
@@ -125,4 +128,6 @@ export default function Footer({ categories = [], loading, error }) {
       </div>
     </footer>
   );
-}
+});
+
+export default Footer;

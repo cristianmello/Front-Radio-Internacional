@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import useArticleActions from '../../hooks/useArticleActions';
 import useAuth from '../../hooks/UseAuth';
 import Url from '../../helpers/Url';
 import DOMPurify from 'dompurify';
 
-export default function ArticleEditor({ article, refresh }) {
+
+const ArticleEditor = React.memo(({ article, refresh }) => {
     // Hooks que SÍ necesitan autenticación. Como este componente solo se renderiza
-    // para usuarios logueados, es seguro llamarlos aquí.
     const { editArticle } = useArticleActions();
     const { authFetch } = useAuth();
 
@@ -22,7 +22,7 @@ export default function ArticleEditor({ article, refresh }) {
         }
     }, [article]);
 
-    const imageUploadHandler = (blobInfo) => new Promise((resolve, reject) => {
+    const imageUploadHandler = useCallback((blobInfo) => new Promise((resolve, reject) => {
         const formData = new FormData();
         formData.append('file', blobInfo.blob(), blobInfo.filename());
 
@@ -39,9 +39,9 @@ export default function ArticleEditor({ article, refresh }) {
                 resolve(json.location);
             })
             .catch(err => reject("Fallo en la subida: " + (err.message || "Error desconocido")));
-    });
+    }), [authFetch]);
 
-    const handleSaveContent = async () => {
+    const handleSaveContent = useCallback(async () => {
         if (!article) return;
         setIsSaving(true);
         const formData = new FormData();
@@ -57,14 +57,31 @@ export default function ArticleEditor({ article, refresh }) {
             alert('Error al guardar el contenido: ' + (result.message || 'Error desconocido'));
         }
         setIsSaving(false);
-    };
+    }, [article, editableContent, editArticle, refresh]);
 
-    const handleCancelEdit = () => {
+    const handleCancelEdit = useCallback(() => {
         setEditableContent(article.article_content);
         setIsEditingContent(false);
-    };
+    }, [article]);
 
-    const sanitizedContent = article ? DOMPurify.sanitize(article.article_content) : '';
+    const sanitizedContent = useMemo(() =>
+        article ? DOMPurify.sanitize(article.article_content) : '',
+        [article]
+    );
+
+    const editorConfig = useMemo(() => ({
+        height: 600,
+        menubar: true,
+        plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media',
+        toolbar: 'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | bullist numlist outdent indent | alignleft aligncenter alignright alignjustify | link image media | table | removeformat | fullscreen preview | help',
+        image_uploadtab: true,
+        images_upload_handler: imageUploadHandler, // Usamos el handler memorizado
+        file_picker_types: 'image',
+        automatic_uploads: true,
+        extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
+        media_live_embeds: true,
+        content_style: `body {font-family:Helvetica,Arial,sans-serif; font-size:16px }iframe {width: 100% !important;max-width: 100%;height: auto !important;aspect-ratio: 16 / 9;border: none;}`
+    }), [imageUploadHandler]);
 
     return (
         <>
@@ -91,19 +108,7 @@ export default function ArticleEditor({ article, refresh }) {
                         apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
                         value={editableContent}
                         onEditorChange={(newContent) => setEditableContent(newContent)}
-                        init={{
-                            height: 600,
-                            menubar: true,
-                            plugins: 'lists link image table code help wordcount autoresize fullscreen preview emoticons media',
-                            toolbar: 'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | bullist numlist outdent indent | alignleft aligncenter alignright alignjustify | link image media | table | removeformat | fullscreen preview | help',
-                            image_uploadtab: true,
-                            images_upload_handler: imageUploadHandler,
-                            file_picker_types: 'image',
-                            automatic_uploads: true,
-                            extended_valid_elements: 'iframe[src|width|height|frameborder|allow|allowfullscreen|title]',
-                            media_live_embeds: true,
-                            content_style: `body {font-family:Helvetica,Arial,sans-serif; font-size:16px }iframe {width: 100% !important;max-width: 100%;height: auto !important;aspect-ratio: 16 / 9;border: none;}`
-                        }}
+                        init={editorConfig}
                     />
                 ) : (
                     <div dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
@@ -111,4 +116,6 @@ export default function ArticleEditor({ article, refresh }) {
             </div>
         </>
     );
-}
+});
+
+export default ArticleEditor;

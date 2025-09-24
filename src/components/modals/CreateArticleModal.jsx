@@ -1,9 +1,10 @@
 
 // src/components/layout/public/home/CreateArticleModal.jsx
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import { compressImage } from "../../helpers/ImageCompressor.js";
 import { useNotification } from "../../context/NotificationContext.jsx";
+
 const defaultContentHTML = `
             <p>En un giro inesperado que ha sorprendido a la comunidad internacional, los líderes de dos naciones históricamente enfrentadas han firmado hoy un acuerdo de paz que pone fin a décadas de conflicto. El tratado, negociado en secreto durante los últimos seis meses, establece un marco para la cooperación económica, cultural y política entre ambos países.</p>
             
@@ -28,7 +29,7 @@ const defaultContentHTML = `
             <p>Este tratado de paz marca un punto de inflexión para una región que ha sufrido conflictos intermitentes durante más de cincuenta años, con un costo humano estimado en más de 100,000 vidas y millones de desplazados. Los ciudadanos de ambas naciones han expresado esperanza de que este acuerdo traiga finalmente una paz duradera y prosperidad compartida.</p>
 `;
 
-export default function CreateArticleModal({ onSave, onCancel, categories = [] }) {
+const CreateArticleModal = React.memo(({ onSave, onCancel, categories = [] }) => {
     const modalContentRef = useRef(null);
     const { showNotification } = useNotification();
 
@@ -63,7 +64,7 @@ export default function CreateArticleModal({ onSave, onCancel, categories = [] }
         setSlug(generateSlug(title));
     }, [title]);
 
-    const handleArticleImageChange = async (e) => {
+    const handleArticleImageChange = useCallback(async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         setFormError('');
@@ -85,9 +86,9 @@ export default function CreateArticleModal({ onSave, onCancel, categories = [] }
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setFormError("");
 
@@ -121,8 +122,12 @@ export default function CreateArticleModal({ onSave, onCancel, categories = [] }
             showNotification(errorMessage, 'error');
         }
         setIsSubmitting(false);
-    };
-    const filteredCategories = categories.filter(cat => cat.category_slug !== 'inicio');
+    }, [title, categoryId, slug, excerpt, imageFile, onSave, onCancel]);
+
+    const filteredCategories = useMemo(() =>
+        categories.filter(cat => cat.category_slug !== 'inicio'),
+        [categories]
+    );
 
     return (
         <div className="modal-edit active" id="createArticleModal">
@@ -184,10 +189,12 @@ export default function CreateArticleModal({ onSave, onCancel, categories = [] }
             </div>
         </div>
     );
-}
+});
 
 CreateArticleModal.propTypes = {
     onSave: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
     categories: PropTypes.array.isRequired,
 };
+
+export default CreateArticleModal;

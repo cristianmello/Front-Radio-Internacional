@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { AD_FORMATS } from '../../helpers/adFormats.js';
 import { compressImage } from "../../helpers/ImageCompressor.js";
 import { useNotification } from '../../context/NotificationContext.jsx';
 
-const CreateAdvertisementModal = ({ onSave, onCancel }) => {
+const CreateAdvertisementModal = React.memo(({ onSave, onCancel }) => {
     const modalContentRef = useRef(null);
     const { showNotification } = useNotification();
 
@@ -26,7 +26,7 @@ const CreateAdvertisementModal = ({ onSave, onCancel }) => {
         }
     }, [formError]);
 
-    const handleImageFileChange = async (e) => {
+    const handleImageFileChange = useCallback(async (e) => {
         const file = e.target.files[0];
         if (!file) {
             setAdImageFile(null);
@@ -45,9 +45,9 @@ const CreateAdvertisementModal = ({ onSave, onCancel }) => {
         } finally {
             setIsSubmitting(false); // Desbloquea los botones
         }
-    };
+    }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setFormError('');
 
@@ -96,7 +96,7 @@ const CreateAdvertisementModal = ({ onSave, onCancel }) => {
         }
 
         setIsSubmitting(false);
-    };
+    }, [adName, adType, adImageFile, adTargetUrl, adScriptContent, adStartDate, adEndDate, onSave, onCancel]);
 
     return (
         <div className="modal-edit active" id="createAdModal">
@@ -184,11 +184,11 @@ const CreateAdvertisementModal = ({ onSave, onCancel }) => {
             </div>
         </div>
     );
-}
+});
 
 CreateAdvertisementModal.propTypes = {
-    onSave: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired,
-};
+        onSave: PropTypes.func.isRequired,
+        onCancel: PropTypes.func.isRequired,
+    };
 
 export default CreateAdvertisementModal;

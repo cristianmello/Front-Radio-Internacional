@@ -1,17 +1,16 @@
 
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useSectionEdit } from '../../context/SectionEditContext';
 
-const AdBanner = ({ section, sectionTitle, data = [] }) => {
-    // 1. Obtenemos TODAS las funciones del contexto, igual que en TrendingNews.jsx
+const AdBanner = React.memo(({ section, sectionTitle, data = [] }) => {
     const { canEdit, onAddItem, onRemove, onEdit, onDeleteSection } = useSectionEdit();
 
     if (!data.length && !canEdit) {
         return null;
     }
     // El placeholder ahora incluye el botón para añadir un anuncio directamente
-    const renderPlaceholder = () => (
+    const renderPlaceholder = useCallback(() => (
         <div className="widget ad-widget-placeholder">
             <p>Espacio para Anuncio ({section.section_type}).</p>
             {/* El botón de añadir es contextual al placeholder si no hay items */}
@@ -21,7 +20,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
                 </button>
             )}
         </div>
-    );
+    ), [canEdit, onAddItem, section.section_type]);
 
     // Si no hay anuncios, mostramos el placeholder y terminamos.
     if (!data.length) {
@@ -44,7 +43,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
     const ad = data[0];
 
     // Contenido del anuncio con los botones de acción para editar y quitar
-    const adContent = (
+    const adContent = useMemo(() => (
         <>
             <div className="ad-disclaimer">Publicidad</div>
             <a href={ad.ad_target_url} target="_blank" rel="noopener noreferrer sponsored">
@@ -71,10 +70,10 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
                 </div>
             )}
         </>
-    );
+    ), [ad, canEdit, onEdit, onRemove]);
 
     // El 'switch' sigue decidiendo el contenedor, pero ahora todo está dentro de un layout común
-    const renderAdContainer = () => {
+    const renderAdContainer = useCallback(() => {
         switch (section.section_type) {
             case 'ad-banner':
                 return <div className="ad-container ad-banner-container">{adContent}</div>;
@@ -91,7 +90,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
             default:
                 return null;
         }
-    };
+    }, [section.section_type, adContent]);
 
     return (
         <section className="ad-section-wrapper">
@@ -112,7 +111,7 @@ const AdBanner = ({ section, sectionTitle, data = [] }) => {
             {renderAdContainer()}
         </section>
     );
-};
+});
 
 AdBanner.propTypes = {
     section: PropTypes.shape({

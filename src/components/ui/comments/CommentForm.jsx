@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 
-export default function CommentForm({
+const CommentForm = React.memo(({
     onSubmit,
     userAvatar, // Recibimos la URL del avatar del usuario
     initialText = '',
@@ -8,11 +8,11 @@ export default function CommentForm({
     isSubmitting = false,
     placeholder = 'Escribe tu comentario...',
     onCancel
-}) {
+}) => {
     const [content, setContent] = useState(initialText);
     const [isFocused, setIsFocused] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = useCallback((e) => {
         e.preventDefault();
         if (content.trim()) {
             onSubmit(content);
@@ -21,15 +21,15 @@ export default function CommentForm({
                 setIsFocused(false); // Reseteamos el foco al enviar
             }
         }
-    };
+    }, [content, initialText, onSubmit]);
 
-    const handleCancel = () => {
+    const handleCancel = useCallback(() => {
         setContent('');
         setIsFocused(false);
         if (onCancel) {
             onCancel(); // Llama a la función onCancel del padre si existe
         }
-    };
+    }, [onCancel]);
 
     return (
         <form onSubmit={handleSubmit} className="comment-form">
@@ -54,4 +54,6 @@ export default function CommentForm({
             </div>
         </form>
     );
-}
+});
+
+export default CommentForm;
