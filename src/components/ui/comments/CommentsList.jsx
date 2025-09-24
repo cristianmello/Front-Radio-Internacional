@@ -18,3 +18,5 @@ const CommentsList = React.memo(({ comments, onPostReply, onDelete, onUpdate, on
         </div>
     );
 });
+
+export default CommentsList;
