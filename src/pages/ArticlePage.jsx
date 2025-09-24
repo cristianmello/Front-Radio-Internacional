@@ -330,8 +330,7 @@ border: none;
                                     onInit={(evt, editor) => editorRef.current = editor}
                                     value={editableContent}
                                     onEditorChange={(newContent) => setEditableContent(newContent)}
-                                    init={}
-
+                                    init={editorConfig}
                                 />
                             ) : (
                                 <div className="rendered-content">
