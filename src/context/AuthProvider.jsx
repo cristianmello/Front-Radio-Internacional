@@ -1,14 +1,11 @@
 // src/context/AuthContext.jsx
-import React, { useState, useEffect, createContext, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, createContext, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Url from '../helpers/Url';
 
 const AuthContext = createContext();
 
-// Variables globales para manejar el semáforo de refresh token
-let isRefreshing = false;
-let refreshPromise = null;
-let currentAccessToken = null;
+
 
 function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -24,12 +21,16 @@ export const AuthProvider = ({ children }) => {
     const [avatarUrl, setAvatarUrl] = useState('');
     const [loading, setLoading] = useState(true);
 
+    const isRefreshingRef = useRef(false);
+    const refreshPromiseRef = useRef(null);
+    const currentAccessTokenRef = useRef(null);
+
     const refreshAuth = useCallback(async () => {
-        if (isRefreshing) {
-            return refreshPromise;
+        if (isRefreshingRef.current) {
+            return refreshPromiseRef.current;
         }
-        isRefreshing = true;
-        refreshPromise = (async () => {
+        isRefreshingRef.current = true;
+        refreshPromiseRef.current = (async () => {
             try {
                 // Intentamos leer el token CSRF que el servidor pone en cookie
                 let csrfToken = getCookie('XSRF-TOKEN');
@@ -65,20 +66,20 @@ export const AuthProvider = ({ children }) => {
                 }
 
                 const { token } = await res.json();
-                currentAccessToken = token;
+                currentAccessTokenRef.current = token;
                 return token;
             } catch (err) {
-                currentAccessToken = null;
+                currentAccessTokenRef.current = null;
                 setAuth(null);
                 setRoles([]);
                 setAvatarUrl('');
                 return null;
             } finally {
-                isRefreshing = false;
-                refreshPromise = null;
+                isRefreshingRef.current = false;
+                refreshPromiseRef.current = null;
             }
         })();
-        return refreshPromise;
+        return refreshPromiseRef.current;
     }, [setAuth, setRoles, setAvatarUrl]);
 
     const authFetch = useCallback(async (input, init = {}) => {
@@ -100,13 +101,14 @@ export const AuthProvider = ({ children }) => {
             });
         };
 
-        let res = await doFetch(currentAccessToken);
+        let res = await doFetch(currentAccessTokenRef.current);
 
-        if (res.status === 401 && currentAccessToken) {
+        if (res.status === 401 && currentAccessTokenRef.current) {
             const newToken = await refreshAuth();
             if (newToken) {
                 res = await doFetch(newToken);
             } else {
+                setAuth(null);
                 return new Response(JSON.stringify({ message: 'Session expired. Please log in again.' }), { status: 401 });
             }
         }
@@ -118,7 +120,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
 
         // Si YA tenemos un token en memoria (ej. después del login), no necesitamos renovar.
-        if (currentAccessToken) {
+        if (currentAccessTokenRef.current) {
             setLoading(false);
             return;
         }
@@ -171,12 +173,12 @@ export const AuthProvider = ({ children }) => {
                 error.code = body.code;
                 throw error;
             }
-            currentAccessToken = body.token;
+            currentAccessTokenRef.current = body.token;
 
             const profileRes = await authFetch(`${Url.url}/api/users/profile`, { method: 'GET' });
 
             if (!profileRes.ok) {
-                currentAccessToken = null;
+                currentAccessTokenRef.current = null;
                 setAuth(null);
                 throw new Error('El inicio de sesión fue exitoso, pero no se pudo obtener el perfil.');
             }
@@ -208,7 +210,7 @@ export const AuthProvider = ({ children }) => {
                 headers: {
                     'Content-Type': 'application/json',
                     ...(csrfToken && { 'csrf-token': csrfToken }),
-                    Authorization: `Bearer ${currentAccessToken}`,
+                    Authorization: `Bearer ${currentAccessTokenRef.current}`,
                 },
                 credentials: 'include',
             });
@@ -217,7 +219,9 @@ export const AuthProvider = ({ children }) => {
         }
 
         // Siempre limpiamos cliente aunque el fetch falle
-        currentAccessToken = null;
+        currentAccessTokenRef.current = null;
+        isRefreshingRef.current = false;
+        refreshPromiseRef.current = null;
         setAuth(null);
         setRoles([]);
         setAvatarUrl('');
@@ -226,96 +230,96 @@ export const AuthProvider = ({ children }) => {
 
     const register = useCallback(async ({
         user_name,
-            user_lastname,
-            user_birth,
-            user_phone,
-            user_mail,
-            user_password
+        user_lastname,
+        user_birth,
+        user_phone,
+        user_mail,
+        user_password
     }) => {
-    try {
-        const res = await fetch(`${Url.url}/api/users/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_name,
-                user_lastname,
-                user_birth,
-                user_phone,
-                user_mail,
-                user_password
-            }),
-        });
-        const body = await res.json();
+        try {
+            const res = await fetch(`${Url.url}/api/users/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_name,
+                    user_lastname,
+                    user_birth,
+                    user_phone,
+                    user_mail,
+                    user_password
+                }),
+            });
+            const body = await res.json();
 
-        if (!res.ok) {
-            console.error('Errores de validación en register:', body.errors);
-            throw new Error(body.message);
+            if (!res.ok) {
+                console.error('Errores de validación en register:', body.errors);
+                throw new Error(body.message);
+            }
+            return { success: true, message: body.message };
+
+        } catch (err) {
+            console.error('Error en register:', err);
+            return { success: false, message: err.message };
         }
-        return { success: true, message: body.message };
+    }, []);
 
-    } catch (err) {
-        console.error('Error en register:', err);
-        return { success: false, message: err.message };
-    }
-}, []);
-
-const recoverPassword = useCallback(async ({ user_mail }) => {
-    try {
-        const res = await fetch(`${Url.url}/api/users/forgot-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_mail }),
-        });
-        const body = await res.json();
-        if (!res.ok) {
-            throw new Error(body.message || 'Error al solicitar recuperación');
+    const recoverPassword = useCallback(async ({ user_mail }) => {
+        try {
+            const res = await fetch(`${Url.url}/api/users/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_mail }),
+            });
+            const body = await res.json();
+            if (!res.ok) {
+                throw new Error(body.message || 'Error al solicitar recuperación');
+            }
+            return { success: true, message: body.message };
+        } catch (err) {
+            console.error('Error en recoverPassword:', err);
+            return { success: false, message: err.message };
         }
-        return { success: true, message: body.message };
-    } catch (err) {
-        console.error('Error en recoverPassword:', err);
-        return { success: false, message: err.message };
-    }
-}, []);
+    }, []);
 
-const resendVerificationEmail = useCallback(async ({ user_mail }) => {
-    try {
-        const res = await fetch(`${Url.url}/api/users/send-verification-email`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_mail }),
-        });
-        const body = await res.json();
-        if (!res.ok) {
-            throw new Error(body.message || 'Error al reenviar el correo.');
+    const resendVerificationEmail = useCallback(async ({ user_mail }) => {
+        try {
+            const res = await fetch(`${Url.url}/api/users/send-verification-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_mail }),
+            });
+            const body = await res.json();
+            if (!res.ok) {
+                throw new Error(body.message || 'Error al reenviar el correo.');
+            }
+            return { success: true, message: body.message };
+        } catch (err) {
+            return { success: false, message: err.message };
         }
-        return { success: true, message: body.message };
-    } catch (err) {
-        return { success: false, message: err.message };
-    }
-}, []);
+    }, []);
 
-useEffect(() => {
-    authenticateUser();
-}, [authenticateUser]);
+    useEffect(() => {
+        authenticateUser();
+    }, [authenticateUser]);
 
-const contextValue = useMemo(() => ({
-    auth,
-    setAuth,
-    roles,
-    loading,
-    profile,
-    login,
-    logout,
-    register,
-    recoverPassword,
-    resendVerificationEmail,
-    authFetch
+    const contextValue = useMemo(() => ({
+        auth,
+        setAuth,
+        roles,
+        loading,
+        profile,
+        login,
+        logout,
+        register,
+        recoverPassword,
+        resendVerificationEmail,
+        authFetch
     }), [auth, roles, loading, profile, login, logout, register, recoverPassword, resendVerificationEmail, authFetch]);
 
-return (
-    <AuthContext.Provider value={contextValue}>
-        {children}
-    </AuthContext.Provider>
-);
+    return (
+        <AuthContext.Provider value={contextValue}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 export default AuthContext;
