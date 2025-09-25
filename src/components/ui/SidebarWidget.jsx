@@ -109,6 +109,9 @@ const SidebarWidget = React.memo(({ section, onSectionDeleted, canEditGlobal, ca
         }
     }, []);
 
+    const Component = componentMap[section.section_type];
+    const AddModal = addModalMap[section.section_type];
+
     const handleSaveArticle = useCallback((formData) => {
         if (editingArticle) {
             editArticle(editingArticle.id, formData);
@@ -140,9 +143,6 @@ const SidebarWidget = React.memo(({ section, onSectionDeleted, canEditGlobal, ca
         onEdit: canEditGlobal ? handleEdit : null, // Pasamos la nueva función de manejo
         onDeleteSection: canEditGlobal && !section.is_protected ? handleDeleteSection : null,
     }), [canEditGlobal, AddModal, handleRemoveItem, handleEdit, handleDeleteSection, section.is_protected]);
-
-    const Component = componentMap[section.section_type];
-    const AddModal = addModalMap[section.section_type];
 
     if (!Component) return null;
 
