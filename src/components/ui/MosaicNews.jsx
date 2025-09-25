@@ -185,7 +185,6 @@ const MosaicNews = ({
 
         return () => {
             clearTimeout(timer);
-            cancelled = true;
             controller.abort();
         };
     }, [bgColor, sectionSlug, canEdit, authFetch]);
