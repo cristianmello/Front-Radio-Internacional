@@ -11,7 +11,6 @@ export default function useAudio(audioId) {
     const [error, setError] = useState(null);
 
     // --- LEER (READ) ---
-    // Esta función está bien, carga el audio basado en el ID del hook.
     const fetchAudio = useCallback(async (options = {}) => {
         if (audioId == null) return;
         setLoading(true);

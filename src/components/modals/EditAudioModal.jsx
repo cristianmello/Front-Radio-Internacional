@@ -7,18 +7,20 @@ import { useNotification } from "../../context/NotificationContext";
 const EditAudioModal = React.memo(({ audioId, onSave, onCancel, onUpdateSuccess, categories = [] }) => {
     const modalContentRef = useRef(null);
     const { showNotification } = useNotification();
-
     const { audio, loading: loadingAudio, error: errorAudio } = useAudio(audioId);
-
     const initialRef = useRef(null);
 
     // Estados del formulario adaptados para Audio
     const [title, setTitle] = useState("");
     const [categoryId, setCategoryId] = useState("");
     const [newAudioFile, setNewAudioFile] = useState(null);
-
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formError, setFormError] = useState("");
+
+    const filteredCategories = useMemo(() =>
+        categories.filter(cat => cat.category_slug !== 'inicio'),
+        [categories]
+    );
 
     useEffect(() => {
         if (formError && modalContentRef.current) {
@@ -98,11 +100,6 @@ const EditAudioModal = React.memo(({ audioId, onSave, onCancel, onUpdateSuccess,
     if (componentError) {
         return <div className="modal-edit active"><div className="modal-edit-content">Error: {componentError}</div></div>;
     }
-
-    const filteredCategories = useMemo(() =>
-        categories.filter(cat => cat.category_slug !== 'inicio'),
-        [categories]
-    );
 
     return (
         <div className="modal-edit active" id="editAudioModal">

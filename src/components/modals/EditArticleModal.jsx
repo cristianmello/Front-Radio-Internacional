@@ -8,9 +8,7 @@ import { useNotification } from '../../context/NotificationContext.jsx';
 const EditArticleModal = React.memo(({ article: articleToEdit, onSave, onCancel, onUpdateSuccess, categories = [] }) => {
     const modalContentRef = useRef(null);
     const { showNotification } = useNotification();
-
     const { article, loading: loadingArticle, error: errorArticle } = usePublicArticle(articleToEdit?.id, articleToEdit?.slug);
-
     const initialRef = useRef(null);
 
     // Estados del formulario
@@ -26,6 +24,12 @@ const EditArticleModal = React.memo(({ article: articleToEdit, onSave, onCancel,
             modalContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [formError]);
+
+    const filteredCategories = useMemo(() =>
+        categories.filter(cat => cat.category_slug !== 'inicio'),
+        [categories]
+    );
+
     // Carga los datos del artículo en el formulario cuando el hook los obtiene
     useEffect(() => {
         if (article) {
@@ -144,11 +148,6 @@ const EditArticleModal = React.memo(({ article: articleToEdit, onSave, onCancel,
     if (componentError) {
         return <div className="modal-edit active"><div className="modal-edit-content">Error: {componentError}</div></div>;
     }
-
-    const filteredCategories = useMemo(() =>
-        categories.filter(cat => cat.category_slug !== 'inicio'),
-        [categories]
-    );
 
     return (
         <div className="modal-edit active" id="editArticleModal">
