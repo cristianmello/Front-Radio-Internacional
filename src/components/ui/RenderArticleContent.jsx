@@ -43,9 +43,7 @@ const normalizeIframeProps = (attribs = {}) => {
 
 const RenderArticleContent = ({ htmlContent }) => {
     const { advertisements, loading, error } = useAdvertisements();
-
-    if (!htmlContent) return null;
-
+    
     // SANITIZAR: permitir iframe + atributos necesarios
     const purifyConfig = useMemo(() => ({
         ADD_TAGS: ['iframe'],
@@ -54,7 +52,7 @@ const RenderArticleContent = ({ htmlContent }) => {
             'src', 'width', 'height', 'title', 'class', 'style', 'data-ad-id'
         ]
     }), []);
-
+    
     const cleanHtml = useMemo(() => {
         if (!htmlContent) return '';
         // Usamos la config memorizada
@@ -93,7 +91,7 @@ const RenderArticleContent = ({ htmlContent }) => {
             }
         },
     }), [advertisements]);
-
+    
     // 5. Memorizar el contenido final renderizado
     const renderedContent = useMemo(() => {
         if (!cleanHtml) return null;
@@ -107,6 +105,8 @@ const RenderArticleContent = ({ htmlContent }) => {
         // Si todo está bien, hacemos el parseo completo
         return parse(cleanHtml, options);
     }, [cleanHtml, options, loading, error]);
+
+    if (!htmlContent) return null;
 
     return <div>{renderedContent}</div>;
 };

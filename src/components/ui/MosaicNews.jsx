@@ -118,11 +118,9 @@ const MosaicNews = ({
 
     useEffect(() => { setBgColor(initialBgColor); }, [initialBgColor]);
     // Configuración de los sensores de DND-Kit
-    const sensors = useMemo(() => useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: { distance: 8 },
-        })
-    ), []);
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    );
 
     // Lógica que se ejecuta al terminar de arrastrar
     const handleDragEnd = useCallback((event) => {

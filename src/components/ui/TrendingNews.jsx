@@ -112,9 +112,9 @@ const TrendingNews = ({ sectionTitle = "Tendencias", data = [] }) => {
   const { canEdit, onAddItem, onRemove, onEdit, onDeleteSection, setItems, reorderItems } = useSectionEdit();
   const navigate = useNavigate()
 
-  const sensors = useMemo(() => useSensors(
+  const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  ), []);
+  );
 
   const handleDragEnd = useCallback((event) => {
     const { active, over } = event;

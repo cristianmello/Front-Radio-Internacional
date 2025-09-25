@@ -113,11 +113,9 @@ const FeaturedNews = ({ sectionTitle = "Destacados", data = [] }) => {
     const { canEdit, onAddItem, onRemove, onDeleteSection, onEdit, setItems, reorderItems } = useSectionEdit();
     const navigate = useNavigate();
 
-    const sensors = useMemo(() => useSensors(
+    const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-    ), []);
-
-
+    );
 
     // Lógica que se ejecuta al terminar de arrastrar
     const handleDragEnd = useCallback((event) => {

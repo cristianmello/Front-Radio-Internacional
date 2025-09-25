@@ -6,13 +6,13 @@ import useAuth from '../../../hooks/UseAuth';
 import CommentsList from './CommentsList';
 import CommentForm from './CommentForm';
 
- // 1. Usamos una función recursiva para un conteo más preciso de todos los comentarios y respuestas
-    const countComments = (commentList) => {
-        return commentList.reduce((acc, comment) => {
-            return acc + 1 + (comment.replies ? countComments(comment.replies) : 0);
-        }, 0);
-    };
-    
+// 1. Usamos una función recursiva para un conteo más preciso de todos los comentarios y respuestas
+const countComments = (commentList) => {
+    return commentList.reduce((acc, comment) => {
+        return acc + 1 + (comment.replies ? countComments(comment.replies) : 0);
+    }, 0);
+};
+
 export default function CommentsSection({ articleId, onOpenAuth }) {
     const { auth } = useAuth();
     const [sortBy, setSortBy] = useState('most-liked');
@@ -26,10 +26,10 @@ export default function CommentsSection({ articleId, onOpenAuth }) {
         voteOnComment
     } = useComments(articleId, sortBy);
 
+    const totalComments = useMemo(() => countComments(comments), [comments]);
+
     if (loading && comments.length === 0) return <h3>Cargando comentarios...</h3>;
     if (error) return <p style={{ color: 'red' }}>Error al cargar comentarios: {error}</p>;
-
-    const totalComments = useMemo(() => countComments(comments), [comments]);
 
     return (
         <div className={`article-comments ${loading ? 'loading' : ''}`}>

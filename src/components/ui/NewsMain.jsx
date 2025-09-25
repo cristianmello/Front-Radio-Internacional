@@ -79,7 +79,7 @@ const ArticleContent = React.memo(({ item, onItemClick, onEditItem, onRemoveItem
                         >
                             <i className="fas fa-pen"></i>
                         </button>
-                        {onRemove && (
+                        {onRemoveItem && (
                             <button
                                 className="delete-item-btn"
                                 title="Eliminar elemento"
@@ -129,8 +129,10 @@ const NewsMain = ({ sectionTitle, data = [], categoryFilter }) => {
 
 
     // Configuración de DND-Kit
-    const sensors = useMemo(() => useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } })), []);
-
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    );
+    
     const handleDragEnd = useCallback((event) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {

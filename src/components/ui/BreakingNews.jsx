@@ -54,7 +54,7 @@ const TopStoryItem = React.memo(({ item, onNavigate, onEditItem, onRemoveItem })
                 )}
             </div>
         </div>
-        
+
     );
 });
 
@@ -63,9 +63,9 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
     const navigate = useNavigate();
 
     // 3. Memorizamos la configuración de los sensores de DND-Kit
-    const sensors = useMemo(() => useSensors(
+    const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-    ), []);
+    );
 
 
     const handleDragEnd = useCallback((event) => {
@@ -121,7 +121,7 @@ const BreakingNews = ({ sectionTitle, data = [] }) => {
                             {topStoriesData.map(item => (
                                 <SortableItemWrapper key={item.article_code} item={item}>
                                     {/* Aquí recreamos la tarjeta de noticia con todos sus estilos y datos */}
-                                    <TopStoryItem 
+                                    <TopStoryItem
                                         item={item}
                                         onNavigate={handleNavigateItem}
                                         onEditItem={onEdit}
